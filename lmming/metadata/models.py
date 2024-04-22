@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, SlugField, FileField, BooleanField, CharField, TextField, \
-    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField
+    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
 from django.utils import timezone
 
 from utils import PipelineStepName
@@ -65,40 +65,33 @@ class Report(Model):
         RESTRICTED = "RESTRICTED", "restricted"
         NOT_RESTRICTED = "NOT_RESTRICTED", "not restricted"
 
-    iiifArkSlug = SlugField()  # TODO: check settings
-    atomArkSlug = SlugField()  # TODO: check settings
-
     transfer = ForeignKey(Transfer, on_delete=CASCADE)
 
-    identifier = CharField()  # mandatory, URL, single value
-    title = CharField()  # mandatory, plain text, single value
-    creator = CharField()  # mandatory, plain text, single value
-    date = DateField()  # mandatory, single or *multiple* years
-    coverage = CharField(max_length=30, choices=UnionLevel.choices, default=UnionLevel.OTHER)  # mandatory, single value
-    language = ArrayField(CharField())  # mandatory, multi-value
-    spatial = ArrayField(CharField())  # mandatory, multi-value
-    type = ArrayField(CharField(choices=DocumentType.choices))  # mandatory, multi-value
-    license = ArrayField(CharField())  # mandatory, multi-value
-    isVersionOf = CharField()  # mandatory, single value  (URL)
-    isFormatOf = CharField(max_length=30, choices=DocumentFormat.choices)  # mandatory, multi-value
-    relation = CharField()  # optional, URL, multi-value ?!
-    created = DateField()  # optional, single year
-    available = DateField(blank=True, null=True)  # optional, date
-    accessRights = CharField(choices=AccessRights.choices,
-                             default=AccessRights.NOT_RESTRICTED)  # optional/default = ???
+    identifier = URLField(blank=True)  # mandatory, URL, single value
+    title = CharField(blank=True)  # mandatory, plain text, single value
+    creator = CharField(blank=True)  # mandatory, plain text, single value
+    date = ArrayField(DateField(), blank=True)  # mandatory, single or *multiple* years
+    coverage = CharField(choices=UnionLevel.choices, default=UnionLevel.OTHER, blank=True)  # mandatory, single value
+    language = ArrayField(CharField(), blank=True)  # mandatory, multi-value
+    spatial = ArrayField(CharField(), blank=True)  # mandatory, multi-value
+    type = ArrayField(CharField(choices=DocumentType.choices), blank=True)  # mandatory, multi-value
+    license = ArrayField(CharField(), blank=True)  # mandatory, multi-value
+    isVersionOf = URLField(blank=True)  # mandatory, single value  (URL)
+    isFormatOf = CharField(choices=DocumentFormat.choices, blank=True)  # mandatory, multi-value
+    relation = URLField(blank=True)  # optional, URL, multi-value ?!
+    created = DateField(blank=True)  # optional, single year
+    available = DateField(blank=True)  # optional, date
+    accessRights = CharField(choices=AccessRights.choices, default=AccessRights.NOT_RESTRICTED, blank=True)  # optional
     source = ArrayField(CharField(), blank=True)  # optional, multi-value, plain-text-name | url
-    description = TextField()  # optional, single value
+    description = TextField(blank=True)  # optional, single value
 
 
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
-    file = FileField()
-
     order = PositiveIntegerField(default=1)  # internal use, not for CSV
-
-    identifier = CharField()  # URL TODO: this is built from the base IIIF URL ... do we really need a separate field for this?
-    isPartOf = CharField()  # mandatory, URL, based on report.identifier ... can be built on demand ...
     transcriptionFile = FileField(blank=False)  # mandatory, file type can be plain text or ALTO xml
+
+    identifier = URLField(blank=True)  # URL
     transcription = TextField(blank=True)  # optional, single value
     normalisedTranscription = TextField(blank=True)  # optional, single value
     persons = ArrayField(CharField(), blank=True)  # optional
@@ -162,9 +155,18 @@ class ProcessingStep(Model):
     job = ForeignKey(Job, on_delete=CASCADE, related_name="processingSteps")
 
     processingStepType = CharField(choices=ProcessingStepType.choices)
-    order = PositiveIntegerField()
+    order = PositiveIntegerField(default=1)
 
     status = CharField(choices=Status.choices, default=Status.PENDING)
-    log = TextField()
+    log = TextField(blank=True)
     humanValidation = BooleanField(default=False)
     mode = CharField(choices=ProcessingStepMode.choices, default=ProcessingStepMode.AUTOMATIC)
+
+
+class UrlSettings(Model):
+    class UrlSettingsType(TextChoices):
+        IIIF = "IIIF", "IIIF Base URL"
+        ATOM = "ATOM", "AtoM Base URL"
+
+    name = CharField(primary_key=True, choices=UrlSettingsType.choices)
+    url = URLField()
