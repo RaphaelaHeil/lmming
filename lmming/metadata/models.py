@@ -1,5 +1,5 @@
 from django.contrib.postgres.fields import ArrayField
-from django.db.models import Model, PositiveIntegerField, SlugField, FileField, BooleanField, CharField, TextField, \
+from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
 from django.utils import timezone
 
