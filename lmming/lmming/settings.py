@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_bootstrap5',
+    'fontawesomefree'
 ]
 
 MIDDLEWARE = [
@@ -111,9 +113,13 @@ LANGUAGE_CODE = 'en-gb'
 
 TIME_ZONE = 'CET'
 
-USE_I18N = True
+USE_I18N = False # TODO: revisit this decision ...
 
 USE_TZ = True
+
+DATETIME_FORMAT = "j N Y, H"
+
+
 
 
 # Static files (CSS, JavaScript, Images)
@@ -121,7 +127,21 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+CELERY_BROKER_URL = os.environ.get("REDIS", "redis://localhost:6379")
+CELERY_RESULT_BACKEND = os.environ.get("REDIS", "redis://localhost:6379")
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = Path(os.environ.get("MEDIA_PATH", "../tmp")) / "media"  # BASE_DIR / "media"
+
+NER_BASE_DIR = Path(os.environ.get("NER_DIR", BASE_DIR.parent))

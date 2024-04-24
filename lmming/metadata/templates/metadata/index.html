@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>NER Home</title>
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
+    <script src="{% static 'metadata/htmx.min.js' %}"></script>
+    <script src="{% static 'metadata/jquery.min.js' %}"></script>
+    <link rel="shortcut icon" type="image/png" href="{% static 'metadata/favicon.png' %}"/>
+    <style>
+        body {
+          min-height: 25rem;
+          padding-top: 4.5rem;
+        }
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-label="Toggle navigation"
+                data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="false">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse d-lg-flex" id="navbarsExample11">
+            <a class="navbar-brand col-lg-3 me-0" href="/">
+                LMMing
+            </a>
+            <ul class="navbar-nav col-lg-6 justify-content-lg-center">
+                <li class="nav-item px-2">
+                    <span class="btn btn-light">
+                        <i class="fa-solid fa-file-circle-plus"></i> Start new Extraction Process
+                    </span>
+                    {# <span class="btn btn-light" hx-get="{% url 'metadata:create_job'%}" hx-target="#exampleModal" #}
+                             {# hx-trigger="click" data-bs-toggle="modal" data-bs-target="#exampleModal">#}
+                      {#  <i class="fa-solid fa-file-circle-plus"></i> Apply NER to single collection#}
+                    {#</span>#}
+                </li>
+
+                <li class="nav-item px-2">
+                    {#<span class="btn btn-light" hx-get="{% url 'metadata:bulk_upload'%}" hx-target="#exampleModal" #}
+                            {# hx-trigger="click" data-bs-toggle="modal" data-bs-target="#exampleModal">#}
+                       {# <i class="fa-solid fa-folder-open"></i> Apply NER in bulk#}
+                    {#</span>#}
+                </li>
+            </ul>
+            <div class="d-lg-flex col-lg-3 justify-content-lg-end">
+                <span class="btn btn-dark disabled" data-bs-toggle="tooltip" title="Settings">
+                    <i class="fa-solid fa-gear"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+</nav>
+<main class="container">
+    {% csrf_token %}
+    <div class="bg-body-tertiary p-1 table-responsive" hx-get="{% url 'metadata:transfer_table'%}?sort=created:asc"
+         hx-trigger="load" hx-target="#tablediv">
+        <div id="tablediv"></div>
+    </div>
+</main>
+
+<div id="exampleModal" class="modal modal-blur fade" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<div id="deleteModal" class="modal modal-blur fade" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+</body>
+<script src="{% static 'metadata/ner_d.js' %}"></script>
+</html>
