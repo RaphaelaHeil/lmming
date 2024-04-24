@@ -15,9 +15,9 @@ class Status(TextChoices):
     AWAITING_HUMAN_VALIDATION = "AWAITING_HUMAN_VALIDATION", "Awaiting Human Validation"
 
 
-class Transfer(Model):
+class ExtractionTransfer(Model):
     name = CharField()
-    dateCreated = DateField(auto_now_add=True)
+    dateCreated = DateTimeField(auto_now_add=True)
     startDate = DateTimeField(null=True, blank=True)
     endDate = DateTimeField(null=True, blank=True)
     status = CharField(choices=Status.choices, default=Status.PENDING)
@@ -65,7 +65,7 @@ class Report(Model):
         RESTRICTED = "RESTRICTED", "restricted"
         NOT_RESTRICTED = "NOT_RESTRICTED", "not restricted"
 
-    transfer = ForeignKey(Transfer, on_delete=CASCADE)
+    transfer = ForeignKey(ExtractionTransfer, on_delete=CASCADE)
 
     identifier = URLField(blank=True)  # mandatory, URL, single value
     title = CharField(blank=True)  # mandatory, plain text, single value
@@ -105,7 +105,7 @@ class Page(Model):
 
 
 class Job(Model):
-    transfer = ForeignKey(Transfer, on_delete=CASCADE, related_name="jobs")
+    transfer = ForeignKey(ExtractionTransfer, on_delete=CASCADE, related_name="jobs")
     report = OneToOneField(
         Report,
         on_delete=CASCADE,
@@ -113,7 +113,7 @@ class Job(Model):
     )
 
     status = CharField(choices=Status.choices, default=Status.PENDING)
-    dateCreated = DateField(auto_now_add=True)
+    dateCreated = DateTimeField(auto_now_add=True)
     startDate = DateTimeField(null=True, blank=True)
     endDate = DateTimeField(null=True, blank=True)
 
@@ -164,7 +164,6 @@ class ProcessingStep(Model):
 
 
 class UrlSettings(Model):
-
     class Meta():
         verbose_name_plural = "url Settings"
 
@@ -175,5 +174,21 @@ class UrlSettings(Model):
     name = CharField(primary_key=True, choices=UrlSettingsType.choices)
     url = URLField()
 
-    def __str__(self)->str:
+    def __str__(self) -> str:
         return f"{self.name}: {self.url}"
+
+
+class DefaultValueSettings(Model):
+    class Meta():
+        verbose_name_plural = "default Value Settings"
+
+    class DefaultValueSettingsType(TextChoices):
+        DC_LANGUAGE = "DC_LANGUAGE", "dcterms:language"
+        DC_LICENSE = "DC_LICENSE", "dcterms:license"
+        DC_SOURCE = "DC_SOURCE", "dcterms:source"
+
+    name = CharField(primary_key=True, choices=DefaultValueSettingsType.choices)
+    value = CharField(blank=True)
+
+    def __str__(self) -> str:
+        return f"{self.name}: {self.value}"
