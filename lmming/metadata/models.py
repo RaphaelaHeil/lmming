@@ -3,7 +3,7 @@ from django.db.models import Model, PositiveIntegerField, FileField, BooleanFiel
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
 from django.utils import timezone
 
-from utils import PipelineStepName
+from .utils import PipelineStepName
 
 
 class Status(TextChoices):
@@ -100,7 +100,7 @@ class Page(Model):
     times = ArrayField(CharField(), blank=True)  # optional
     works = ArrayField(CharField(), blank=True)  # optional
     events = ArrayField(CharField(), blank=True)  # optional
-    objects = ArrayField(CharField(), blank=True)  # optional
+    ner_objects = ArrayField(CharField(), blank=True)  # optional
     measures = BooleanField(default=False)  # optional/default = False
 
 
@@ -112,7 +112,7 @@ class Job(Model):
         primary_key=True,
     )
 
-    status = CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    status = CharField(choices=Status.choices, default=Status.PENDING)
     dateCreated = DateField(auto_now_add=True)
     startDate = DateTimeField(null=True, blank=True)
     endDate = DateTimeField(null=True, blank=True)
@@ -164,9 +164,16 @@ class ProcessingStep(Model):
 
 
 class UrlSettings(Model):
+
+    class Meta():
+        verbose_name_plural = "url Settings"
+
     class UrlSettingsType(TextChoices):
         IIIF = "IIIF", "IIIF Base URL"
         ATOM = "ATOM", "AtoM Base URL"
 
     name = CharField(primary_key=True, choices=UrlSettingsType.choices)
     url = URLField()
+
+    def __str__(self)->str:
+        return f"{self.name}: {self.url}"
