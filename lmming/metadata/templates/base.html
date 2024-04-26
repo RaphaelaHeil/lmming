@@ -4,7 +4,7 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>NER Home</title>
+    <title>LMMing - Labour's Memory Metadata Handling</title>
     {% load django_bootstrap5 %}
     {% bootstrap_css %}
     {% bootstrap_javascript %}
@@ -23,34 +23,16 @@
 <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
     <div class="container-fluid">
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-label="Toggle navigation"
-                data-bs-target="#navbarsExample11" aria-controls="navbarsExample11" aria-expanded="false">
+                data-bs-target="#navbar-id" aria-controls="navbar-id" aria-expanded="false">
             <span class="navbar-toggler-icon"></span>
         </button>
-
-        <div class="collapse navbar-collapse d-lg-flex" id="navbarsExample11">
+        <div class="collapse navbar-collapse d-flex justify-content-between" id="navbar-id">
             <a class="navbar-brand col-lg-3 me-0" href="/">
                 LMMing
             </a>
-            <ul class="navbar-nav col-lg-6 justify-content-lg-center">
-                <li class="nav-item px-2">
-                    <span class="btn btn-light">
-                        <i class="fa-solid fa-file-circle-plus"></i> Start new Extraction Process
-                    </span>
-                    {# <span class="btn btn-light" hx-get="{% url 'metadata:create_job'%}" hx-target="#exampleModal" #}
-                             {# hx-trigger="click" data-bs-toggle="modal" data-bs-target="#exampleModal">#}
-                      {#  <i class="fa-solid fa-file-circle-plus"></i> Apply NER to single collection#}
-                    {#</span>#}
-                </li>
 
-                <li class="nav-item px-2">
-                    {#<span class="btn btn-light" hx-get="{% url 'metadata:bulk_upload'%}" hx-target="#exampleModal" #}
-                            {# hx-trigger="click" data-bs-toggle="modal" data-bs-target="#exampleModal">#}
-                       {# <i class="fa-solid fa-folder-open"></i> Apply NER in bulk#}
-                    {#</span>#}
-                </li>
-            </ul>
             <div class="d-lg-flex col-lg-3 justify-content-lg-end">
-                <span class="btn btn-dark disabled" data-bs-toggle="tooltip" title="Settings">
+                <span class="btn btn-dark disabled" data-bs-toggle="tooltip" title="Settings" id="settings_button">
                     <i class="fa-solid fa-gear"></i>
                 </span>
             </div>
@@ -59,11 +41,18 @@
 </nav>
 <main class="container">
     {% csrf_token %}
-    <div class="bg-body-tertiary p-1 table-responsive" hx-get="{% url 'metadata:transfer_table'%}?sort=created:asc"
-         hx-trigger="load" hx-target="#tablediv">
-        <div id="tablediv"></div>
+    <div id="content">
+        <h2 class="mb-5">{% block title %}{% endblock %}</h2>
+        {% block content %}{% endblock %}
     </div>
 </main>
+
+<div id="modalContainer" class="modal modal-lg modal-blur fade" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
 
 <div id="exampleModal" class="modal modal-blur fade" style="display: none" aria-hidden="false" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">

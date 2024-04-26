@@ -3,7 +3,7 @@ from django.db.models import Model, PositiveIntegerField, FileField, BooleanFiel
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
 from django.utils import timezone
 
-from .utils import PipelineStepName
+from metadata.enum_utils import PipelineStepName
 
 
 class Status(TextChoices):

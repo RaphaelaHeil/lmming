@@ -1,0 +1,129 @@
+<div class="mb-2 d-flex justify-content-between">
+    <a href="{%url 'metadata:create_transfer'%}"  class="btn btn-warning" id="create_transfer_button">
+        <i class="fa-solid fa-file-circle-plus"></i> Start New Extraction Process
+    </a>
+
+    <div hx-include="#checked-contacts" hx-target="#tbody">
+        <button class="btn btn-secondary checkbox-action-button disabled">
+            {% comment %}
+            {#hx-get="{% url 'metadata:batch_download_modal'%}" hx-target="#exampleModal" hx-trigger="click"
+            data-bs-toggle="modal" data-bs-target="#exampleModal"#}
+            {% endcomment %}
+            <i class="fa-solid fa-download"></i> Download Selected
+        </button>
+        <button class="btn btn-danger checkbox-action-button disabled">
+            {% comment %}
+            {#hx-delete="{% url 'metadata:batch_delete_modal'%}" hx-target="#deleteModal" hx-trigger="click"
+            data-bs-toggle="modal" data-bs-target="#deleteModal"#}
+            {% endcomment %}
+            <i class="fa-solid fa-trash"></i> Delete Selected
+        </button>
+    </div>
+</div>
+<div class="table-responsive">
+    <form id="checked-contacts">
+        <table class="table table-striped" hx-get="{% url 'metadata:transfer_table'%}?{{searchParams}}"
+               hx-trigger="every 20s[allowRefresh()], collection-deleted from:body" hx-target="#tablediv">
+            <thead>
+            <tr>
+                <th>
+                    <input class="form-check-input" type="checkbox" id="checkAll" onclick="toggleCheckboxes()">
+                </th>
+                <th scope="col">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.name.sortUrl}}">
+                Extraction Process Name
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.name.up}};cursor: pointer;"
+                       hx-trigger="click"
+                       hx-get="{% url 'metadata:transfer_table'%}?sort=name:asc" hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.name.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=name:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+
+                <th scope="col">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.status.sortUrl}}">
+                Status
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.status.up}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=status:asc"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.status.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=status:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+
+                <th scope="col">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.created.sortUrl}}">
+                Date Created
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.created.up}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=created:asc"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.created.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=created:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+                <th scope="col" class="text-center">Options</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            {% if jobs%}
+            {%for job in jobs %}
+            <tr>
+                <td>
+                    <input type='checkbox' class="form-check-input checkable" name='ids' value='{{job.id}}'
+                           onchange="checkboxChange()">
+                </td>
+                <th scope="row">
+                    {{job.name}}
+                </th>
+                <td>
+                    {{job.status}}
+                </td>
+                <td>
+                    {{job.dateCreated}}
+                </td>
+                <td class="text-center">
+                <span style="cursor:pointer;">
+                    {% comment %}
+                    {#hx-get="{% url 'metadata:single_job' job.id %}" hx-target="#exampleModal" hx-trigger="click" data-bs-toggle="modal" data-bs-target="#exampleModal"#}
+                    {% endcomment %}
+                    <i class="fa-solid fa-magnifying-glass text-dark"></i>
+                </span>
+                    <a style="cursor:pointer;">
+                        {% comment %}
+                        {# href="{% url 'metadata:download' job.id %}"#}
+                        {% endcomment %}
+                        <i class="fa-solid fa-download text-dark"></i>
+                        {% comment %}
+                        {#</a>#}
+                    {% endcomment %}
+                    <span style="cursor:pointer;">
+                    {% comment %}
+                    {#hx-get="{% url 'metadata:delete_modal' job.id %}" hx-target="#deleteModal" hx-trigger="click" {#    data-bs-toggle="modal" data-bs-target="#deleteModal"#}
+                    {% endcomment %}
+                    {% csrf_token %}
+                    <i class="fa-solid fa-trash text-dark"></i>
+                </span>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td></td>
+                <td></td>
+                <th scope="row">
+                    No jobs
+                </th>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </form>
+</div>

@@ -12,7 +12,7 @@ from metadata.models import ExtractionTransfer
 
 
 def index(request):
-    return render(request, "metadata/index.html", {})
+    return render(request, "partial/index_partial.html", {})
 
 
 class Transfers(View):
@@ -47,7 +47,9 @@ class Transfers(View):
             context = {"jobs": ExtractionTransfer.objects.order_by(orderBy), "viewStatus": viewStatus,
                        "searchParams": f"sort={viewKey}:asc"}
 
-        return render(request, "metadata/partial/transfer_table.html", context)
+        # return render(request, "partial/extraction_transfer_table.html", context)
+
+        return render(request, "partial/extraction_transfer_table.html", context)
 
     def delete(self, request, *args, **kwargs):
         pass
