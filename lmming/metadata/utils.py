@@ -1,10 +1,68 @@
-from enum import Enum
+import re
+from typing import Dict, Union, List
+
+from metadata.models import Report
+
+__REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
+                     "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
+                     "revisionsberattelse": Report.DocumentType.FINANCIAL_STATEMENT}
 
 
-class PipelineStepName(Enum):
-    FILENAME = 10, "Filename-based extraction"
-    FILEMAKER_LOOKUP = 20, "Lookup in Filemaker export"
-    GENERATE = 30, "Generate/Calculate"
-    IMAGE = 40, "Image-based extraction"
-    NER = 50, "Named Entity Recognition"
-    MINT_ARKS = 60, "Mint ARKs"
+def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
+    if filename.endswith(".xml") or filename.endswith(".txt"):
+        filename = filename[:-4]
+
+    if "fac" in filename:
+        filename = filename[filename.index("fac") + 4:]
+    if "arab" in filename:
+        filename = filename[filename.index("arab") + 5:]
+
+    if "sid" in filename:
+        matches = re.findall(r"(?<=sid-)\d*", filename)
+        page = int(matches[0])
+        filename = filename.split("sid")[0][:-1]
+    else:
+        m = re.findall(r"(?<=1[89]\d{2}[_-])\d*", filename)
+        if m:
+            val = m[-1]
+            if not re.match(r"1[89]\d{2}", val):
+                page = val
+                idx = filename.rfind(page)
+                filename = filename[:idx]
+            else:
+                page = 1
+        else:
+            page = 1
+
+    s = filename.split("_")
+    if len(s) < 3:
+        raise SyntaxError(
+            "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
+            "following: union identifier, report type, report year(s)")
+
+    unionId = s[0]
+
+    typeName = s[1]
+    typeName = typeName.lower()
+    typeName = typeName.replace("ä", "a")
+    typeName = typeName.replace("å", "a")
+    typeName = typeName.replace("ö", "o")
+    if typeName in __REPORT_TYPE_INDEX__:
+        reportType = __REPORT_TYPE_INDEX__[typeName]
+    else:
+        reportType = Report.DocumentType.ANNUAL_REPORT
+
+    dateStrings = []
+    d = " ".join(s[2:])  # in case two years were separated by underscores
+    ma = re.findall(r"1[89]\d{2}", d)
+    if ma:
+        for m in ma:
+            dateStrings.append(m)
+    if len(dateStrings) == 1:
+        dateStrings = dateStrings[0]
+    if not dateStrings:
+        raise SyntaxError(
+            "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
+            "following: union identifier, report type, report year(s)")
+
+    return {"date": dateStrings, "union_id": unionId, "type": reportType, "page": page}

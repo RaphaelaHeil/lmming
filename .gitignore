@@ -1,5 +1,6 @@
 tmp/*
 checkpoints/*
+htmlcov/*
 ner_data/*
 .idea/
 .idea/*
