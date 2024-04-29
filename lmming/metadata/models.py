@@ -38,6 +38,10 @@ class ExtractionTransfer(Model):
             else:  # status is a mix of complete and error
                 self.status = Status.ERROR
 
+    def started(self):
+        self.startDate = timezone.now()
+        self.status = Status.IN_PROGRESS
+
 
 class Report(Model):
     class UnionLevel(TextChoices):
@@ -67,50 +71,48 @@ class Report(Model):
 
     transfer = ForeignKey(ExtractionTransfer, on_delete=CASCADE)
 
-    identifier = URLField(blank=True)  # mandatory, URL, single value
-    title = CharField(blank=True)  # mandatory, plain text, single value
-    creator = CharField(blank=True)  # mandatory, plain text, single value
-    date = ArrayField(DateField(), blank=True)  # mandatory, single or *multiple* years
+    identifier = URLField(blank=True, null=True)  # mandatory, URL, single value
+    title = CharField(blank=True, default="")  # mandatory, plain text, single value
+    creator = CharField(blank=True, default="")  # mandatory, plain text, single value
+    date = ArrayField(DateField(), blank=True, null=True)  # mandatory, single or *multiple* years
     coverage = CharField(choices=UnionLevel.choices, default=UnionLevel.OTHER, blank=True)  # mandatory, single value
-    language = ArrayField(CharField(), blank=True)  # mandatory, multi-value
-    spatial = ArrayField(CharField(), blank=True)  # mandatory, multi-value
-    type = ArrayField(CharField(choices=DocumentType.choices), blank=True)  # mandatory, multi-value
-    license = ArrayField(CharField(), blank=True)  # mandatory, multi-value
-    isVersionOf = URLField(blank=True)  # mandatory, single value  (URL)
-    isFormatOf = CharField(choices=DocumentFormat.choices, blank=True)  # mandatory, multi-value
-    relation = URLField(blank=True)  # optional, URL, multi-value ?!
-    created = DateField(blank=True)  # optional, single year
-    available = DateField(blank=True)  # optional, date
+    language = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
+    spatial = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
+    type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True)  # mandatory, multi-value
+    license = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
+    isVersionOf = URLField(blank=True, null=True)  # mandatory, single value  (URL)
+    isFormatOf = CharField(choices=DocumentFormat.choices, blank=True, null=True)  # mandatory, multi-value
+    relation = URLField(blank=True, null=True)  # optional, URL, multi-value ?!
+    created = DateField(blank=True, null=True)  # optional, single year
+    available = DateField(blank=True, null=True)  # optional, date
     accessRights = CharField(choices=AccessRights.choices, default=AccessRights.NOT_RESTRICTED, blank=True)  # optional
-    source = ArrayField(CharField(), blank=True)  # optional, multi-value, plain-text-name | url
-    description = TextField(blank=True)  # optional, single value
+    source = ArrayField(CharField(), blank=True, null=True)  # optional, multi-value, plain-text-name | url
+    description = TextField(blank=True, default="")  # optional, single value
+
+    unionId = CharField(blank=True, default="")
 
 
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
     order = PositiveIntegerField(default=1)  # internal use, not for CSV
-    transcriptionFile = FileField(blank=False)  # mandatory, file type can be plain text or ALTO xml
+    transcriptionFile = FileField(blank=False, null=True)  # mandatory, file type can be plain text or ALTO xml
 
-    identifier = URLField(blank=True)  # URL
-    transcription = TextField(blank=True)  # optional, single value
-    normalisedTranscription = TextField(blank=True)  # optional, single value
-    persons = ArrayField(CharField(), blank=True)  # optional
-    organisations = ArrayField(CharField(), blank=True)  # optional
-    locations = ArrayField(CharField(), blank=True)  # optional
-    times = ArrayField(CharField(), blank=True)  # optional
-    works = ArrayField(CharField(), blank=True)  # optional
-    events = ArrayField(CharField(), blank=True)  # optional
-    ner_objects = ArrayField(CharField(), blank=True)  # optional
+    identifier = URLField(blank=True, null=True)  # URL
+    transcription = TextField(blank=True, default="")  # optional, single value
+    normalisedTranscription = TextField(blank=True, default="")  # optional, single value
+    persons = ArrayField(CharField(), blank=True, null=True)  # optional
+    organisations = ArrayField(CharField(), blank=True, null=True)  # optional
+    locations = ArrayField(CharField(), blank=True, null=True)  # optional
+    times = ArrayField(CharField(), blank=True, null=True)  # optional
+    works = ArrayField(CharField(), blank=True, null=True)  # optional
+    events = ArrayField(CharField(), blank=True, null=True)  # optional
+    ner_objects = ArrayField(CharField(), blank=True, null=True)  # optional
     measures = BooleanField(default=False)  # optional/default = False
 
 
 class Job(Model):
     transfer = ForeignKey(ExtractionTransfer, on_delete=CASCADE, related_name="jobs")
-    report = OneToOneField(
-        Report,
-        on_delete=CASCADE,
-        primary_key=True,
-    )
+    report = OneToOneField(Report,on_delete=CASCADE,primary_key=True)
 
     status = CharField(choices=Status.choices, default=Status.PENDING)
     dateCreated = DateTimeField(auto_now_add=True)
@@ -161,6 +163,9 @@ class ProcessingStep(Model):
     log = TextField(blank=True)
     humanValidation = BooleanField(default=False)
     mode = CharField(choices=ProcessingStepMode.choices, default=ProcessingStepMode.AUTOMATIC)
+
+    def __str__(self):
+        return f"{self.job.pk} - {self.processingStepType} ({self.mode}{', human validation' if self.humanValidation else ''})"
 
 
 class UrlSettings(Model):
