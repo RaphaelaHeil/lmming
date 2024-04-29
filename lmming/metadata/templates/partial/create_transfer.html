@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Create New Metadata Extraction Process{% endblock %}
+
+{% block content %}
+<div class="p-2">
+    <form class="form" method="POST" enctype="multipart/form-data" action="{% url 'metadata:create_transfer'%}">
+        {% csrf_token %}
+        {{detailform.as_p}}
+        <br>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                <tr>
+                    <th>Processing Step</th>
+                    <th></th>
+                    <th class="text-center">Mode</th>
+                    <th class="text-center">Human Validation</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+                <tr>
+                    <td scope="row">
+                        Filename Information
+                    </td>
+                    <td class="text-left">
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="Extracts 'date' and 'type' information, as well as the organisation's id, from the filename."><i
+                                class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
+                    </td>
+                    <td class="text-center">
+                        {{ settings.filenameMode }}
+                    </td>
+                    <td class="text-center">
+                        {{settings.filenameHumVal}}
+                    </td>
+                </tr>
+                <tr>
+                    <td scope="row">
+                        Filemaker Information
+                    </td>
+                    <td class="text-left">
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="Uses the organisation's ID to extract informationen from Filemaker-based data. Fills the fields 'creator', 'relation', 'coverage', and 'spatial'."><i
+                                class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
+                    </td>
+                    <td class="text-center">
+                        {{ settings.filemakerMode }}
+                    </td>
+                    <td class="text-center">
+                        {{settings.filemakerHumVal}}
+                    </td>
+                </tr>
+                <tr>
+                    <td scope="row">
+                        Generate/Calculate from existing data
+                    </td>
+                    <td class="text-left">
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="Fills the fields 'title', 'created', 'description' and 'available', based on information collected in the previous two steps."><i
+                                class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
+                    </td>
+                    <td class="text-center">
+                        {{ settings.generateMode }}
+                    </td>
+                    <td class="text-center">
+                        {{settings.generateHumVal}}
+                    </td>
+                </tr>
+                <tr>
+                    <td scope="row">
+                        Extract from Images
+                    </td>
+                    <td class="text-left">
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="Not implemented yet! - Identifies the type of text (printed, handwritten,...), based on images."><i
+                                class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
+                    </td>
+                    <td class="text-center">
+                        {{ settings.imageMode }}
+                    </td>
+                    <td class="text-center">
+                        {{settings.imageHumVal}}
+                    </td>
+                </tr>
+                <tr>
+                    <td scope="row">
+                        Named Entity Recognition
+                    </td>
+                    <td class="text-left">
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="top"
+                              data-bs-title="Extracts named entities from the provided transcriptions."><i
+                                class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
+                    </td>
+                    <td class="text-center">
+                        {{ settings.nerMode }}
+                    </td>
+                    <td class="text-center">
+                        {{settings.nerHumVal}}
+                    </td>
+                </tr>
+                <tr>
+                    <td scope="row">
+                        Mint ARKs
+                    </td>
+                    <td class="text-left">
+                        <span data-bs-toggle="tooltip"
+                              data-bs-placement="top" id="abctest"
+                              data-bs-title="Mints ARKs for IIIF and AtoM, to be included in the CSV for Omeka."><i
+                                class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
+                    </td>
+                    <td class="text-center">
+                        {{ settings.mintMode }}
+                    </td>
+                    <td class="text-center">
+                        {{settings.mintHumVal}}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success">
+                Create
+            </button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

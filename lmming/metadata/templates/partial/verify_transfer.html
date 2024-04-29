@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Extraction Transfer: "{{transfer.name}}"{% endblock %}
+
+{% block content %}
+<div class="p-0">
+    <form class="form" method="POST" action="{% url 'metadata:verify_transfer' transfer.id%}">
+        {% csrf_token %}
+        <input type="submit" value="Confirm" class="btn btn-success">
+    </form>
+</div>
+<div class="p-1 mt-5">
+
+    <div class="accordion" id="accordionExample">
+        {%for report in transfer.report_set.all %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{report.pk}}"
+                        aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+                    Organisation ID: {{report.unionId}} - Year(s) Covered: {%for date in report.date%}{{date.year}}{%endfor%}
+                </button>
+            </h2>
+            <div id="{{report.pk}}" class="accordion-collapse collapse show" aria-labelledby="headingOne">
+                <div class="accordion-body">
+                    <p>Pages:</p>
+                    <ul class="list-group list-group-flush">
+                        {%for page in report.page_set.all%}
+                        <li class="list-group-item">{{page.transcriptionFile}}</li>
+                        {%endfor%}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+</div>
+{% endblock %}

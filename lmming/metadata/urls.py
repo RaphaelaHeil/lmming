@@ -7,6 +7,9 @@ app_name = "metadata"
 urlpatterns = [
     path("", views.index, name="index"),
     path("transfers", views.Transfers.as_view(), name="transfer_table"),
+    path("transfer/create", partials.createTransfer, name="create_transfer"),
+    path("transfer/<int:transfer_id>/verify", partials.verifyTransfer, name="verify_transfer"),
+
     # path("jobs", name="job_table")
     # path("jobs", views.Jobs.as_view(), name="job_table"),
     # path("jobs/results", views.batchDownloadNERResults, name="batch_download"),

@@ -42,7 +42,7 @@
 <main class="container">
     {% csrf_token %}
     <div id="content">
-        <h2 class="mb-5">{% block title %}{% endblock %}</h2>
+        <h2 class="mb-4">{% block title %}{% endblock %}</h2>
         {% block content %}{% endblock %}
     </div>
 </main>
@@ -65,6 +65,14 @@
         <div class="modal-content"></div>
     </div>
 </div>
+<script>
+var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+  return new bootstrap.Tooltip(tooltipTriggerEl)
+})
+
+</script>
 </body>
-<script src="{% static 'metadata/ner_d.js' %}"></script>
+<script src="{% static 'metadata/metadata.js' %}"></script>
+
 </html>
