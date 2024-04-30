@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Something Something review "XYZ" {{job.id}}{% endblock %}
+
+{% block content %}
+<div class="p-0">
+    <p>Organisation ID: {{job.report.unionId}}</p>
+    <p>Date: {{job.report.date}}</p>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
-from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput
-from metadata.models import ProcessingStep
+from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
+    MultipleChoiceField, CheckboxSelectMultiple
+from metadata.models import ProcessingStep, Report
 
 
 class MultipleFileInput(ClearableFileInput):
@@ -53,3 +54,10 @@ class ExtractionTransferSettingsForm(Form):
 class ZipForm(Form):
     zipFile = FileField(label="Select a compressed file, containing one or more collections (*.zip):",
                         widget=ClearableFileInput(attrs={"accept": ".zip", "class": "form-control"}))
+
+
+class FileNameForm(Form):
+    organisationID = CharField(label="Organisation ID", required=True)
+    type = MultipleChoiceField(label="Report Type", choices=Report.DocumentType, required=True,
+                               widget=CheckboxSelectMultiple)
+    date = CharField(label="Report date by year (comma-separted for multiple years)", required=True)

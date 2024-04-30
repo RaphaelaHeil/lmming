@@ -8,7 +8,8 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import View
 from django.utils.crypto import get_random_string
 
-from metadata.models import ExtractionTransfer
+from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
+from metadata.pipeline_views import filename
 
 
 def index(request):
@@ -71,6 +72,38 @@ class Transfer(View):
             return HttpResponseRedirect("/")
 
     def delete(self, request, *args, **kwargs):
-        job = get_object_or_404(ExtractionTransfer, pk=kwargs["transfer_id"])
-        job.delete()
+        transfer = get_object_or_404(ExtractionTransfer, pk=kwargs["transfer_id"])
+        transfer.delete()
         return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
+
+
+class JobView(View):
+
+    def get(self, request, *args, **kwargs):
+        templateName, context = self.__handleStepRedirect__(request, args, kwargs)
+        return render(request, templateName, context)
+
+    def post(self, request, *args, **kwargs):
+        templateName, context = self.__handleStepRedirect__(request, args, kwargs)
+        return render(request, templateName, context)
+
+    def __handleStepRedirect__(self, request, args, kwargs):
+        job = get_object_or_404(Job, pk=kwargs["job_id"])
+        if job.status in [Status.PENDING, Status.IN_PROGRESS, Status.COMPLETE]:
+            return "partial/job.html", {"job": job}
+        else:
+            return filename(request, job)
+
+        # for step in job.processingSteps.all():
+        #     if step.status in [Status.AWAITING_HUMAN_VALIDATION, Status.AWAITING_HUMAN_VALIDATION]:
+        #         match step.processingStepType:
+        #             case ProcessingStep.ProcessingStepType.FILENAME:
+        #                 return filename(request, job)
+        #             case ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP:
+        #                 pass
+        #             case _:
+        #                 pass  # TODO: something's wrong, raise error!!
+        #     else:
+        #         # return general view, with all steps+status and error messages, if applicable
+        #         continue
+        # pass

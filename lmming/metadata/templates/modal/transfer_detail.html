@@ -19,6 +19,7 @@
                 <th scope="row" class="text-center">Pages</th>
                 <th scope="row" class="text-center">Job Stage</th>
                 <th scope="row" class="text-center">Job Status</th>
+                <th></th>
                 </thead>
                 <tbody>
                 {%for job in transfer.jobs.all %}
@@ -29,6 +30,16 @@
                     <td class="text-center">{{job.report.page_set.count}}</td>
                     <td class="text-center">Unknown</td>
                     <td class="text-center">{{job.status}}</td>
+                    <td class="text-center">
+                        <a href="{% url 'metadata:job' job.pk %}">
+                            {% if job.status.name == AWAITING_HUMAN_INPUT or job.status.name == AWAITING_HUMAN_VALIDATION %}
+                            <i class="fa-solid fa-pencil text-dark"></i>
+                            {% else %}
+                            <i
+                                class="fa-solid fa-magnifying-glass text-dark"></i>
+                            {% endif %}
+                        </a>
+                    </td>
                 </tr>
                 {%endfor%}
                 </tbody>

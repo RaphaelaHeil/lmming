@@ -11,7 +11,8 @@ urlpatterns = [
     path("transfer/<int:transfer_id>", views.Transfer.as_view(), name="transfer"),
     path("transfer/<int:transfer_id>/verify", partials.verifyTransfer, name="verify_transfer"),
     path("transfers/delete", partials.batchDeleteModal, name="transfer_batch_delete"),
-    path("transfer/modal/delete/<int:transfer_id>", partials.deleteModal, name="transfer_delete_modal")
+    path("transfer/modal/delete/<int:transfer_id>", partials.deleteModal, name="transfer_delete_modal"),
+    path("job/<int:job_id>", views.JobView.as_view(), name="job"),
 
     # path("jobs", name="job_table")
     # path("jobs", views.Jobs.as_view(), name="job_table"),
