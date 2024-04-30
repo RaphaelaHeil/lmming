@@ -117,9 +117,6 @@ USE_I18N = False # TODO: revisit this decision ...
 
 USE_TZ = True
 
-DATETIME_FORMAT = "j N Y, H"
-
-
 
 
 # Static files (CSS, JavaScript, Images)

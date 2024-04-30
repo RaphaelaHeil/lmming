@@ -1,19 +1,28 @@
-import zipfile
-from pathlib import Path
-from typing import List, Union, Dict
+from datetime import date
 
-from django.core.files.base import ContentFile
-from django.db import transaction
-from django.http import HttpResponseRedirect
 from django.http import QueryDict
 from django.shortcuts import render, get_object_or_404, redirect
 
+from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm
-from datetime import date
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep
 from metadata.utils import parseFilename, buildReportIdentifier
-from metadata.enum_utils import PipelineStepName
 
+
+def batchDeleteModal(request):
+    ids = [int(id) for id in (QueryDict(request.body).getlist("ids"))]
+    print(ids)
+    result = ""
+    if ids:
+        result = f"ids={ids[0]}"
+        for ID in ids[1:]:
+            result += f"&ids={ID}"
+    return render(request, "modal/bulk_delete.html", {"ids": result, "jobs": (ExtractionTransfer.objects.filter(id__in=ids))})
+
+
+def deleteModal(request, transfer_id):
+    transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
+    return render(request, "modal/delete_transfer.html", {"transfer": transfer})
 
 
 def verifyTransfer(request, transfer_id):

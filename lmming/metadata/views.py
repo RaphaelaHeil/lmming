@@ -52,4 +52,25 @@ class Transfers(View):
         return render(request, "partial/extraction_transfer_table.html", context)
 
     def delete(self, request, *args, **kwargs):
-        pass
+        transfers = ExtractionTransfer.objects.filter(id__in=[int(id) for id in request.GET.getlist("ids")])
+        for transfer in transfers:
+            transfer.delete()
+        return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
+
+
+class Transfer(View):
+    def get(self, request, *args, **kwargs):
+        if "transfer_id" in kwargs:
+            transferId = kwargs["transfer_id"]
+            transfer = get_object_or_404(ExtractionTransfer, pk=transferId)
+            # if job:
+            #     pages = Page.objects.filter(job=transferId)
+            #     metadata = loadMetadata(job.metadata)
+            return render(request, "modal/transfer_detail.html", {"transfer": transfer})
+        else:
+            return HttpResponseRedirect("/")
+
+    def delete(self, request, *args, **kwargs):
+        job = get_object_or_404(ExtractionTransfer, pk=kwargs["transfer_id"])
+        job.delete()
+        return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})

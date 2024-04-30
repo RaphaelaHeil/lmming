@@ -1,5 +1,5 @@
 <div class="mb-2 d-flex justify-content-between">
-    <a href="{%url 'metadata:create_transfer'%}"  class="btn btn-warning" id="create_transfer_button">
+    <a href="{%url 'metadata:create_transfer'%}" class="btn btn-warning" id="create_transfer_button">
         <i class="fa-solid fa-file-circle-plus"></i> Start New Extraction Process
     </a>
 
@@ -11,11 +11,10 @@
             {% endcomment %}
             <i class="fa-solid fa-download"></i> Download Selected
         </button>
-        <button class="btn btn-danger checkbox-action-button disabled">
-            {% comment %}
-            {#hx-delete="{% url 'metadata:batch_delete_modal'%}" hx-target="#deleteModal" hx-trigger="click"
-            data-bs-toggle="modal" data-bs-target="#deleteModal"#}
-            {% endcomment %}
+        <button class="btn btn-danger checkbox-action-button"
+                hx-delete="{% url 'metadata:transfer_batch_delete'%}" hx-target="#modalContainer" hx-trigger="click"
+                data-bs-toggle="modal" data-bs-target="#modalContainer">
+
             <i class="fa-solid fa-trash"></i> Delete Selected
         </button>
     </div>
@@ -85,15 +84,14 @@
                     {{job.status}}
                 </td>
                 <td>
-                    {{job.dateCreated}}
+                    {{job.dateCreated |date:"d M Y, H:i"}}
                 </td>
                 <td class="text-center">
-                <span style="cursor:pointer;">
-                    {% comment %}
-                    {#hx-get="{% url 'metadata:single_job' job.id %}" hx-target="#exampleModal" hx-trigger="click" data-bs-toggle="modal" data-bs-target="#exampleModal"#}
-                    {% endcomment %}
+                <span style="cursor:pointer;"
+                      hx-get="{% url 'metadata:transfer' job.id %}" hx-target="#modalContainer" hx-trigger="click"
+                      data-bs-toggle="modal" data-bs-target="#modalContainer" #}>
                     <i class="fa-solid fa-magnifying-glass text-dark"></i>
-                </span>
+                    </span>
                     <a style="cursor:pointer;">
                         {% comment %}
                         {# href="{% url 'metadata:download' job.id %}"#}
@@ -102,10 +100,9 @@
                         {% comment %}
                         {#</a>#}
                     {% endcomment %}
-                    <span style="cursor:pointer;">
-                    {% comment %}
-                    {#hx-get="{% url 'metadata:delete_modal' job.id %}" hx-target="#deleteModal" hx-trigger="click" {#    data-bs-toggle="modal" data-bs-target="#deleteModal"#}
-                    {% endcomment %}
+                    <span style="cursor:pointer;" hx-get="{% url 'metadata:transfer_delete_modal' job.id %}"
+                          hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
+                          data-bs-target="#modalContainer">
                     {% csrf_token %}
                     <i class="fa-solid fa-trash text-dark"></i>
                 </span>
@@ -115,10 +112,10 @@
             {% else %}
             <tr>
                 <td></td>
-                <td></td>
                 <th scope="row">
-                    No jobs
+                    No extraction processes
                 </th>
+                <td></td>
                 <td></td>
                 <td></td>
             </tr>

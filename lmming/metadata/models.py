@@ -1,6 +1,8 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from django.utils import timezone
 
 from metadata.enum_utils import PipelineStepName
@@ -91,6 +93,14 @@ class Report(Model):
 
     unionId = CharField(blank=True, default="")
 
+    def dateString(self) -> str:
+        if len(self.date) == 0:
+            return ""
+        elif len(self.date) == 1:
+            return str(self.date[0].year)
+        else:
+            return ", ".join([str(d.year) for d in self.date])
+
 
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
@@ -109,10 +119,14 @@ class Page(Model):
     ner_objects = ArrayField(CharField(), blank=True, null=True)  # optional
     measures = BooleanField(default=False)  # optional/default = False
 
+@receiver(pre_delete, sender=Page)
+def pageFileDeleteHandler(sender, instance, **kwargs):
+    instance.transcriptionFile.delete(save=False)
+
 
 class Job(Model):
     transfer = ForeignKey(ExtractionTransfer, on_delete=CASCADE, related_name="jobs")
-    report = OneToOneField(Report,on_delete=CASCADE,primary_key=True)
+    report = OneToOneField(Report, on_delete=CASCADE, primary_key=True)
 
     status = CharField(choices=Status.choices, default=Status.PENDING)
     dateCreated = DateTimeField(auto_now_add=True)
