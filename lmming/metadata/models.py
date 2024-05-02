@@ -45,6 +45,10 @@ class ExtractionTransfer(Model):
         self.status = Status.IN_PROGRESS
 
 
+def spatialDefault():
+    return list(["SE"])
+
+
 class Report(Model):
     class UnionLevel(TextChoices):
         WORKPLACE = "WORKPLACE", "workplace"
@@ -79,12 +83,12 @@ class Report(Model):
     date = ArrayField(DateField(), blank=True, null=True)  # mandatory, single or *multiple* years
     coverage = CharField(choices=UnionLevel.choices, default=UnionLevel.OTHER, blank=True)  # mandatory, single value
     language = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
-    spatial = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
+    spatial = ArrayField(CharField(), blank=True, null=True, default=spatialDefault)  # mandatory, multi-value
     type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True)  # mandatory, multi-value
     license = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
     isVersionOf = URLField(blank=True, null=True)  # mandatory, single value  (URL)
     isFormatOf = CharField(choices=DocumentFormat.choices, blank=True, null=True)  # mandatory, multi-value
-    relation = URLField(blank=True, null=True)  # optional, URL, multi-value ?!
+    relation = ArrayField(CharField(), blank=True, null=True)  # optional, URL, multi-value ?!
     created = DateField(blank=True, null=True)  # optional, single year
     available = DateField(blank=True, null=True)  # optional, date
     accessRights = CharField(choices=AccessRights.choices, default=AccessRights.NOT_RESTRICTED, blank=True)  # optional
@@ -118,6 +122,7 @@ class Page(Model):
     events = ArrayField(CharField(), blank=True, null=True)  # optional
     ner_objects = ArrayField(CharField(), blank=True, null=True)  # optional
     measures = BooleanField(default=False)  # optional/default = False
+
 
 @receiver(pre_delete, sender=Page)
 def pageFileDeleteHandler(sender, instance, **kwargs):

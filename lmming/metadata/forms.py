@@ -1,5 +1,5 @@
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple
+    MultipleChoiceField, CheckboxSelectMultiple, Textarea
 from metadata.models import ProcessingStep, Report
 
 
@@ -61,3 +61,10 @@ class FileNameForm(Form):
     type = MultipleChoiceField(label="Report Type", choices=Report.DocumentType, required=True,
                                widget=CheckboxSelectMultiple)
     date = CharField(label="Report date by year (comma-separted for multiple years)", required=True)
+
+
+class FilemakerForm(Form):
+    creator = CharField(label="Creator Name", required=True)
+    relation = CharField(label="Relation (comma-separated)", required=False)
+    coverage = ChoiceField(choices=Report.UnionLevel, required=True)
+    spatial = CharField(label="Spatial (comma-separated)", required=True)

@@ -9,7 +9,7 @@ from django.views.generic import View
 from django.utils.crypto import get_random_string
 
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
-from metadata.pipeline_views import filename
+from metadata.pipeline_views import filename, filemaker
 
 
 def index(request):
@@ -92,7 +92,8 @@ class JobView(View):
         if job.status in [Status.PENDING, Status.IN_PROGRESS, Status.COMPLETE]:
             return "partial/job.html", {"job": job}
         else:
-            return filename(request, job)
+            # return filename(request, job)
+            return filemaker(request, job)
 
         # for step in job.processingSteps.all():
         #     if step.status in [Status.AWAITING_HUMAN_VALIDATION, Status.AWAITING_HUMAN_VALIDATION]:
