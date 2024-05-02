@@ -6,7 +6,8 @@ from django.http import QueryDict
 from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
-from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, FileNameForm, FilemakerForm
+from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, FileNameForm, FilemakerForm, \
+    ComputeForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep
 from metadata.utils import parseFilename, buildReportIdentifier
 from django.forms import formset_factory
@@ -79,10 +80,27 @@ def filemaker(request, job):
 
 
 def compute(request, job):
+    initial = {"title": job.report.title, "created": job.report.created.year if job.report.created else "",
+               "available": job.report.available, "description": job.report.description}
     if request.method == "POST":
+        computeForm = ComputeForm(request.POST, initial=initial)
+        if computeForm.is_valid():
+            if computeForm.has_changed():
+                if "title" in computeForm.changed_data:
+                    job.report.title = computeForm.cleaned_data["title"]
+                if "created" in computeForm.changed_data:
+                    job.report.created = date(int(computeForm.cleaned_data["created"]), month=1, day=1)
+                if "available" in computeForm.changed_data:
+                    job.report.available = computeForm.cleaned_data["available"]
+                if "description" in computeForm.changed_data:
+                    job.report.description = computeForm.cleaned_data["description"]
+                job.report.save()
+            else:
+                pass  # make step as complte and trigger next one
         return "partial/job.html", {"job": job}
     else:
-        return "partial/job.html", {"job": job}
+        computeForm = ComputeForm(initial=initial)
+        return "partial/compute_result.html", {"form": computeForm, "job": job}
 
 
 def imageBased(request, job):

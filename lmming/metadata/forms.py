@@ -1,5 +1,7 @@
+import datetime
+
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple, Textarea
+    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput
 from metadata.models import ProcessingStep, Report
 
 
@@ -68,3 +70,11 @@ class FilemakerForm(Form):
     relation = CharField(label="Relation (comma-separated)", required=False)
     coverage = ChoiceField(choices=Report.UnionLevel, required=True)
     spatial = CharField(label="Spatial (comma-separated)", required=True)
+
+
+class ComputeForm(Form):
+    title = CharField(label="Title", required=True)
+    created = CharField(label="Year Created", required=False)
+    available = DateField(label="Available from", required=False, input_formats=['%Y-%m-%d'],
+                          widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
+    description = CharField(label="Report description", required=False, widget=Textarea)
