@@ -82,3 +82,7 @@ class ComputeForm(Form):
     language = CharField(label="Language (comma-separated)", required=True)
     license = CharField(label="License (comma-separated)", required=True, widget=Textarea())
     source = CharField(label="Source (comma-separated)", required=False)
+
+
+class ImageForm(Form):
+    isFormatOf = ChoiceField(choices=Report.DocumentFormat, label="Format", required=True)

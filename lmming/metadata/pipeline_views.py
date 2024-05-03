@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, FileNameForm, FilemakerForm, \
-    ComputeForm
+    ComputeForm, ImageForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep
 from metadata.utils import parseFilename, buildReportIdentifier
 from django.forms import formset_factory
@@ -114,10 +114,20 @@ def compute(request, job):
 
 
 def imageBased(request, job):
+    initial = {"isFormatOf":job.report.isFormatOf}
     if request.method == "POST":
+        imageForm = ImageForm(request.POST, initial=initial)
+        if imageForm.is_valid():
+            if imageForm.has_changed():
+                if "isFormatOf" in imageForm.changed_data:
+                    job.report.isFormatOf = imageForm.cleaned_data["isFormatOf"]
+                job.report.save()
+            else:
+                pass
         return "partial/job.html", {"job": job}
     else:
-        return "partial/job.html", {"job": job}
+        imageForm = ImageForm(initial=initial)
+        return "partial/image_result.html", {"form":imageForm, "job": job}
 
 
 def ner(request, job):
