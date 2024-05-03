@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, FileNameForm, FilemakerForm, \
-    ComputeForm, ImageForm
+    ComputeForm, ImageForm, MintForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep
 from metadata.utils import parseFilename, buildReportIdentifier
 from django.forms import formset_factory
@@ -114,7 +114,7 @@ def compute(request, job):
 
 
 def imageBased(request, job):
-    initial = {"isFormatOf":job.report.isFormatOf}
+    initial = {"isFormatOf": job.report.isFormatOf}
     if request.method == "POST":
         imageForm = ImageForm(request.POST, initial=initial)
         if imageForm.is_valid():
@@ -127,7 +127,7 @@ def imageBased(request, job):
         return "partial/job.html", {"job": job}
     else:
         imageForm = ImageForm(initial=initial)
-        return "partial/image_result.html", {"form":imageForm, "job": job}
+        return "partial/image_result.html", {"form": imageForm, "job": job}
 
 
 def ner(request, job):
@@ -138,7 +138,19 @@ def ner(request, job):
 
 
 def mint(request, job):
+    initial = {"identifier": job.report.identifier, "isVersionOf": job.report.identifier}
     if request.method == "POST":
+        mintForm = MintForm(request.POST, initial=initial)
+        if mintForm.is_valid():
+            if mintForm.has_changed():
+                if "identifier" in mintForm.changed_data:
+                    job.report.identifier = mintForm.cleaned_data["identifier"]
+                if "isVersionOf" in mintForm.changed_data:
+                    job.report.isVersionOf = mintForm.cleaned_data["isVersionOf"]
+                job.report.save()
+            else:
+                pass
         return "partial/job.html", {"job": job}
     else:
-        return "partial/job.html", {"job": job}
+        mintForm = MintForm(initial=initial)
+        return "partial/mint_result.html", {"form": mintForm, "job": job}

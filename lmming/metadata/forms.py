@@ -1,7 +1,7 @@
 import datetime
 
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput
+    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField
 from metadata.models import ProcessingStep, Report
 
 
@@ -86,3 +86,8 @@ class ComputeForm(Form):
 
 class ImageForm(Form):
     isFormatOf = ChoiceField(choices=Report.DocumentFormat, label="Format", required=True)
+
+
+class MintForm(Form):
+    identifier = URLField(label="IIIF URL", required=True)
+    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True)
