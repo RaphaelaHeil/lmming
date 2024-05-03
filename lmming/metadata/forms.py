@@ -77,4 +77,8 @@ class ComputeForm(Form):
     created = CharField(label="Year Created", required=False)
     available = DateField(label="Available from", required=False, input_formats=['%Y-%m-%d'],
                           widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
-    description = CharField(label="Report description", required=False, widget=Textarea)
+    accessRights = ChoiceField(choices=Report.AccessRights, required=True)
+    description = CharField(label="Report description", required=False, widget=Textarea())
+    language = CharField(label="Language (comma-separated)", required=True)
+    license = CharField(label="License (comma-separated)", required=True, widget=Textarea())
+    source = CharField(label="Source (comma-separated)", required=False)

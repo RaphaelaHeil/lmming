@@ -13,18 +13,18 @@ from metadata.utils import parseFilename, buildReportIdentifier
 from django.forms import formset_factory
 
 
-def __toDisplayList__(input: List[Any]):
+def __toDisplayList__(input: List[Any]) -> str:
     if input:
         return ", ".join([str(i) for i in input])
     else:
-        return []
+        return ""
 
 
-def __fromDisplayList__(input: str):
+def __fromDisplayList__(input: str) -> List[Any]:
     if input:
         return [s.strip() for s in input.split(",")]
     else:
-        return ""
+        return []
 
 
 def filename(request, job):
@@ -81,7 +81,9 @@ def filemaker(request, job):
 
 def compute(request, job):
     initial = {"title": job.report.title, "created": job.report.created.year if job.report.created else "",
-               "available": job.report.available, "description": job.report.description}
+               "available": job.report.available, "description": job.report.description,
+               "language": __toDisplayList__(job.report.language), "license": __toDisplayList__(job.report.license),
+               "source": __toDisplayList__(job.report.source), "accessRights": job.report.accessRights}
     if request.method == "POST":
         computeForm = ComputeForm(request.POST, initial=initial)
         if computeForm.is_valid():
@@ -94,6 +96,14 @@ def compute(request, job):
                     job.report.available = computeForm.cleaned_data["available"]
                 if "description" in computeForm.changed_data:
                     job.report.description = computeForm.cleaned_data["description"]
+                if "language" in computeForm.changed_data:
+                    job.report.language = __fromDisplayList__(computeForm.cleaned_data["language"])
+                if "license" in computeForm.changed_data:
+                    job.report.license = __fromDisplayList__(computeForm.cleaned_data["license"])
+                if "source" in computeForm.changed_data:
+                    job.report.source = __fromDisplayList__(computeForm.cleaned_data["source"])
+                if "accessRights" in computeForm.changed_data:
+                    job.report.accessRights = computeForm.cleaned_data["accessRights"]
                 job.report.save()
             else:
                 pass  # make step as complte and trigger next one
