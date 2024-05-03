@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Something Something review "XYZ" {{job.id}}{% endblock %}
+
+{% block content %}
+<div class="p-0">
+    <div class="accordion" id="accordionExample">
+        <form class="form" method="POST" action="{% url 'metadata:job' job.pk %}">
+            {% csrf_token %}
+            {{ form.management_form }}
+            {%for pageForm in form%}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{pageForm.order}}">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{pageForm.order}}" aria-expanded="true" aria-controls="collapse{{pageForm.order}}">
+                        Page {{pageForm.order}}
+                    </button>
+                </h2>
+                <div id="collapse{{pageForm.order}}" class="accordion-collapse collapse show" aria-labelledby="heading{{pageForm.order}}"
+                     data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        {{pageForm}}
+                    </div>
+                </div>
+            </div>
+            {%endfor%}
+            <input type="submit" value="Confirm" class="btn btn-success">
+        </form>
+    </div>
+</div>
+{% endblock %}

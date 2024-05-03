@@ -1,7 +1,7 @@
 import datetime
 
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField
+    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, HiddenInput
 from metadata.models import ProcessingStep, Report
 
 
@@ -91,3 +91,27 @@ class ImageForm(Form):
 class MintForm(Form):
     identifier = URLField(label="IIIF URL", required=True)
     isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True)
+
+
+class PageForm(Form):
+    def __init__(self,  *args, **kwargs):
+        self.pageId = kwargs["initial"]["pageId"]
+        self.order = kwargs["initial"]["order"]
+        super(PageForm, self).__init__(*args, **kwargs)  # call base class
+
+    # pageId = CharField(widget=HiddenInput(), required=False)
+    measures = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
+    transcription = CharField(label="Transcription", required=False,
+                              widget=Textarea(attrs={"class": "form-control", "rows": 10}))
+    normalisedTranscription = CharField(label="Normalised transcription", required=False,
+                                        widget=Textarea(attrs={"class": "form-control", "rows": 10}))
+    persons = CharField(label="Persons", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    organisations = CharField(label="Organisations", required=False,
+                              widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    locations = CharField(label="Locations", required=False,
+                          widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    times = CharField(label="Times", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    works = CharField(label="Works", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    events = CharField(label="Events", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    ner_objects = CharField(label="Objects", required=False,
+                            widget=Textarea(attrs={"class": "form-control", "rows": 3}))

@@ -7,7 +7,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, FileNameForm, FilemakerForm, \
-    ComputeForm, ImageForm, MintForm
+    ComputeForm, ImageForm, MintForm, PageForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep
 from metadata.utils import parseFilename, buildReportIdentifier
 from django.forms import formset_factory
@@ -131,10 +131,49 @@ def imageBased(request, job):
 
 
 def ner(request, job):
+    NerFormSet = formset_factory(PageForm, extra=0)
+    initial = [{"measures": p.measures, "transcription": p.transcription,
+                "normalisedTranscription": p.normalisedTranscription,
+                "persons": __toDisplayList__(p.persons),
+                "organisations": __toDisplayList__(p.organisations),
+                "locations": __toDisplayList__(p.locations),
+                "times": __toDisplayList__(p.times),
+                "works": __toDisplayList__(p.works),
+                "events": __toDisplayList__(p.events),
+                "ner_objects": __toDisplayList__(p.ner_objects),
+                "pageId": p.pk, "order": p.order} for p in job.report.page_set.all().order_by("order")]
+
     if request.method == "POST":
+        nerForm = NerFormSet(request.POST, initial=initial)
+        if nerForm.is_valid():
+            for f in nerForm:
+                if f.has_changed():
+                    page = Page.objects.get(pk=f.pageId)
+                    if "measures" in f.changed_data:
+                        page.measures = f.cleaned_data["measures"]
+                    if "transcription" in f.changed_data:
+                        page.transcription = f.cleaned_data["transcription"]
+                    if "normalisedTranscription" in f.changed_data:
+                        page.normalisedTranscription = f.cleaned_data["normalisedTranscription"]
+                    if "persons" in f.changed_data:
+                        page.persons = __fromDisplayList__(f.cleaned_data["persons"])
+                    if "organisations" in f.changed_data:
+                        page.organisations = __fromDisplayList__(f.cleaned_data["organisations"])
+                    if "locations" in f.changed_data:
+                        page.locations = __fromDisplayList__(f.cleaned_data["locations"])
+                    if "times" in f.changed_data:
+                        page.times = __fromDisplayList__(f.cleaned_data["times"])
+                    if "works" in f.changed_data:
+                        page.works = __fromDisplayList__(f.cleaned_data["works"])
+                    if "events" in f.changed_data:
+                        page.events = __fromDisplayList__(f.cleaned_data["events"])
+                    if "ner_objects" in f.changed_data:
+                        page.ner_objects = __fromDisplayList__(f.cleaned_data["ner_objects"])
+                    page.save()
         return "partial/job.html", {"job": job}
     else:
-        return "partial/job.html", {"job": job}
+        nerForm = NerFormSet(initial=initial)
+        return "partial/ner_result.html", {"form": nerForm, "job": job}
 
 
 def mint(request, job):
