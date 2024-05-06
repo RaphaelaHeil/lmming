@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
-from django.db.models.signals import pre_delete
+from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -25,24 +25,35 @@ class ExtractionTransfer(Model):
     status = CharField(choices=Status.choices, default=Status.PENDING)
 
     def updateStatus(self):
-        jobStatuses = set([job.status for job in self.jobs.all()])  # TODO: is this thread-safe?
+        jobStatuses = set([job.status for job in self.jobs.all()])
 
-        if Status.AWAITING_HUMAN_INPUT in jobStatuses:
+        if self.status == Status.PENDING and len(jobStatuses) > 1:
+            self.started()
+        elif Status.AWAITING_HUMAN_INPUT in jobStatuses:
             self.status = Status.AWAITING_HUMAN_INPUT
         elif Status.AWAITING_HUMAN_VALIDATION in jobStatuses:
             self.status = Status.AWAITING_HUMAN_VALIDATION
         elif len(jobStatuses) == 1:
-            self.status = jobStatuses.pop()
+            status = jobStatuses.pop()
+            if status == Status.COMPLETE:
+                self.completed()
+            else:
+                self.status = status
         else:
             # mix of: pending, in progress, complete and error
             if Status.IN_PROGRESS in jobStatuses or Status.PENDING in jobStatuses:
                 self.status = Status.IN_PROGRESS
             else:  # status is a mix of complete and error
                 self.status = Status.ERROR
+        self.save()
 
     def started(self):
         self.startDate = timezone.now()
         self.status = Status.IN_PROGRESS
+
+    def completed(self):
+        self.endDate = timezone.now()
+        self.status = Status.COMPLETE
 
 
 def spatialDefault():
@@ -139,7 +150,7 @@ class Job(Model):
     endDate = DateTimeField(null=True, blank=True)
 
     def updateStatus(self):
-        stepStatuses = set([s.status for s in self.processingSteps.all()])  # TODO: is this thread-safe?
+        stepStatuses = set([s.status for s in self.processingSteps.all()])
         if Status.ERROR in stepStatuses:
             self.status = Status.ERROR
         elif Status.AWAITING_HUMAN_INPUT in stepStatuses:
@@ -147,9 +158,17 @@ class Job(Model):
         elif Status.AWAITING_HUMAN_VALIDATION in stepStatuses:
             self.status = Status.AWAITING_HUMAN_VALIDATION
         elif len(stepStatuses) == 1:
-            self.status = stepStatuses.pop()
+            status = stepStatuses.pop()
+            if self.status != Status.COMPLETE and status == Status.COMPLETE:
+                self.completed()
+            else:
+                self.status = status
         else:
-            self.status = Status.IN_PROGRESS
+            if self.status == Status.PENDING:
+                self.started()
+            else:
+                self.status = Status.IN_PROGRESS
+        self.save()
 
     def started(self):
         self.startDate = timezone.now()
@@ -158,6 +177,11 @@ class Job(Model):
     def completed(self):
         self.endDate = timezone.now()
         self.status = Status.COMPLETE
+
+
+@receiver(post_save, sender=Job)
+def statusUpdate(sender, instance, **kwargs):
+    instance.transfer.updateStatus()
 
 
 class ProcessingStep(Model):
@@ -185,6 +209,11 @@ class ProcessingStep(Model):
 
     def __str__(self):
         return f"{self.job.pk} - {self.processingStepType} ({self.mode}{', human validation' if self.humanValidation else ''})"
+
+
+@receiver(post_save, sender=ProcessingStep)
+def statusUpdate(sender, instance, **kwargs):
+    instance.job.updateStatus()
 
 
 class UrlSettings(Model):

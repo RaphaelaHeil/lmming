@@ -84,29 +84,34 @@ class JobView(View):
         return render(request, templateName, context)
 
     def post(self, request, *args, **kwargs):
-        templateName, context = self.__handleStepRedirect__(request, args, kwargs)
-        return render(request, templateName, context)
+        if request.POST['submit'] == 'confirm':
+            templateName, context = self.__handleStepRedirect__(request, args, kwargs)
+            return render(request, templateName, context)
+        else:
+            job = get_object_or_404(Job, pk=kwargs["job_id"])
+            return "partial/job.html", {"job": job}
 
     def __handleStepRedirect__(self, request, args, kwargs):
         job = get_object_or_404(Job, pk=kwargs["job_id"])
-        if job.status in [Status.PENDING, Status.IN_PROGRESS, Status.COMPLETE]:
-            return "partial/job.html", {"job": job}
-        else:
-            # return filename(request, job)
-            #return filemaker(request, job)
-            # return compute(request, job)
-            return ner(request, job)
 
-        # for step in job.processingSteps.all():
-        #     if step.status in [Status.AWAITING_HUMAN_VALIDATION, Status.AWAITING_HUMAN_VALIDATION]:
-        #         match step.processingStepType:
-        #             case ProcessingStep.ProcessingStepType.FILENAME:
-        #                 return filename(request, job)
-        #             case ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP:
-        #                 pass
-        #             case _:
-        #                 pass  # TODO: something's wrong, raise error!!
-        #     else:
-        #         # return general view, with all steps+status and error messages, if applicable
-        #         continue
-        # pass
+        if job.status in [Status.AWAITING_HUMAN_INPUT, Status.AWAITING_HUMAN_VALIDATION]:
+            for step in job.processingSteps.order_by("order"):
+                if step.status in [Status.AWAITING_HUMAN_VALIDATION, Status.AWAITING_HUMAN_VALIDATION]:
+                    match step.processingStepType:
+                        case ProcessingStep.ProcessingStepType.FILENAME:
+                            return filename(request, job)
+                        case ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP:
+                            return filemaker(request, job)
+                        case ProcessingStep.ProcessingStepType.GENERATE:
+                            return compute(request, job)
+                        case ProcessingStep.ProcessingStepType.IMAGE:
+                            return imageBased(request, job)
+                        case ProcessingStep.ProcessingStepType.NER:
+                            return ner(request, job)
+                        case ProcessingStep.ProcessingStepType.MINT_ARKS:
+                            return mint(request, job)
+                        case _:
+                            # TODO: add loggin
+                            return "partial/job.html", {"job": job}
+        else:
+            return "partial/job.html", {"job": job}

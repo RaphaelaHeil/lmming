@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+ {% extends "base.html" %}
 
 {% block title %}Something Something review "XYZ" {{job.id}}{% endblock %}
 
@@ -7,7 +7,7 @@
     <form class="form" method="POST" action="{% url 'metadata:job' job.pk %}">
         {% csrf_token %}
         {{form.as_p}}
-        <input type="submit" value="Confirm" class="btn btn-success">
+        <input type="submit" value="Confirm" class="btn btn-success" name="confirm">
     </form>
 </div>
 {% endblock %}

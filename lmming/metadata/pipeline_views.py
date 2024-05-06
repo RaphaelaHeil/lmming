@@ -2,15 +2,13 @@ import datetime
 from datetime import date
 from typing import List, Any
 
-from django.http import QueryDict
-from django.shortcuts import render, get_object_or_404, redirect
-
-from metadata.enum_utils import PipelineStepName
-from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, FileNameForm, FilemakerForm, \
-    ComputeForm, ImageForm, MintForm, PageForm
-from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep
-from metadata.utils import parseFilename, buildReportIdentifier
+from django.db import transaction
 from django.forms import formset_factory
+
+from metadata.forms import FileNameForm, FilemakerForm, \
+    ComputeForm, ImageForm, MintForm, PageForm
+from metadata.models import Page, Status, ProcessingStep
+from metadata.tasks import scheduleTask
 
 
 def __toDisplayList__(input: List[Any]) -> str:
@@ -30,9 +28,9 @@ def __fromDisplayList__(input: str) -> List[Any]:
 def filename(request, job):
     # add a check that the user is allowed to see/modify this view? otherwise return general job view?
     if request.method == "POST":
-        filenameForm = FileNameForm(request.POST,
-                                    initial={"organisationID": job.report.unionId, "type": job.report.type,
-                                             "date": __toDisplayList__(job.report.date)})
+        filenameForm = FileNameForm(request.POST, initial={"organisationID": job.report.unionId,
+                                                           "type": job.report.type,
+                                                           "date": __toDisplayList__(job.report.date)})
         if filenameForm.is_valid():
             if filenameForm.has_changed():
                 if "organisationID" in filenameForm.changed_data:
@@ -43,11 +41,14 @@ def filename(request, job):
                     years = [int(d) for d in __fromDisplayList__(filenameForm.data["date"])]
                     job.report.date = [datetime.date(year=y, month=1, day=1) for y in years]
                 job.report.save()
-            else:
-                # TODO: update processing status and trigger next one
-                pass
+
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILENAME)
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
             return "partial/job.html", {"job": job}
         else:
+            # TODO: return errors!
             return "partial/job.html", {"job": job}
     else:
         filenameForm = FileNameForm(initial={"organisationID": job.report.unionId, "type": job.report.type,
@@ -71,9 +72,14 @@ def filemaker(request, job):
                 if "spatial" in filemakerForm.changed_data:
                     job.report.spatial = __fromDisplayList__(filemakerForm.cleaned_data["spatial"])
                 job.report.save()
-            else:
-                pass  # mark filemaker step as complete and trigger next one
-        return "partial/job.html", {"job": job}
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return "partial/job.html", {"job": job}
+        else:
+            # TODO: return errors?!
+            return "partial/job.html", {"job": job}
     else:
         filemakerForm = FilemakerForm(initial=initial)
         return "partial/filemaker_result.html", {"form": filemakerForm, "job": job}
@@ -105,9 +111,14 @@ def compute(request, job):
                 if "accessRights" in computeForm.changed_data:
                     job.report.accessRights = computeForm.cleaned_data["accessRights"]
                 job.report.save()
-            else:
-                pass  # make step as complte and trigger next one
-        return "partial/job.html", {"job": job}
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.GENERATE)
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return "partial/job.html", {"job": job}
+        else:
+            # TODO: return errors?!
+            return "partial/job.html", {"job": job}
     else:
         computeForm = ComputeForm(initial=initial)
         return "partial/compute_result.html", {"form": computeForm, "job": job}
@@ -122,9 +133,14 @@ def imageBased(request, job):
                 if "isFormatOf" in imageForm.changed_data:
                     job.report.isFormatOf = imageForm.cleaned_data["isFormatOf"]
                 job.report.save()
-            else:
-                pass
-        return "partial/job.html", {"job": job}
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.IMAGE)
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return "partial/job.html", {"job": job}
+        else:
+            # TODO: return errors
+            return "partial/job.html", {"job": job}
     else:
         imageForm = ImageForm(initial=initial)
         return "partial/image_result.html", {"form": imageForm, "job": job}
@@ -170,7 +186,14 @@ def ner(request, job):
                     if "ner_objects" in f.changed_data:
                         page.ner_objects = __fromDisplayList__(f.cleaned_data["ner_objects"])
                     page.save()
-        return "partial/job.html", {"job": job}
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.NER)
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return "partial/job.html", {"job": job}
+        else:
+            # TODO: return errors?!
+            return "partial/job.html", {"job": job}
     else:
         nerForm = NerFormSet(initial=initial)
         return "partial/ner_result.html", {"form": nerForm, "job": job}
@@ -187,9 +210,14 @@ def mint(request, job):
                 if "isVersionOf" in mintForm.changed_data:
                     job.report.isVersionOf = mintForm.cleaned_data["isVersionOf"]
                 job.report.save()
-            else:
-                pass
-        return "partial/job.html", {"job": job}
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return "partial/job.html", {"job": job}
+        else:
+            # TODO: return errors?!
+            return "partial/job.html", {"job": job}
     else:
         mintForm = MintForm(initial=initial)
         return "partial/mint_result.html", {"form": mintForm, "job": job}
