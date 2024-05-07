@@ -84,7 +84,7 @@ class JobView(View):
         return render(request, templateName, context)
 
     def post(self, request, *args, **kwargs):
-        if request.POST['submit'] == 'confirm':
+        if request.POST['confirm'] == 'Confirm':
             templateName, context = self.__handleStepRedirect__(request, args, kwargs)
             return render(request, templateName, context)
         else:
@@ -96,7 +96,7 @@ class JobView(View):
 
         if job.status in [Status.AWAITING_HUMAN_INPUT, Status.AWAITING_HUMAN_VALIDATION]:
             for step in job.processingSteps.order_by("order"):
-                if step.status in [Status.AWAITING_HUMAN_VALIDATION, Status.AWAITING_HUMAN_VALIDATION]:
+                if step.status in [Status.AWAITING_HUMAN_INPUT, Status.AWAITING_HUMAN_VALIDATION]:
                     match step.processingStepType:
                         case ProcessingStep.ProcessingStepType.FILENAME:
                             return filename(request, job)
@@ -111,7 +111,7 @@ class JobView(View):
                         case ProcessingStep.ProcessingStepType.MINT_ARKS:
                             return mint(request, job)
                         case _:
-                            # TODO: add loggin
-                            return "partial/job.html", {"job": job}
+                            # TODO: add logging
+                            return "partial/job.html", {"job": job} # TODO: fix this return type
         else:
-            return "partial/job.html", {"job": job}
+            return "partial/job.html", {"job": job} # TODO: fix this return type!
