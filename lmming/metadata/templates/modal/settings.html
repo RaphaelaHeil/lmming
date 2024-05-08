@@ -1,0 +1,26 @@
+<div class="modal-dialog modal-dialog-centered ">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title text-danger" id="exampleModalLabel">
+                Update Default Settings
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <form class="form" method="POST" action="{% url 'metadata:settings_modal'%}">
+            <div class="modal-body">
+                <p>The values entered below will be used as defaults to fill the respective metadata fields. It is always
+            possible to change them on a case-by-case basis in the respective validation view.</p>
+                {% csrf_token %}
+                {{form.as_p}}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    Close
+                </button>
+                <input type="submit" value="Confirm" class="btn btn-success" name="confirm" data-bs-dismiss="modal">
+            </div>
+        </form>
+    </div>
+</div>
+

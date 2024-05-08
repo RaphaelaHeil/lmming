@@ -1,6 +1,5 @@
-from datetime import date
-
 from celery import shared_task
+from dateutil.relativedelta import relativedelta
 from django.db import transaction
 
 from metadata.enum_utils import PipelineStepName
@@ -10,9 +9,8 @@ from metadata.models import ProcessingStep, Job, Status, Report
 @shared_task()
 def extractFromFileNames(jobPk: int):
     # nothing to do at the moment ...
-    print("extractFromFileNames", jobPk)
-
-    step = ProcessingStep.objects.filter(job_id=jobPk, processingStepType=ProcessingStep.ProcessingStepType.FILENAME)[0]
+    step = ProcessingStep.objects.filter(job_id=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.FILENAME).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -41,7 +39,7 @@ def fileMakerLookup(jobPk: int):
 
     print("fileMakerLookup", jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)[0]
+                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -56,15 +54,17 @@ def computeFromExistingFields(jobPk: int):
     # fields: title*[1], created[1], description[1], available[1]
     report = Report.objects.get(job__pk=jobPk)
 
-    report.title = "this is a title"
-    report.created = date.today()
-    report.description = "this is a description"
-    report.available = date.today()
+    # TODO: expand abbreviations in creator name!
+    report.title = f"{report.creator} - {report.type} ({report.dateString()})"
+    created = sorted(report.date)[-1] + relativedelta(year=1)
+    report.created = created
+    report.description = f"{report.page_set.count} pages"
+    report.available = created + relativedelta(year=0)  # TODO: add years to settings DefaultNumberSettings.value
     report.save()
 
     print("computeFromExistingFields", jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.GENERATE)[0]
+                                         processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -77,7 +77,8 @@ def computeFromExistingFields(jobPk: int):
 @shared_task()
 def extractFromImage(jobPk: int):
     # fields: isFormatOf*[N]
-    step = ProcessingStep.objects.filter(job__pk=jobPk, processingStepType=ProcessingStep.ProcessingStepType.IMAGE)[0]
+    step = ProcessingStep.objects.filter(job__pk=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
     step.status = Status.AWAITING_HUMAN_INPUT
     step.save()
     print("extractFromImage", jobPk)
@@ -101,7 +102,7 @@ def namedEntityRecognition(jobPk: int):
         page.ner_objects = [f"obj 1 {idx}", f"obj 2 {idx}"]
         page.measures = True
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.NER)[0]
+                                         processingStepType=ProcessingStep.ProcessingStepType.NER).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -122,7 +123,7 @@ def mintArks(jobPk: int):
 
     print("mintARKs", jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)[0]
+                                         processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()

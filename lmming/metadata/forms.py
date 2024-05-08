@@ -1,7 +1,7 @@
 import datetime
 
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, HiddenInput
+    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, IntegerField
 from metadata.models import ProcessingStep, Report
 
 
@@ -94,7 +94,7 @@ class MintForm(Form):
 
 
 class PageForm(Form):
-    def __init__(self,  *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         self.pageId = kwargs["initial"]["pageId"]
         self.order = kwargs["initial"]["order"]
         super(PageForm, self).__init__(*args, **kwargs)  # call base class
@@ -115,3 +115,17 @@ class PageForm(Form):
     events = CharField(label="Events", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
     ner_objects = CharField(label="Objects", required=False,
                             widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+
+
+class SettingsForm(Form):
+    iiifURL = URLField(label="IIIF Base-URL", required=True)
+    atomURL = URLField(label="Base-URL to archival record system (e.g. AtoM)", required=True)
+
+    language = CharField(label="Default Language(s) (comma-separated)", required=True)
+    license = CharField(label="Default License(s) (comma-separated)", required=True)
+    source = CharField(label="Default Source(s) (comma-separated)", required=True)
+
+    accessRights = ChoiceField(label="Default accessRights Value", choices=Report.AccessRights, required=True)
+
+    avilableYearOffset = IntegerField(label="Default number of years after publication", required=True, min_value=0,
+                                      step_size=1)

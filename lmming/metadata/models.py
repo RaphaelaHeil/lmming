@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
-    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField
+    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -225,7 +225,7 @@ class UrlSettings(Model):
         ATOM = "ATOM", "AtoM Base URL"
 
     name = CharField(primary_key=True, choices=UrlSettingsType.choices)
-    url = URLField()
+    url = URLField(blank=True, default="")
 
     def __str__(self) -> str:
         return f"{self.name}: {self.url}"
@@ -239,9 +239,25 @@ class DefaultValueSettings(Model):
         DC_LANGUAGE = "DC_LANGUAGE", "dcterms:language"
         DC_LICENSE = "DC_LICENSE", "dcterms:license"
         DC_SOURCE = "DC_SOURCE", "dcterms:source"
+        DC_ACCESS_RIGHTS = "DC_ACCESS_RIGHTS", "dcterms:accessRights"
 
     name = CharField(primary_key=True, choices=DefaultValueSettingsType.choices)
-    value = CharField(blank=True)
+    value = CharField(blank=True, default="")
+
+    def __str__(self) -> str:
+        return f"{self.name}: {self.value}"
+
+
+class DefaultNumberSettings(Model):
+    class Meta():
+        verbose_name_plural = "default Number Settings"
+
+    class DefaultNumberSettingsType(TextChoices):
+        AVAILABLE_YEAR_OFFSET = "AVAILABLE_YEAR_OFFSET", ("Number of years, calculated from date of publication, until "
+                                                          "the material becomes available")
+
+    name = CharField(primary_key=True, choices=DefaultNumberSettingsType.choices)
+    value = IntegerField(blank=True, default=0)
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value}"

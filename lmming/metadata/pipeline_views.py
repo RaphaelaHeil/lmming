@@ -42,7 +42,7 @@ def filename(request, job):
                     job.report.date = [datetime.date(year=y, month=1, day=1) for y in years]
                 job.report.save()
 
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILENAME)[0]
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILENAME).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -72,7 +72,8 @@ def filemaker(request, job):
                 if "spatial" in filemakerForm.changed_data:
                     job.report.spatial = __fromDisplayList__(filemakerForm.cleaned_data["spatial"])
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)[0]
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -111,7 +112,7 @@ def compute(request, job):
                 if "accessRights" in computeForm.changed_data:
                     job.report.accessRights = computeForm.cleaned_data["accessRights"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.GENERATE)[0]
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -133,7 +134,7 @@ def imageBased(request, job):
                 if "isFormatOf" in imageForm.changed_data:
                     job.report.isFormatOf = imageForm.cleaned_data["isFormatOf"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.IMAGE)[0]
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -186,7 +187,7 @@ def ner(request, job):
                     if "ner_objects" in f.changed_data:
                         page.ner_objects = __fromDisplayList__(f.cleaned_data["ner_objects"])
                     page.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.NER)[0]
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.NER).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -210,7 +211,7 @@ def mint(request, job):
                 if "isVersionOf" in mintForm.changed_data:
                     job.report.isVersionOf = mintForm.cleaned_data["isVersionOf"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)[0]
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))

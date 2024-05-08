@@ -32,9 +32,13 @@
             </a>
 
             <div class="d-lg-flex col-lg-3 justify-content-lg-end">
-                <span class="btn btn-dark disabled" data-bs-toggle="tooltip" title="Settings" id="settings_button">
-                    <i class="fa-solid fa-gear"></i>
+                <span data-bs-toggle="tooltip"> {# extra span is needed so that tooltip AND modal can be applied to the same button #}
+                <span style="cursor:pointer;" hx-get="{% url 'metadata:settings_modal'%}"
+                      hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
+                      data-bs-target="#modalContainer" class="btn btn-dark" title="Settings" id="settings_button">
+                <i class="fa-solid fa-gear"></i>
                 </span>
+                    </span>
             </div>
         </div>
     </div>
@@ -66,10 +70,10 @@
     </div>
 </div>
 <script>
-var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-  return new bootstrap.Tooltip(tooltipTriggerEl)
-})
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
 
 </script>
 </body>

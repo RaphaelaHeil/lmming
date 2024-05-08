@@ -91,7 +91,7 @@
                       hx-get="{% url 'metadata:transfer' job.id %}" hx-target="#modalContainer" hx-trigger="click"
                       data-bs-toggle="modal" data-bs-target="#modalContainer" #}>
                     <i class="fa-solid fa-magnifying-glass text-dark"></i>
-                    </span>
+                </span>
                     <a style="cursor:pointer;">
                         {% comment %}
                         {# href="{% url 'metadata:download' job.id %}"#}
@@ -103,8 +103,8 @@
                     <span style="cursor:pointer;" hx-get="{% url 'metadata:transfer_delete_modal' job.id %}"
                           hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
                           data-bs-target="#modalContainer">
-                    {% csrf_token %}
-                    <i class="fa-solid fa-trash text-dark"></i>
+                {% csrf_token %}
+                <i class="fa-solid fa-trash text-dark"></i>
                 </span>
                 </td>
             </tr>

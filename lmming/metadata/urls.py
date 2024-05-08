@@ -13,6 +13,7 @@ urlpatterns = [
     path("transfers/delete", partials.batchDeleteModal, name="transfer_batch_delete"),
     path("transfer/modal/delete/<int:transfer_id>", partials.deleteModal, name="transfer_delete_modal"),
     path("job/<int:job_id>", views.JobView.as_view(), name="job"),
+    path("settings", partials.settingsModal, name="settings_modal"),
 
     # path("jobs", name="job_table")
     # path("jobs", views.Jobs.as_view(), name="job_table"),
