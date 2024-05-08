@@ -11,9 +11,21 @@ from django.utils.crypto import get_random_string
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
 from metadata.pipeline_views import filename, filemaker, compute, imageBased, ner, mint
 
+from metadata.utils import buildTransferCsvs
+
 
 def index(request):
     return render(request, "partial/index_partial.html", {})
+
+
+def downloadTransfer(request, transfer_id):
+    # TODO: add a check if transfer is complete!
+    transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
+   
+    if transfer:
+        outFile = buildTransferCsvs(transfer)
+        return FileResponse(outFile, as_attachment=True,
+                            filename=f"Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
 
 
 class Transfers(View):
@@ -112,6 +124,6 @@ class JobView(View):
                             return mint(request, job)
                         case _:
                             # TODO: add logging
-                            return "partial/job.html", {"job": job} # TODO: fix this return type
+                            return "partial/job.html", {"job": job}  # TODO: fix this return type
         else:
-            return "partial/job.html", {"job": job} # TODO: fix this return type!
+            return "partial/job.html", {"job": job}  # TODO: fix this return type!

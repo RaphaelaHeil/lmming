@@ -10,6 +10,13 @@ from metadata.models import ExtractionTransfer, Report, Page, Status, Job, Proce
 from metadata.utils import parseFilename, buildReportIdentifier
 
 
+def downloadTransfer():
+    pass
+
+def donwloadModal():
+    pass
+
+
 def batchDeleteModal(request):
     ids = [int(id) for id in (QueryDict(request.body).getlist("ids"))]
     print(ids)

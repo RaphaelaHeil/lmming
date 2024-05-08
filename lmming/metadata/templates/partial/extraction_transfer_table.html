@@ -92,14 +92,9 @@
                       data-bs-toggle="modal" data-bs-target="#modalContainer" #}>
                     <i class="fa-solid fa-magnifying-glass text-dark"></i>
                 </span>
-                    <a style="cursor:pointer;">
-                        {% comment %}
-                        {# href="{% url 'metadata:download' job.id %}"#}
-                        {% endcomment %}
+                    <a style="cursor:pointer;" href="{% url 'metadata:download_single' job.id %}">
                         <i class="fa-solid fa-download text-dark"></i>
-                        {% comment %}
-                        {#</a>#}
-                    {% endcomment %}
+                    </a>
                     <span style="cursor:pointer;" hx-get="{% url 'metadata:transfer_delete_modal' job.id %}"
                           hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
                           data-bs-target="#modalContainer">

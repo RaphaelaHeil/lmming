@@ -1,7 +1,11 @@
+import io
 import re
-from typing import Dict, Union, List
+import zipfile
+from typing import Dict, Union, List, Any
 
-from metadata.models import Report
+from metadata.models import Report, ExtractionTransfer
+
+import pandas as pd
 
 __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
                          "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
@@ -87,3 +91,57 @@ def buildReportIdentifier(data: Dict[str, Union[str, int, List[str]]]) -> str:
         reportType = "-".join(sorted(reportType))
 
     return f"{data['union_id']}-{reportType}-{date}"
+
+
+def __toOmekaList__(ll: List[Any]) -> str:
+    if ll:
+        return " | ".join(str(e) for e in ll)
+    else:
+        return ""
+
+
+def buildTransferCsvs(transfer: ExtractionTransfer):
+    reportSummary = []
+    pageSummary = []
+    for report in transfer.report_set.all():
+        reportSummary.append({"dcterms:identifier": report.identifier,
+                              "dcterms:title": report.title,
+                              "dcterms:creator": report.creator,
+                              "dcterms:date": "/".join([d.year for d in report.date]),
+                              "dcterms:coverage": report.coverage,
+                              "dcterms:language": __toOmekaList__(report.language),
+                              "dcterms:spatial": __toOmekaList__(report.spatial),
+                              "dcterms:type": __toOmekaList__(report.type),
+                              "dcterms:license": __toOmekaList__(report.license),
+                              "dcterms:isVersionOf": report.isVersionOf,
+                              "dcterms:isFormatOf": __toOmekaList__(report.isFormatOf),
+                              "dcterms:accessRights": report.accessRights,
+                              "dcterms:relation": __toOmekaList__(report.relation),
+                              "dcterms:created": report.created.year,
+                              "dcterms:available": report.available,
+                              "dcterms:source": __toOmekaList__(report.source),
+                              "dcterms:description": report.description})
+
+        for page in report.page_set.all().order_by("order"):
+            pageSummary.append({"dcterms:isPartOf": report.identifier,
+                                "dcterms:identifier": 0,
+                                # TODO: build from report base # TODO: requires changes in Archival .... :S
+                                # TODO: image naming needs to be pre-determined and cannot depend on Archivematica >.<
+                                "lm:transcription": page.transcription,
+                                "lm:normalised": page.normalisedTranscription,
+                                "lm:person": __toOmekaList__(page.persons),
+                                "lm:organisation": __toOmekaList__(page.organisations),
+                                "lm:location": __toOmekaList__(page.locations),
+                                "lm:time": __toOmekaList__(page.times),
+                                "lm:work": __toOmekaList__(page.works),
+                                "lm:event": __toOmekaList__(page.events),
+                                "lm:object": __toOmekaList__(page.ner_objects),
+                                "lm:measure": page.measures})
+
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
+        zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
+    zip_buffer.seek(0)
+
+    return zip_buffer
