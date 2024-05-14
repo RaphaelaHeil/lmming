@@ -21,7 +21,7 @@ def index(request):
 def downloadTransfer(request, transfer_id):
     # TODO: add a check if transfer is complete!
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
-   
+
     if transfer:
         outFile = buildTransferCsvs(transfer)
         return FileResponse(outFile, as_attachment=True,

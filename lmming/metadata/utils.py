@@ -54,7 +54,7 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
             "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
             "following: union identifier, report type, report year(s)")
 
-    unionId = s[0]
+    unionId = s[0].lstrip("0") or "0"
 
     typeName = s[1]
     typeName = typeName.lower()
@@ -108,7 +108,7 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
         reportSummary.append({"dcterms:identifier": report.identifier,
                               "dcterms:title": report.title,
                               "dcterms:creator": report.creator,
-                              "dcterms:date": "/".join([d.year for d in report.date]),
+                              "dcterms:date": "/".join([str(d.year) for d in report.date]),
                               "dcterms:coverage": report.coverage,
                               "dcterms:language": __toOmekaList__(report.language),
                               "dcterms:spatial": __toOmekaList__(report.spatial),

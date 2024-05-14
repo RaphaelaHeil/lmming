@@ -1,6 +1,7 @@
 from datetime import date
 
 import pandas as pd
+from django.db import transaction
 from django.http import QueryDict
 from django.shortcuts import render, get_object_or_404, redirect
 
@@ -9,6 +10,7 @@ from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSetti
     FilemakerSettingsForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings, UrlSettings
+from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
 
 
@@ -116,7 +118,7 @@ def settingsModal(request):
                             value=settingsForm.cleaned_data["avilableYearOffset"])
         if filemakerForm.is_valid():
             filemakerCsv = filemakerForm.cleaned_data["filemaker_csv"]
-            updateFilemakerData(pd.read_csv(filemakerCsv)) # TODO: technically needs a loading indicator ...
+            updateFilemakerData(pd.read_csv(filemakerCsv))  # TODO: technically needs a loading indicator ...
         else:
             pass  # TODO: return error or smth
         return redirect("/")
@@ -129,8 +131,8 @@ def verifyTransfer(request, transfer_id):
     transferInstance = get_object_or_404(ExtractionTransfer, pk=transfer_id)
 
     if request.method == "POST":
-        transferInstance.status = Status.PENDING
-        transferInstance.save()
+        for job in transferInstance.jobs.all():
+            scheduleTask(job.pk)
         # TODO: add delete button,
         return redirect("/")
 
@@ -147,7 +149,8 @@ def __buildProcessingSteps__(data, job):
                 ("mintMode", "mintHumVal", PipelineStepName.MINT_ARKS)]
 
     for mode, humVal, stepName in stepKeys:
-        p = ProcessingStep.objects.create(job=job, order=stepName.value[0], processingStepType=stepName,
+        p = ProcessingStep.objects.create(job=job, order=stepName.value[0],
+                                          processingStepType=ProcessingStep.ProcessingStepType[stepName.name],
                                           humanValidation=data[humVal], mode=data[mode])
         steps.append(p)
     return steps

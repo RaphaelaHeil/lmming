@@ -85,8 +85,8 @@ class ComputeForm(Form):
 
 
 class ImageForm(Form):
-    isFormatOf = ChoiceField(choices=Report.DocumentFormat, label="Format", required=True)
-
+    isFormatOf = MultipleChoiceField(label="Format", choices=Report.DocumentFormat, required=True,
+                        widget=CheckboxSelectMultiple)
 
 class MintForm(Form):
     identifier = URLField(label="IIIF URL", required=True)

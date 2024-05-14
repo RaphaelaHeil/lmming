@@ -1,9 +1,12 @@
+from pathlib import Path
+
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
 from django.db import transaction
 
 from metadata.enum_utils import PipelineStepName
 from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry
+from metadata.nlp.ner import processPage
 
 
 @shared_task()
@@ -26,23 +29,31 @@ def fileMakerLookup(jobPk: int):
 
     # fields: creator*[1], relation[n], coverage*[1], spatial*[N]
 
-    filemaker = FilemakerEntry.objects.filter(archiveId=report.unionId).first()
-
-    report.creator = filemaker.organisationName
-    report.relation = [""]  # TODO: not yet in FAC Filemaker CSV
-    report.spatial = ["SE"] + [x for x in [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
-                               if x]
-
-    if "klubb" in filemaker.organisationName:
-        report.coverage = Report.UnionLevel.WORKPLACE
-    elif "sektion" in filemaker.organisationName:
-        report.coverage = Report.UnionLevel.SECTION
-    elif "avd" in filemaker.organisationName or "avdelning" in filemaker.organisationName:
-        report.coverage = Report.UnionLevel.DIVISION
-    elif "distrikt" in filemaker.organisationName:
-        report.coverage = Report.UnionLevel.DISTRICT
-    else:
+    entries = FilemakerEntry.objects.filter(archiveId=report.unionId)
+    if entries.count() == 0:
+        # log
+        report.creator = "unknown"
+        report.relation = [""]
+        report.spatial = ["SE"]
         report.coverage = Report.UnionLevel.OTHER
+    else:
+        filemaker = entries.first()
+
+        report.creator = filemaker.organisationName
+        report.relation = [""]  # TODO: not yet in FAC Filemaker CSV
+        report.spatial = ["SE"] + [x for x in [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
+                                   if x]
+
+        if "klubb" in filemaker.organisationName:
+            report.coverage = Report.UnionLevel.WORKPLACE
+        elif "sektion" in filemaker.organisationName:
+            report.coverage = Report.UnionLevel.SECTION
+        elif "avd" in filemaker.organisationName or "avdelning" in filemaker.organisationName:
+            report.coverage = Report.UnionLevel.DIVISION
+        elif "distrikt" in filemaker.organisationName:
+            report.coverage = Report.UnionLevel.DISTRICT
+        else:
+            report.coverage = Report.UnionLevel.OTHER
 
     report.save()
 
@@ -64,13 +75,17 @@ def computeFromExistingFields(jobPk: int):
 
     # TODO: expand abbreviations in creator name!
     report.title = f"{report.creator} - {report.type} ({report.dateString()})"
-    created = sorted(report.date)[-1] + relativedelta(year=1)
+    created = sorted(report.date)[-1] + relativedelta(years=1)
     report.created = created
-    report.description = f"{report.page_set.count} pages"
-    report.available = created + relativedelta(year=0)  # TODO: add years to settings DefaultNumberSettings.value
+
+    pageCount = report.page_set.count()
+    if pageCount != 1:
+        report.description = f"{pageCount} pages"
+    else:
+        report.description = f"1 page"
+    report.available = created + relativedelta(years=0)  # TODO: add years to settings DefaultNumberSettings.value
     report.save()
 
-    print("computeFromExistingFields", jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
     if step.humanValidation:
@@ -89,26 +104,26 @@ def extractFromImage(jobPk: int):
                                          processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
     step.status = Status.AWAITING_HUMAN_INPUT
     step.save()
-    print("extractFromImage", jobPk)
     scheduleTask(jobPk)
 
 
 @shared_task()
 def namedEntityRecognition(jobPk: int):
     # fields: everything in page, except minting
-    print("namedEntityRecognition", jobPk)
     report = Report.objects.get(job__pk=jobPk)
     for page in report.page_set.all():
-        idx = page.order
-        page.transcription = f"transcription {idx}"
-        page.normalisedTranscription = f"normalised transcription {idx}"
-        page.persons = [f"person 1 {idx}", f"person 2 {idx}"]
-        page.organisations = [f"org 1 {idx}", f"org 2 {idx}"]
-        page.locations = [f"loc 1 {idx}", f"loc 2 {idx}"]
-        page.works = [f"works 1 {idx}", f"works 2 {idx}"]
-        page.events = [f"events 1 {idx}", f" events 2{idx}"]
-        page.ner_objects = [f"obj 1 {idx}", f"obj 2 {idx}"]
+        result = processPage(Path(page.transcriptionFile.path))
+        page.transcription = result.text
+        page.normalisedTranscription = result.normalised
+        page.persons = list(result.persons)
+        page.organisations = list(result.organisations)
+        page.locations = list(result.locations)
+        page.works = list(result.works)
+        page.events = list(result.events)
+        page.ner_objects = list(result.objects)
+        page.times = list(result.times)
         page.measures = True
+        page.save()
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.NER).first()
     if step.humanValidation:

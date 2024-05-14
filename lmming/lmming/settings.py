@@ -16,6 +16,7 @@ from lmming.setting_utils import loadSettingsFromToml
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -71,7 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lmming.wsgi.application'
 
-configFile = Path("config.toml") # TODO: read from env/cmd args?
+configFile = BASE_DIR.parent / "config.toml" # TODO: read from env/cmd args?
 
 fileSettings = loadSettingsFromToml(configFile)
 
@@ -137,6 +138,6 @@ CELERY_RESULT_BACKEND = os.environ.get("REDIS", "redis://localhost:6379")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_PATH", "../tmp")) / "media"  # BASE_DIR / "media"
 
-NER_BASE_DIR = Path(os.environ.get("NER_DIR", BASE_DIR.parent))
+NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
 FILEMAKER_SETTINGS = fileSettings.filemaker
