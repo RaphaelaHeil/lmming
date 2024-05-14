@@ -1,17 +1,20 @@
 from datetime import date
 
+import pandas as pd
 from django.http import QueryDict
 from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
-from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm
+from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm, \
+    FilemakerSettingsForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings, UrlSettings
-from metadata.utils import parseFilename, buildReportIdentifier
+from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
 
 
 def downloadTransfer():
     pass
+
 
 def donwloadModal():
     pass
@@ -54,6 +57,7 @@ def settingsModal(request):
                }
     if request.method == 'POST':
         settingsForm = SettingsForm(request.POST, initial=initial)
+        filemakerForm = FilemakerSettingsForm(request.POST, request.FILES)
         if settingsForm.is_valid():
             if settingsForm.has_changed():
                 if "iiifURL" in settingsForm.changed_data:
@@ -110,11 +114,15 @@ def settingsModal(request):
                         DefaultNumberSettings.objects.create(
                             pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET,
                             value=settingsForm.cleaned_data["avilableYearOffset"])
+        if filemakerForm.is_valid():
+            filemakerCsv = filemakerForm.cleaned_data["filemaker_csv"]
+            updateFilemakerData(pd.read_csv(filemakerCsv)) # TODO: technically needs a loading indicator ...
         else:
             pass  # TODO: return error or smth
         return redirect("/")
     else:
-        return render(request, 'modal/settings.html', {"form": SettingsForm(initial=initial)})
+        return render(request, 'modal/settings.html',
+                      {"form": SettingsForm(initial=initial), "filemaker": FilemakerSettingsForm()})
 
 
 def verifyTransfer(request, transfer_id):

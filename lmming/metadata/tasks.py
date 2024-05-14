@@ -3,7 +3,7 @@ from dateutil.relativedelta import relativedelta
 from django.db import transaction
 
 from metadata.enum_utils import PipelineStepName
-from metadata.models import ProcessingStep, Job, Status, Report
+from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry
 
 
 @shared_task()
@@ -22,22 +22,30 @@ def extractFromFileNames(jobPk: int):
 
 @shared_task()
 def fileMakerLookup(jobPk: int):
-    # use union ID to extract information from filemaker export
     report = Report.objects.get(job__pk=jobPk)
 
     # fields: creator*[1], relation[n], coverage*[1], spatial*[N]
 
-    # TODO: constantly opening and closing the filemaker csv to look up one line seems overkill
-    # can we keep the csv in memory?
-    # or should we perhaps add it into the database, together with a last updated date?
-    # DB lookup would be quite smooth, but how do we handle mass-updates from csv?
-    report.creator = "creator"
-    report.relation = ["rel1", "rel2"]
-    report.coverage = Report.UnionLevel.DISTRICT
-    report.spatial = ["spatial1", "spatial2"]
+    filemaker = FilemakerEntry.objects.filter(archiveId=report.unionId).first()
+
+    report.creator = filemaker.organisationName
+    report.relation = [""]  # TODO: not yet in FAC Filemaker CSV
+    report.spatial = ["SE"] + [x for x in [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
+                               if x]
+
+    if "klubb" in filemaker.organisationName:
+        report.coverage = Report.UnionLevel.WORKPLACE
+    elif "sektion" in filemaker.organisationName:
+        report.coverage = Report.UnionLevel.SECTION
+    elif "avd" in filemaker.organisationName or "avdelning" in filemaker.organisationName:
+        report.coverage = Report.UnionLevel.DIVISION
+    elif "distrikt" in filemaker.organisationName:
+        report.coverage = Report.UnionLevel.DISTRICT
+    else:
+        report.coverage = Report.UnionLevel.OTHER
+
     report.save()
 
-    print("fileMakerLookup", jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
     if step.humanValidation:

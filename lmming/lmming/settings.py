@@ -11,10 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 from pathlib import Path
+from lmming.setting_utils import loadSettingsFromToml
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -26,7 +26,6 @@ SECRET_KEY = 'django-insecure-j*%(^$9$_kyq3l)u(b@@hx40x%zzn8fudj1yi9umt+on#!e*6y
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -72,6 +71,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lmming.wsgi.application'
 
+configFile = Path("config.toml") # TODO: read from env/cmd args?
+
+fileSettings = loadSettingsFromToml(configFile)
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -85,7 +87,6 @@ DATABASES = {
         'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -105,7 +106,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
@@ -113,22 +113,18 @@ LANGUAGE_CODE = 'en-gb'
 
 TIME_ZONE = 'CET'
 
-USE_I18N = False # TODO: revisit this decision ...
+USE_I18N = False  # TODO: revisit this decision ...
 
 USE_TZ = True
-
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
 
-
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -142,3 +138,5 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = Path(os.environ.get("MEDIA_PATH", "../tmp")) / "media"  # BASE_DIR / "media"
 
 NER_BASE_DIR = Path(os.environ.get("NER_DIR", BASE_DIR.parent))
+
+FILEMAKER_SETTINGS = fileSettings.filemaker

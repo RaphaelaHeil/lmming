@@ -98,7 +98,7 @@ class Report(Model):
     type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True)  # mandatory, multi-value
     license = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
     isVersionOf = URLField(blank=True, null=True)  # mandatory, single value  (URL)
-    isFormatOf = ArrayField(CharField(choices=DocumentFormat.choices),blank=True, null=True)  # mandatory, multi-value
+    isFormatOf = ArrayField(CharField(choices=DocumentFormat.choices), blank=True, null=True)  # mandatory, multi-value
     relation = ArrayField(CharField(), blank=True, null=True)  # optional, URL, multi-value ?!
     created = DateField(blank=True, null=True)  # optional, single year
     available = DateField(blank=True, null=True)  # optional, date
@@ -261,3 +261,12 @@ class DefaultNumberSettings(Model):
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value}"
+
+
+class FilemakerEntry(Model):
+    archiveId = CharField()
+    organisationName = CharField()
+    county = CharField(blank=True, default="")
+    municipality = CharField(blank=True, default="")
+    city = CharField(blank=True, default="")
+    parish = CharField(blank=True, default="")

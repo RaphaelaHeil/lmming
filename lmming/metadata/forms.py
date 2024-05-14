@@ -129,3 +129,8 @@ class SettingsForm(Form):
 
     avilableYearOffset = IntegerField(label="Default number of years after publication", required=True, min_value=0,
                                       step_size=1)
+
+
+class FilemakerSettingsForm(Form):
+    filemaker_csv = FileField(label="Filemaker CSV",
+                              widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}))

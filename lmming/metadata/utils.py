@@ -3,9 +3,10 @@ import re
 import zipfile
 from typing import Dict, Union, List, Any
 
-from metadata.models import Report, ExtractionTransfer
-
 import pandas as pd
+
+from lmming import settings
+from metadata.models import Report, ExtractionTransfer, FilemakerEntry
 
 __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
                          "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
@@ -145,3 +146,16 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
     zip_buffer.seek(0)
 
     return zip_buffer
+
+
+def updateFilemakerData(df: pd.DataFrame):
+    FilemakerEntry.objects.all().delete()
+    df = df.fillna("")
+    keys = settings.FILEMAKER_SETTINGS
+    for idx, row in df.iterrows():
+        if row[keys.archiveId] and row[keys.organisationName]:
+            FilemakerEntry.objects.create(archiveId=row[keys.archiveId], organisationName=row[keys.organisationName],
+                                          county=row[keys.county], municipality=row[keys.municipality],
+                                          city=row[keys.city], parish=row[keys.parish])
+        else:
+            continue  # TODO: add logging about skipping an entry!

@@ -1,0 +1,14 @@
+[general]
+archive = "FAC"
+
+
+[filemaker]
+archiveId = "PostID_Arkivbildare"
+organisationName = "Organisation"
+county = "Distrikt län"
+municipality = "Kommun"
+city = "Ort"
+parish = "Socken"
+
+[logging]
+a = ""

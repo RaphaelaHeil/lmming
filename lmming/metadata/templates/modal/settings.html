@@ -7,12 +7,18 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
 
-        <form class="form" method="POST" action="{% url 'metadata:settings_modal'%}">
+        <form class="form" method="POST" enctype="multipart/form-data" action="{% url 'metadata:settings_modal'%}">
             <div class="modal-body">
-                <p>The values entered below will be used as defaults to fill the respective metadata fields. It is always
-            possible to change them on a case-by-case basis in the respective validation view.</p>
+                <p>The values entered below will be used as defaults to fill the respective metadata fields. It is
+                    always
+                    possible to change them on a case-by-case basis in the respective validation view.</p>
                 {% csrf_token %}
                 {{form.as_p}}
+                <h2>Filemaker CSV Upload</h2>
+                <p>Please note that uploading a new filemaker export <strong>will not</strong> change the information in
+                    extraction processes that have already completed the Filemaker stage! If you want to change already
+                    collected information, either alter the data manually or re-run the extraction.</p>
+                {{filemaker.as_p}}
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
