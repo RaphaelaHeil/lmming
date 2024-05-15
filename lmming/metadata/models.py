@@ -95,10 +95,10 @@ class Report(Model):
     coverage = CharField(choices=UnionLevel.choices, default=UnionLevel.OTHER, blank=True)  # mandatory, single value
     language = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
     spatial = ArrayField(CharField(), blank=True, null=True, default=spatialDefault)  # mandatory, multi-value
-    type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True)  # mandatory, multi-value
+    type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True,  default=list,)  # mandatory, multi-value
     license = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
     isVersionOf = URLField(blank=True, null=True)  # mandatory, single value  (URL)
-    isFormatOf = ArrayField(CharField(choices=DocumentFormat.choices), blank=True, null=True)  # mandatory, multi-value
+    isFormatOf = ArrayField(CharField(choices=DocumentFormat.choices), blank=True, null=True,  default=list,)  # mandatory, multi-value
     relation = ArrayField(CharField(), blank=True, null=True)  # optional, URL, multi-value ?!
     created = DateField(blank=True, null=True)  # optional, single year
     available = DateField(blank=True, null=True)  # optional, date
