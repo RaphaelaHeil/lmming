@@ -29,26 +29,26 @@ class ExtractionTransferDetailForm(Form):
 
 
 class ExtractionTransferSettingsForm(Form):
-    filenameMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode.choices,
+    filenameMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                                initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     filenameHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                   required=False)
-    filemakerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode.choices,
+    filemakerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                                 initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     filemakerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                    required=False)
-    generateMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode.choices,
+    generateMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                                initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     generateHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                   required=False)
-    imageMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode.choices,
+    imageMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                             initial=ProcessingStep.ProcessingStepMode.MANUAL, disabled=True)
     imageHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False,
                                disabled=True)
-    nerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode.choices,
+    nerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                           initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     nerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
-    mintMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode.choices,
+    mintMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                            initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     mintHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
 

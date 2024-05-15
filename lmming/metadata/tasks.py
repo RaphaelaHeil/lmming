@@ -79,7 +79,7 @@ def computeFromExistingFields(jobPk: int,pipeline:bool=True):
     report = Report.objects.get(job__pk=jobPk)
 
     # TODO: expand abbreviations in creator name!
-    report.title = f"{report.creator} - {report.type} ({report.dateString()})"
+    report.title = f"{report.creator} - {', '.join([Report.DocumentType[x].label for x in report.type])} ({report.dateString()})"
     created = sorted(report.date)[-1] + relativedelta(years=1)
     report.created = created
 

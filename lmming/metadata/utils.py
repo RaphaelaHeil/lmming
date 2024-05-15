@@ -105,18 +105,20 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
     reportSummary = []
     pageSummary = []
     for report in transfer.report_set.all():
+        # TODO: add null/none checks!! 
         reportSummary.append({"dcterms:identifier": report.identifier,
                               "dcterms:title": report.title,
                               "dcterms:creator": report.creator,
                               "dcterms:date": "/".join([str(d.year) for d in report.date]),
-                              "dcterms:coverage": report.coverage.label,
+                              "dcterms:coverage": Report.UnionLevel[report.coverage].label,
                               "dcterms:language": __toOmekaList__(report.language),
                               "dcterms:spatial": __toOmekaList__(report.spatial),
-                              "dcterms:type": __toOmekaList__([x.label for x in report.type]),
+                              "dcterms:type": __toOmekaList__([Report.DocumentType[x].label for x in report.type]),
                               "dcterms:license": __toOmekaList__(report.license),
                               "dcterms:isVersionOf": report.isVersionOf,
-                              "dcterms:isFormatOf": __toOmekaList__([x.label for x in report.isFormatOf]),
-                              "dcterms:accessRights": report.accessRights.label,
+                              "dcterms:isFormatOf": __toOmekaList__(
+                                  [Report.DocumentFormat[x].label for x in report.isFormatOf]),
+                              "dcterms:accessRights": Report.AccessRights[report.accessRights].label,
                               "dcterms:relation": __toOmekaList__(report.relation),
                               "dcterms:created": report.created.year,
                               "dcterms:available": report.available,
