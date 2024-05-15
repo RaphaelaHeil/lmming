@@ -5,7 +5,8 @@ from dateutil.relativedelta import relativedelta
 from django.db import transaction
 
 from metadata.enum_utils import PipelineStepName
-from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry
+from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry, DefaultNumberSettings, \
+    DefaultValueSettings, UrlSettings
 from metadata.nlp.ner import processPage
 
 
@@ -41,7 +42,8 @@ def fileMakerLookup(jobPk: int):
 
         report.creator = filemaker.organisationName
         report.relation = [""]  # TODO: not yet in FAC Filemaker CSV
-        report.spatial = ["SE"] + [x for x in [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
+        report.spatial = ["SE"] + [x for x in
+                                   [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
                                    if x]
 
         if "klubb" in filemaker.organisationName:
@@ -83,7 +85,19 @@ def computeFromExistingFields(jobPk: int):
         report.description = f"{pageCount} pages"
     else:
         report.description = f"1 page"
-    report.available = created + relativedelta(years=0)  # TODO: add years to settings DefaultNumberSettings.value
+    report.available = created + relativedelta(
+        years=DefaultNumberSettings.objects.filter(
+            pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first().value)
+    # TODO: language fix array vs comma separated string!
+    report.language = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first().value.split(",")
+    report.license = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first().value.split(",")
+    report.accessRights = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first().value
+    report.source = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first().value.split("|")
+
     report.save()
 
     step = ProcessingStep.objects.filter(job__pk=jobPk,
@@ -140,8 +154,11 @@ def mintArks(jobPk: int):
     # field: identifier*[1], isVersionOf*[1]
     report = Report.objects.get(job__pk=jobPk)
 
-    report.identifier = "http://iiif.fauppsala.se"
-    report.isVersionOf = "http://atom.fauppsala.se"
+    iiifArk = "ark1234"
+    atomArk = "ark1234"
+
+    report.identifier = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + iiifArk
+    report.isVersionOf = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + atomArk
     report.save()
 
     print("mintARKs", jobPk)
