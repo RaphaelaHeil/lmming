@@ -11,7 +11,7 @@ from metadata.nlp.ner import processPage
 
 
 @shared_task()
-def extractFromFileNames(jobPk: int):
+def extractFromFileNames(jobPk: int, pipeline:bool=True):
     # nothing to do at the moment ...
     step = ProcessingStep.objects.filter(job_id=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILENAME).first()
@@ -21,11 +21,12 @@ def extractFromFileNames(jobPk: int):
     else:
         step.status = Status.COMPLETE
         step.save()
-    scheduleTask(jobPk)
+    if pipeline:
+        scheduleTask(jobPk)
 
 
 @shared_task()
-def fileMakerLookup(jobPk: int):
+def fileMakerLookup(jobPk: int, pipeline:bool=True):
     report = Report.objects.get(job__pk=jobPk)
 
     # fields: creator*[1], relation[n], coverage*[1], spatial*[N]
@@ -67,11 +68,13 @@ def fileMakerLookup(jobPk: int):
     else:
         step.status = Status.COMPLETE
         step.save()
-    scheduleTask(jobPk)
+
+    if pipeline:
+        scheduleTask(jobPk)
 
 
 @shared_task()
-def computeFromExistingFields(jobPk: int):
+def computeFromExistingFields(jobPk: int,pipeline:bool=True):
     # fields: title*[1], created[1], description[1], available[1]
     report = Report.objects.get(job__pk=jobPk)
 
@@ -108,21 +111,25 @@ def computeFromExistingFields(jobPk: int):
     else:
         step.status = Status.COMPLETE
         step.save()
-    scheduleTask(jobPk)
+
+    if pipeline:
+        scheduleTask(jobPk)
 
 
 @shared_task()
-def extractFromImage(jobPk: int):
+def extractFromImage(jobPk: int, pipeline:bool=True):
     # fields: isFormatOf*[N]
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
     step.status = Status.AWAITING_HUMAN_INPUT
     step.save()
-    scheduleTask(jobPk)
+
+    if pipeline:
+        scheduleTask(jobPk)
 
 
 @shared_task()
-def namedEntityRecognition(jobPk: int):
+def namedEntityRecognition(jobPk: int, pipeline:bool=True):
     # fields: everything in page, except minting
     report = Report.objects.get(job__pk=jobPk)
     for page in report.page_set.all():
@@ -146,11 +153,13 @@ def namedEntityRecognition(jobPk: int):
     else:
         step.status = Status.COMPLETE
         step.save()
-    scheduleTask(jobPk)
+
+    if pipeline:
+        scheduleTask(jobPk)
 
 
 @shared_task()
-def mintArks(jobPk: int):
+def mintArks(jobPk: int, pipeline:bool=True):
     # field: identifier*[1], isVersionOf*[1]
     report = Report.objects.get(job__pk=jobPk)
 
@@ -170,7 +179,9 @@ def mintArks(jobPk: int):
     else:
         step.status = Status.COMPLETE
         step.save()
-    scheduleTask(jobPk)
+
+    if pipeline:
+        scheduleTask(jobPk)
 
 
 def buildStructMap(transferId: int):
@@ -187,6 +198,14 @@ TASK_INDEX = {PipelineStepName.FILENAME.name: extractFromFileNames,
               PipelineStepName.IMAGE.name: extractFromImage,
               PipelineStepName.NER.name: namedEntityRecognition,
               PipelineStepName.MINT_ARKS.name: mintArks}
+
+
+def restartTask(jobId: int, stepType: ProcessingStep.ProcessingStepType):
+    job = Job.objects.get(pk=jobId)
+    step = job.processingSteps.filter(processingStepType=stepType).first()
+    step.status = Status.IN_PROGRESS
+    step.save()
+    transaction.on_commit(lambda: TASK_INDEX[stepType].delay(jobId, False))
 
 
 def scheduleTask(jobId: int) -> bool:

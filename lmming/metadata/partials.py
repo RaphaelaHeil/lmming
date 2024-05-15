@@ -12,6 +12,7 @@ from metadata.models import ExtractionTransfer, Report, Page, Status, Job, Proce
     DefaultNumberSettings, UrlSettings
 from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
+from metadata.tasks import restartTask
 
 
 def downloadTransfer():
@@ -20,6 +21,16 @@ def downloadTransfer():
 
 def donwloadModal():
     pass
+
+
+def restart(request, job_id: int, step: str):
+    stepLookup = {"filename": ProcessingStep.ProcessingStepType.FILENAME,
+                  "filemaker": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                  "generate": ProcessingStep.ProcessingStepType.GENERATE, "ner": ProcessingStep.ProcessingStepType.NER,
+                  "mint": ProcessingStep.ProcessingStepType.MINT_ARKS}
+
+    restartTask(job_id, stepLookup[step])
+    return render(request, "partial/job.html", {"job": Job.objects.get(pk=job_id)})
 
 
 def batchDeleteModal(request):

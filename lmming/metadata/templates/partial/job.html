@@ -1,10 +1,57 @@
 {% extends "base.html" %}
 
-{% block title %}Something Something review "XYZ" {{job.id}}{% endblock %}
+{% block title %}Job #{{job.pk}}{% endblock %}
 
 {% block content %}
 <div class="p-0">
-    <p>Organisation ID: {{job.report.unionId}}</p>
+    <p><strong>Organisation ID:</strong> {{job.report.unionId}}</p>
     <p>Date: {{job.report.date}}</p>
+
+
+    <h2>Processing Steps</h2>
+    <table class="table table-sm">
+        <thead>
+        <th scope="row" class="text-center">Step Name</th>
+        <th scope="row" class="text-center">Status</th>
+        <th scope="row" class="text-center">Options</th>
+        </thead>
+        <tbody>
+        <tr>
+            <th scope="row" class="text-center">Filename Lookup</th>
+            <td class="text-center"></td>
+            <td class="text-center"><a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'filename'%}"><i
+                    class="fa-solid fa-pencil text-dark"></i></a></td>
+        </tr>
+                <tr>
+            <th scope="row" class="text-center">Filemaker</th>
+            <td class="text-center"></td>
+            <td class="text-center"><a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'filemaker'%}"><i
+                    class="fa-solid fa-pencil text-dark"></i></a></td>
+        </tr>
+                <tr>
+            <th scope="row" class="text-center">Generate</th>
+            <td class="text-center"></td>
+            <td class="text-center"><a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'generate'%}"><i
+                    class="fa-solid fa-pencil text-dark"></i></a></td>
+        </tr>
+                <tr>
+            <th scope="row" class="text-center">Image</th>
+            <td class="text-center"></td>
+            <td class="text-center"><i class="fa-solid fa-pencil text-secondary"></i></td>
+        </tr>
+                <tr>
+            <th scope="row" class="text-center">Named Entity Recognition</th>
+            <td class="text-center"></td>
+            <td class="text-center"><a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'ner'%}"><i
+                    class="fa-solid fa-pencil text-dark"></i></a></td>
+        </tr>
+                <tr>
+            <th scope="row" class="text-center">ARK Minting</th>
+            <td class="text-center"></td>
+            <td class="text-center"><a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'mint'%}"><i
+                    class="fa-solid fa-pencil text-dark"></i></a></td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 {% endblock %}

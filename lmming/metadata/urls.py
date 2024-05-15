@@ -16,6 +16,7 @@ urlpatterns = [
     path("transfer/modal/download/<int:transfer_id>", partials.donwloadModal, name="transfer_download_modal"),
     path("job/<int:job_id>", views.JobView.as_view(), name="job"),
     path("settings", partials.settingsModal, name="settings_modal"),
+    path("restart/<int:job_id>/<str:step>", partials.restart, name ="restart")
 
     # path("jobs", name="job_table")
     # path("jobs", views.Jobs.as_view(), name="job_table"),
