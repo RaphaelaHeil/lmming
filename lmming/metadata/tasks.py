@@ -166,8 +166,8 @@ def mintArks(jobPk: int, pipeline:bool=True):
     iiifArk = "ark1234"
     atomArk = "ark1234"
 
-    report.identifier = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + iiifArk
-    report.isVersionOf = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + atomArk
+    report.identifier = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + "/"+ iiifArk
+    report.isVersionOf = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + "/"+atomArk
     report.save()
 
     print("mintARKs", jobPk)

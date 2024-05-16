@@ -29,14 +29,13 @@
                     <td class="text-center">{{job.report.unionId}}</td>
                     <td class="text-center">{{job.report.page_set.count}}</td>
                     <td class="text-center">Unknown</td>
-                    <td class="text-center">{{job.status}}</td>
+                    <td class="text-center">{{job.get_status_display}}</td>
                     <td class="text-center">
                         <a href="{% url 'metadata:job' job.pk %}">
-                            {% if job.status.name == AWAITING_HUMAN_INPUT or job.status.name == AWAITING_HUMAN_VALIDATION %}
+                            {% if job.status == 'AWAITING_HUMAN_INPUT'  or job.status == 'AWAITING_HUMAN_VALIDATION' %}
                             <i class="fa-solid fa-pencil text-dark"></i>
                             {% else %}
-                            <i
-                                class="fa-solid fa-magnifying-glass text-dark"></i>
+                            <i class="fa-solid fa-magnifying-glass text-dark"></i>
                             {% endif %}
                         </a>
                     </td>

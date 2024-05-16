@@ -14,6 +14,8 @@ from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
 from metadata.tasks import restartTask
 
+from django.db.models import Q
+
 
 def downloadTransfer():
     pass
@@ -165,6 +167,11 @@ def __buildProcessingSteps__(data, job):
                                           humanValidation=data[humVal], mode=data[mode])
         steps.append(p)
     return steps
+
+
+def awaitingHumanInteraction(request):
+    jobs = Job.objects.filter(Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT))
+    return render(request, 'partial/human_interaction_list.html', {"jobs": jobs})
 
 
 def createTransfer(request):

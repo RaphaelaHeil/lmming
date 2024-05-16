@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs awaiting human interaction{% endblock %}
+
+{% block content %}
+<div class="table-responsive">
+    <table class="table table-sm">
+        <thead>
+        <tr>
+            <th scope="row" class="text-center">Job ID</th>
+            <th scope="row" class="text-center">Org Name</th>
+            <th scope="row" class="text-center">Step</th>
+            <th scope="row" class="text-center">Status</th>
+            <th scope="row" class="text-center">Options</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if jobs%}
+
+        {%for job in jobs%}
+        <tr>
+            <th scope="row" class="text-center">{{job.pk}}</th>
+            <td class="text-center">{{job.report.creator|default:'N/A'}}</td>
+            <td class="text-center">{{job.getFirstStepNameAwaitingHumanInteraction}}</td>
+            <td class="text-center">{{job.get_status_display}}</td>
+            {#show name of the pending step ... #}
+            <td class="text-center"><a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'filename'%}"><i
+                    class="fa-solid fa-pencil text-dark"></i></a></td>
+        </tr>
+        {%endfor%}
+        {%else%}
+        <tr>
+            <td scope="row" class="text-center">No jobs awaiting human interactions.</td>
+        </tr>
+        {%endif%}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

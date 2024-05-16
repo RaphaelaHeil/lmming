@@ -1,0 +1,157 @@
+<div class="p-0">
+    <h2>Report Details</h2>
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Identifier:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.identifier|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Title:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.title|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Creator:</strong>
+        </div>
+        <div class="col">
+            <p> {{report.creator|default:'name not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Date:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_date_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Coverage:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_coverage_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Language:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_language_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Spatial:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_spatial_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Report Type:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_type_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>License:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_license_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>isVersionOf:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.isVersionOf|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>isFormatOf:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_isFormatOf_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+     <div class="row">
+        <div class="col-2 text-center">
+            <strong>accessRights:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_accessRights_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Relation:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_relation_display|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Created:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.created.year|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Available:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.available|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Source:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.get_source_display|default:'not assigned yet'}}</p>
+        </div>
+
+    </div>
+    <div class="row">
+        <div class="col-2 text-center">
+            <strong>Description:</strong>
+        </div>
+        <div class="col">
+            <p>{{report.description|default:'not assigned yet'}}</p>
+        </div>
+    </div>
+
+
+    {% include "components/page_details.html" with pages=report.page_set.all %}
+
+</div>

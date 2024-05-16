@@ -1,0 +1,181 @@
+<div class="p-1">
+    <h3>Pages</h3>
+    <div class="accordion" id="pageAccordeon">
+        {% for page in pages|dictsort:"order"  %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{page.order}}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse{{page.order}}" aria-expanded="true"
+                        aria-controls="collapse{{page.order}}">
+                    Page {{page.order}}
+                </button>
+            </h2>
+            <div id="collapse{{page.order}}" class="accordion-collapse collapse show"
+                 aria-labelledby="heading{{page.order}}" data-bs-parent="#pageAccordeon">
+                <div class="accordion-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>Identifier:</strong>
+                            </div>
+                            <div class="col">
+                                <p><i>{{page.identifier|default:'not assigned yet'}}</i></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>Transcription:</strong>
+                            </div>
+                            <div class="col border">
+                                <p>{{page.transcription}}</p>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-2 text-center">
+                                <strong>Normalised Transcription:</strong>
+                            </div>
+                            <div class="col border">
+                                <p>{{page.normalisedTranscription}}</p>
+                            </div>
+                        </div>
+                        <hr/>
+                        <div>
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Measures:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {%if page.measures %}
+                                    <p>
+                                        <i class="fa-solid fa-check text-dark"></i>
+                                    </p>
+                                    {% else %}
+                                    <p>
+                                        <i class="fa-solid fa-xmark text-dark"></i>
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Person:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {% if page.persons %}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for prs in page.persons%}
+                                        <li class="border">{{prs}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Organisation:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {% if page.organisations %}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for prs in page.organisations%}
+                                        <li class="border">{{prs}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Location:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {%if page.locations %}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for loc in page.locations%}
+                                        <li class="border">{{loc}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Time:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {%if page.times %}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for prs in page.times%}
+                                        <li class="border">{{prs}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Work:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {%if page.works %}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for prs in page.works%}
+                                        <li class="border">{{prs}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <div class="row border-bottom mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Event:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {% if page.events %}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for prs in page.events%}
+                                        <li class="border">{{prs}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-2 text-center">
+                                    <strong>Object:</strong>
+                                </div>
+                                <div class="col text-center">
+                                    {%if page.ner_objects%}
+                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                        {% for prs in page.ner_objects%}
+                                        <li class="border">{{prs}}</li>
+                                        {%endfor%}
+                                    </ul>
+                                    {%else%}
+                                    <p><i>none found</i></p>
+                                    {%endif%}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>

@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
-    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField
+    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField, Q
 from django.db.models.signals import pre_delete, post_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -95,10 +95,12 @@ class Report(Model):
     coverage = CharField(choices=UnionLevel.choices, default=UnionLevel.OTHER, blank=True)  # mandatory, single value
     language = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
     spatial = ArrayField(CharField(), blank=True, null=True, default=spatialDefault)  # mandatory, multi-value
-    type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True,  default=list,)  # mandatory, multi-value
+    type = ArrayField(CharField(choices=DocumentType.choices), blank=True, null=True,
+                      default=list, )  # mandatory, multi-value
     license = ArrayField(CharField(), blank=True, null=True)  # mandatory, multi-value
     isVersionOf = URLField(blank=True, null=True)  # mandatory, single value  (URL)
-    isFormatOf = ArrayField(CharField(choices=DocumentFormat.choices), blank=True, null=True,  default=list,)  # mandatory, multi-value
+    isFormatOf = ArrayField(CharField(choices=DocumentFormat.choices), blank=True, null=True,
+                            default=list, )  # mandatory, multi-value
     relation = ArrayField(CharField(), blank=True, null=True)  # optional, URL, multi-value ?!
     created = DateField(blank=True, null=True)  # optional, single year
     available = DateField(blank=True, null=True)  # optional, date
@@ -116,6 +118,29 @@ class Report(Model):
         else:
             return ", ".join([str(d.year) for d in self.date])
 
+    def get_type_display(self):
+        return ", ".join([self.DocumentType[x].label for x in self.type] if self.type else [])
+
+    def get_date_display(self):
+        return ", ".join([str(x.year) for x in self.date])
+
+    def get_language_display(self):
+        return ", ".join(self.language if self.language else [])
+
+    def get_spatial_display(self):
+        return ", ".join(self.spatial)
+
+    def get_license_display(self):
+        return ", ".join(self.license if self.license else [])
+
+    def get_isFormatOf_display(self):
+        return ", ".join([self.DocumentFormat[x].label for x in self.isFormatOf] if self.isFormatOf else [])
+
+    def get_source_display(self):
+        return ", ".join(self.source if self.source else [])
+
+    def get_accessRights_display(self):
+        return self.AccessRights[self.accessRights].label
 
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
@@ -177,6 +202,11 @@ class Job(Model):
     def completed(self):
         self.endDate = timezone.now()
         self.status = Status.COMPLETE
+
+    def getFirstStepNameAwaitingHumanInteraction(self):
+        return self.processingSteps.order_by("order").filter(
+            Q(status=Status.AWAITING_HUMAN_INPUT) | Q(
+                status=Status.AWAITING_HUMAN_VALIDATION)).first().get_processingStepType_display()
 
 
 @receiver(post_save, sender=Job)
