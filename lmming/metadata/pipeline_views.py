@@ -46,14 +46,14 @@ def filename(request, job):
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
-            return "partial/job.html", {"job": job}
+            return {"job": job}  # TODO: double-check this return type ...
         else:
             # TODO: return errors!
-            return "partial/job.html", {"job": job}
+            return {"job": job}
     else:
         filenameForm = FileNameForm(initial={"organisationID": job.report.unionId, "type": job.report.type,
                                              "date": __toDisplayList__(job.report.date)})
-        return 'partial/filename_result.html', {"form": filenameForm, "job": job}
+        return {"form": filenameForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FILENAME.label}
 
 
 def filemaker(request, job):
@@ -77,13 +77,13 @@ def filemaker(request, job):
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
-            return "partial/job.html", {"job": job}
+            return {"job": job}
         else:
             # TODO: return errors?!
-            return "partial/job.html", {"job": job}
+            return {"job": job}
     else:
         filemakerForm = FilemakerForm(initial=initial)
-        return "partial/filemaker_result.html", {"form": filemakerForm, "job": job}
+        return {"form": filemakerForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.label}
 
 
 def compute(request, job):
@@ -116,13 +116,13 @@ def compute(request, job):
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
-            return "partial/job.html", {"job": job}
+            return {"job": job}
         else:
             # TODO: return errors?!
-            return "partial/job.html", {"job": job}
+            return {"job": job}
     else:
         computeForm = ComputeForm(initial=initial)
-        return "partial/compute_result.html", {"form": computeForm, "job": job}
+        return {"form": computeForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.GENERATE.label}
 
 
 def imageBased(request, job):
@@ -138,13 +138,13 @@ def imageBased(request, job):
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
-            return "partial/job.html", {"job": job}
+            return {"job": job}
         else:
             # TODO: return errors
-            return "partial/job.html", {"job": job}
+            return {"job": job}
     else:
         imageForm = ImageForm(initial=initial)
-        return "partial/image_result.html", {"form": imageForm, "job": job}
+        return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.IMAGE.label}
 
 
 def ner(request, job):
@@ -191,13 +191,13 @@ def ner(request, job):
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
-            return "partial/job.html", {"job": job}
+            return {"job": job}
         else:
             # TODO: return errors?!
-            return "partial/job.html", {"job": job}
+            return {"job": job}
     else:
         nerForm = NerFormSet(initial=initial)
-        return "partial/ner_result.html", {"form": nerForm, "job": job}
+        return {"form":nerForm, "job": job, "stepName":ProcessingStep.ProcessingStepType.NER.label}
 
 
 def mint(request, job):
@@ -215,10 +215,10 @@ def mint(request, job):
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
-            return "partial/job.html", {"job": job}
+            return {"job": job}
         else:
             # TODO: return errors?!
-            return "partial/job.html", {"job": job}
+            return {"job": job}
     else:
         mintForm = MintForm(initial=initial)
-        return "partial/mint_result.html", {"form": mintForm, "job": job}
+        return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.MINT_ARKS.label}

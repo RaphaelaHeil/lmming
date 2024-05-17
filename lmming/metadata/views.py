@@ -1,10 +1,13 @@
-from django.shortcuts import render
+from typing import Tuple, Dict, Any
+
+from django.shortcuts import render, redirect
 import zipfile
 from datetime import datetime
 from io import BytesIO
 
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
+from django.urls import reverse
 from django.views.generic import View
 from django.utils.crypto import get_random_string
 
@@ -16,6 +19,11 @@ from metadata.utils import buildTransferCsvs
 
 def index(request):
     return render(request, "partial/index_partial.html", {})
+
+
+def jobDetails(request, job_id):
+    job = get_object_or_404(Job, pk=job_id)
+    return render(request, "partial/job.html", {"job": job})
 
 
 def downloadTransfer(request, transfer_id):
@@ -89,41 +97,27 @@ class Transfer(View):
         return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
 
 
-class JobView(View):
-
+class JobEditView(View):
     def get(self, request, *args, **kwargs):
-        templateName, context = self.__handleStepRedirect__(request, args, kwargs)
-        return render(request, templateName, context)
+        job = get_object_or_404(Job, pk=kwargs["job_id"])
+        stepName = kwargs["step"]
+        context = self.__handleView__(request, job, stepName)
+        return render(request, "partial/edit_job.html", context)
 
     def post(self, request, *args, **kwargs):
-        if request.POST['confirm'] == 'Confirm':
-            templateName, context = self.__handleStepRedirect__(request, args, kwargs)
-            return render(request, templateName, context)
-        else:
-            job = get_object_or_404(Job, pk=kwargs["job_id"])
-            return "partial/job.html", {"job": job}
-
-    def __handleStepRedirect__(self, request, args, kwargs):
         job = get_object_or_404(Job, pk=kwargs["job_id"])
 
-        if job.status in [Status.AWAITING_HUMAN_INPUT, Status.AWAITING_HUMAN_VALIDATION]:
-            for step in job.processingSteps.order_by("order"):
-                if step.status in [Status.AWAITING_HUMAN_INPUT, Status.AWAITING_HUMAN_VALIDATION]:
-                    match step.processingStepType:
-                        case ProcessingStep.ProcessingStepType.FILENAME:
-                            return filename(request, job)
-                        case ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP:
-                            return filemaker(request, job)
-                        case ProcessingStep.ProcessingStepType.GENERATE:
-                            return compute(request, job)
-                        case ProcessingStep.ProcessingStepType.IMAGE:
-                            return imageBased(request, job)
-                        case ProcessingStep.ProcessingStepType.NER:
-                            return ner(request, job)
-                        case ProcessingStep.ProcessingStepType.MINT_ARKS:
-                            return mint(request, job)
-                        case _:
-                            # TODO: add logging
-                            return "partial/job.html", {"job": job}  # TODO: fix this return type
+        if request.POST['confirm'] == 'Confirm':  # TODO: add cancel button :D
+            stepName = kwargs["step"]
+            context = self.__handleView__(request, job, stepName)  # TODO: do we need to return anything here?
+            # TODO: only if there are errors, in which case it should be the same as GET + error context ...
+            return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
         else:
-            return "partial/job.html", {"job": job}  # TODO: fix this return type!
+            return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
+
+    def __handleView__(self, request, job, stepName) -> Tuple[str, Dict[str, Any]]:
+        stepIndex = {"filename": filename, "filemaker": filemaker, "generate": compute, "image": imageBased, "ner": ner,
+                     "mint": mint}
+        context = stepIndex[stepName](request, job)
+        context["stepParam"] = stepName
+        return context

@@ -14,9 +14,10 @@ urlpatterns = [
     path("transfers/delete", partials.batchDeleteModal, name="transfer_batch_delete"),
     path("transfer/modal/delete/<int:transfer_id>", partials.deleteModal, name="transfer_delete_modal"),
     path("transfer/modal/download/<int:transfer_id>", partials.donwloadModal, name="transfer_download_modal"),
-    path("job/<int:job_id>", views.JobView.as_view(), name="job"),
+    path("job/<int:job_id>", views.jobDetails, name="job"),
+    path("job/<int:job_id>/edit/<str:step>", views.JobEditView.as_view(), name="edit_job"),
+    path("job/<int:job_id>/restart/<str:step>", partials.restart, name="restart"),
     path("settings", partials.settingsModal, name="settings_modal"),
-    path("restart/<int:job_id>/<str:step>", partials.restart, name ="restart"),
     path("jobs/interaction", partials.awaitingHumanInteraction, name="human_interaction")
 
     # path("jobs", name="job_table")

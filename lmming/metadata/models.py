@@ -142,6 +142,9 @@ class Report(Model):
     def get_accessRights_display(self):
         return self.AccessRights[self.accessRights].label
 
+    def get_relation_display(self):
+        return ", ".join(self.relation if self.relation else [])
+
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
     order = PositiveIntegerField(default=1)  # internal use, not for CSV
