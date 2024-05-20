@@ -21,6 +21,9 @@ def index(request):
     return render(request, "partial/index_partial.html", {})
 
 
+def waitingJobs(request):
+    return render(request, "partial/waiting_partial.html", {})
+
 def jobDetails(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     return render(request, "partial/job.html", {"job": job})

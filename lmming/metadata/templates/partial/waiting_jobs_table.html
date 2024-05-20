@@ -1,0 +1,64 @@
+<div class="table-responsive">
+    <form id="checked-contacts">
+        <table class="table table-striped" hx-get="{% url 'metadata:waiting_jobs_table'%}"
+               hx-trigger="every 20s[allowRefresh()], collection-deleted from:body" hx-target="#tablediv">
+            <thead>
+            <tr>
+
+                <th scope="col">
+                    Job ID
+                </th>
+                <th scope="col">
+                    Process Name
+                </th>
+                <th scope="col">
+                    Processing Step
+                </th>
+                <th scope="col">
+                    Status
+                </th>
+
+                <th scope="col">
+                    Job Start Date
+                </th>
+                <th scope="col" class="text-center">Options</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            {% if steps%}
+            {%for step in steps %}
+            <tr>
+                <th scope="row">
+                    {{step.job}}
+                </th>
+                <td>
+                    {{step.processName}}
+                </td>
+                <td>
+                    {{step.stepDisplay}}
+                </td>
+                <td>
+                    {{step.status}}
+                </td>
+                <td>{{step.startDate}}</td>
+                <td class="text-center">
+                    <a style="cursor:pointer;" href="{% url 'metadata:edit_job' step.job step.stepName%}"><i
+                            class="fa-solid fa-pencil text-dark"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td></td>
+                <th scope="row">
+                    No extraction processes
+                </th>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </form>
+</div>

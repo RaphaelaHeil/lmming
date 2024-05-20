@@ -1,8 +1,8 @@
 from datetime import date
 
 import pandas as pd
-from django.db import transaction
-from django.http import QueryDict
+from django.db.models import Q
+from django.http import QueryDict, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
@@ -10,11 +10,9 @@ from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSetti
     FilemakerSettingsForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings, UrlSettings
+from metadata.tasks import restartTask
 from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
-from metadata.tasks import restartTask
-
-from django.db.models import Q
 
 
 def downloadTransfer():
@@ -169,11 +167,6 @@ def __buildProcessingSteps__(data, job):
     return steps
 
 
-def awaitingHumanInteraction(request):
-    jobs = Job.objects.filter(Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT))
-    return render(request, 'partial/human_interaction_list.html', {"jobs": jobs})
-
-
 def createTransfer(request):
     detailform = ExtractionTransferDetailForm()
     extractionSettingsForm = ExtractionTransferSettingsForm()
@@ -230,3 +223,32 @@ def createTransfer(request):
 
     return render(request, 'partial/create_transfer.html',
                   {"detailform": detailform, "settings": extractionSettingsForm})
+
+
+def awaitingHumanInteraction(request):
+    stepNameIndex = {ProcessingStep.ProcessingStepType.FILENAME: "filename",
+                     ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP: "filemaker",
+                     ProcessingStep.ProcessingStepType.GENERATE: "generate",
+                     ProcessingStep.ProcessingStepType.IMAGE: "image",
+                     ProcessingStep.ProcessingStepType.NER: "ner",
+                     ProcessingStep.ProcessingStepType.MINT_ARKS: "mint"}
+    stepData = []
+    jobPks = set()
+    processingSteps = ProcessingStep.objects.filter(
+        Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT))
+    for step in processingSteps:
+        if step.job.pk in jobPks:
+            continue
+        jobPks.add(step.job.pk)
+        stepData.append(
+            {"stepName": stepNameIndex[step.processingStepType], "processName": step.job.transfer.name,
+             "stepDisplay": ProcessingStep.ProcessingStepType[step.processingStepType].label,
+             "status": Status[step.status].label, "job": step.job.pk, "startDate": step.job.startDate})
+
+    return render(request, 'partial/waiting_jobs_table.html', {"steps": stepData})
+
+
+def waitingCount(request):
+    value = Job.objects.filter(
+        Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT)).count()
+    return HttpResponse(str(value))

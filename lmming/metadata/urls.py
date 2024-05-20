@@ -18,17 +18,7 @@ urlpatterns = [
     path("job/<int:job_id>/edit/<str:step>", views.JobEditView.as_view(), name="edit_job"),
     path("job/<int:job_id>/restart/<str:step>", partials.restart, name="restart"),
     path("settings", partials.settingsModal, name="settings_modal"),
-    path("jobs/interaction", partials.awaitingHumanInteraction, name="human_interaction")
-
-    # path("jobs", name="job_table")
-    # path("jobs", views.Jobs.as_view(), name="job_table"),
-    # path("jobs/results", views.batchDownloadNERResults, name="batch_download"),
-    # path("jobs/create", partials.createBatchJob, name="bulk_upload"),
-    # path("job/create", partials.createSimpleJob, name="create_job"),
-    # path("job/<int:jobId>", views.JobView.as_view(), name="single_job"),
-    # path("job/<int:jobId>/result", views.downloadNerResult, name="download"),
-    # path("settings", views.modelSettings, name="model_settings"),
-    # path("modal/delete/<int:jobId>", partials.deleteModal, name="delete_modal"),
-    # path("modal/jobs/download", partials.batchDownloadModal, name="batch_download_modal"),
-
+    path("jobs/waiting", views.waitingJobs, name="waiting_jobs"),
+    path("jobs/waiting/table", partials.awaitingHumanInteraction, name="waiting_jobs_table"),
+    path("jobs/waiting/count", partials.waitingCount, name="waiting_count")
 ]

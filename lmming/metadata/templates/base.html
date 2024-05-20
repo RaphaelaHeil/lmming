@@ -20,29 +20,44 @@
     </style>
 </head>
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+<nav class="navbar navbar-dark navbar-expand-md bg-dark justify-content-center fixed-top">
     <div class="container-fluid">
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" aria-label="Toggle navigation"
-                data-bs-target="#navbar-id" aria-controls="navbar-id" aria-expanded="false">
+        <a href="/" class="navbar-brand d-flex w-50 me-auto">LMMing</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsingNavbar3">
             <span class="navbar-toggler-icon"></span>
         </button>
-        <div class="collapse navbar-collapse d-flex justify-content-between" id="navbar-id">
-            <a class="navbar-brand col-lg-3 me-0" href="/">
-                LMMing
-            </a>
-
-            <div class="d-lg-flex col-lg-3 justify-content-lg-end">
-                <span data-bs-toggle="tooltip"> {# extra span is needed so that tooltip AND modal can be applied to the same button #}
-                <span style="cursor:pointer;" hx-get="{% url 'metadata:settings_modal'%}"
-                      hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
-                      data-bs-target="#modalContainer" class="btn btn-dark" title="Settings" id="settings_button">
-                <i class="fa-solid fa-gear"></i>
-                </span>
+        <div class="navbar-collapse collapse w-100" id="collapsingNavbar3">
+            <ul class="navbar-nav w-100 justify-content-center">
+                <li class="nav-item me-5">
+                    <a class="btn btn-outline-light" href="/">Extraction Process Overview</a>
+                </li>
+                <li class="nav-item">
+                    <a class="btn btn-outline-light" href="{% url 'metadata:waiting_jobs'%}">Waiting Jobs
+                        <span hx-trigger="load, every 20s[allowRefresh()]" hx-target="#counterSpan"
+                              hx-get="{%url 'metadata:waiting_count'%}">
+                        <span id="counterSpan" class="ms-2 badge bg-danger rounded-pill"></span>
+                        </span>
+                    </a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav ms-auto w-100 justify-content-end">
+                <li class="nav-item">
+                    <span data-bs-toggle="tooltip"> {# extra span is needed so that tooltip AND modal can be applied to the same button #}
+                        <span style="cursor:pointer;" hx-get="{% url 'metadata:settings_modal'%}"
+                              hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
+                              data-bs-target="#modalContainer" class="btn btn-dark" title="Settings"
+                              id="settings_button">
+                        <i class="fa-solid fa-gear"></i>
+                        </span>
                     </span>
-            </div>
+
+                </li>
+            </ul>
         </div>
     </div>
 </nav>
+
+
 <main class="container">
     {% csrf_token %}
     <div id="content">

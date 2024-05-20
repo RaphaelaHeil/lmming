@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Jobs Awaiting Human Interaction{% endblock %}
+
+{% block content %}
+<div class="p-0" hx-get="{% url 'metadata:waiting_jobs_table'%}" hx-trigger="load" hx-target="#tablediv">
+
+    <div id="tablediv">
+    </div>
+</div>
+{% endblock %}
