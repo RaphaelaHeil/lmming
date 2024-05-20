@@ -6,7 +6,7 @@
 
 
 <div class="p-0">
-    <form class="form" method="POST" action="{% url 'metadata:edit_job' job.pk stepParam %}"> {# fix url! #}
+    <form class="form" method="POST" action="{% url 'metadata:edit_job' job.pk stepParam %}">
         {% csrf_token %}
         {% if stepParam == 'ner' %}
         <div class="accordion" id="accordionExample">
