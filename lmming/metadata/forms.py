@@ -1,7 +1,6 @@
-import datetime
-
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
     MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, IntegerField
+
 from metadata.models import ProcessingStep, Report
 
 
@@ -118,9 +117,6 @@ class PageForm(Form):
 
 
 class SettingsForm(Form):
-    iiifURL = URLField(label="IIIF Base-URL", required=True)
-    atomURL = URLField(label="Base-URL to archival record system (e.g. AtoM)", required=True)
-
     language = CharField(label="Default Language(s) (comma-separated)", required=True)
     license = CharField(label="Default License(s) (comma-separated)", required=True)
     source = CharField(label="Default Source(s) (comma-separated)", required=True)

@@ -9,7 +9,7 @@ from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm, \
     FilemakerSettingsForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
-    DefaultNumberSettings, UrlSettings
+    DefaultNumberSettings
 from metadata.tasks import restartTask
 from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
@@ -51,8 +51,6 @@ def deleteModal(request, transfer_id):
 
 
 def settingsModal(request):
-    iiifUrl = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first()
-    atomUrl = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.ATOM).first()
     language = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first()
     license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
@@ -60,9 +58,7 @@ def settingsModal(request):
         pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
     avilableYearOffset = DefaultNumberSettings.objects.filter(
         pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
-    initial = {"iiifURL": iiifUrl.url if iiifUrl else "",
-               "atomURL": atomUrl.url if atomUrl else "",
-               "language": language.value if language else "",
+    initial = {"language": language.value if language else "",
                "license": license.value if license else "",
                "source": source.value if source else "",
                "accessRights": accessRights.value if accessRights else "",
@@ -73,20 +69,6 @@ def settingsModal(request):
         filemakerForm = FilemakerSettingsForm(request.POST, request.FILES)
         if settingsForm.is_valid():
             if settingsForm.has_changed():
-                if "iiifURL" in settingsForm.changed_data:
-                    if iiifUrl:
-                        iiifUrl.value = settingsForm.cleaned_data["iiifURL"]
-                        iiifUrl.save()
-                    else:
-                        UrlSettings.objects.create(pk=UrlSettings.UrlSettingsType.IIIF,
-                                                   value=settingsForm.cleaned_data["iiifURL"])
-                if "atomUrl" in settingsForm.changed_data:
-                    if atomUrl:
-                        atomUrl.value = settingsForm.cleaned_data["atomUrl"]
-                        atomUrl.save()
-                    else:
-                        UrlSettings.objects.create(pk=UrlSettings.UrlSettingsType.ATOM,
-                                                   value=settingsForm.cleaned_data["atomUrl"])
                 if "language" in settingsForm.changed_data:
                     if language:
                         language.value = settingsForm.cleaned_data["language"]
@@ -251,4 +233,7 @@ def awaitingHumanInteraction(request):
 def waitingCount(request):
     value = Job.objects.filter(
         Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT)).count()
-    return HttpResponse(str(value))
+    if value == 0:
+        return HttpResponse("")
+    else:
+        return HttpResponse(str(value))

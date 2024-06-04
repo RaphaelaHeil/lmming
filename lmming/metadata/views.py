@@ -1,19 +1,13 @@
-from typing import Tuple, Dict, Any
-
-from django.shortcuts import render, redirect
-import zipfile
 from datetime import datetime
-from io import BytesIO
+from typing import Tuple, Dict, Any
 
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
-from django.utils.crypto import get_random_string
 
-from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
+from metadata.models import ExtractionTransfer, Job
 from metadata.pipeline_views import filename, filemaker, compute, imageBased, ner, mint
-
 from metadata.utils import buildTransferCsvs
 
 

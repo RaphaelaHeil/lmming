@@ -109,6 +109,7 @@ class Report(Model):
     description = TextField(blank=True, default="")  # optional, single value
 
     unionId = CharField(blank=True, default="")
+    noid = CharField(blank=True, default="")
 
     def dateString(self) -> str:
         if len(self.date) == 0:
@@ -144,6 +145,7 @@ class Report(Model):
 
     def get_relation_display(self):
         return ", ".join(self.relation if self.relation else [])
+
 
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
@@ -249,21 +251,6 @@ def statusUpdate(sender, instance, **kwargs):
     instance.job.updateStatus()
 
 
-class UrlSettings(Model):
-    class Meta():
-        verbose_name_plural = "url Settings"
-
-    class UrlSettingsType(TextChoices):
-        IIIF = "IIIF", "IIIF Base URL"
-        ATOM = "ATOM", "AtoM Base URL"
-
-    name = CharField(primary_key=True, choices=UrlSettingsType.choices)
-    url = URLField(blank=True, default="")
-
-    def __str__(self) -> str:
-        return f"{self.name}: {self.url}"
-
-
 class DefaultValueSettings(Model):
     class Meta():
         verbose_name_plural = "default Value Settings"
@@ -273,6 +260,7 @@ class DefaultValueSettings(Model):
         DC_LICENSE = "DC_LICENSE", "dcterms:license"
         DC_SOURCE = "DC_SOURCE", "dcterms:source"
         DC_ACCESS_RIGHTS = "DC_ACCESS_RIGHTS", "dcterms:accessRights"
+        ARK_SHOULDER = "ARK_SHOULDER", "ARK Shoulder"
 
     name = CharField(primary_key=True, choices=DefaultValueSettingsType.choices)
     value = CharField(blank=True, default="")

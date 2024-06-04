@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+import logging
 import os
 from pathlib import Path
 from lmming.setting_utils import loadSettingsFromToml
@@ -72,9 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lmming.wsgi.application'
 
-configFile = BASE_DIR.parent / "config.toml" # TODO: read from env/cmd args?
-
-fileSettings = loadSettingsFromToml(configFile)
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -140,4 +138,36 @@ MEDIA_ROOT = Path(os.environ.get("MEDIA_PATH", "../tmp")) / "media"  # BASE_DIR 
 
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
+
+configFile = BASE_DIR.parent / "config.toml" # TODO: read from env/cmd args?
+
+fileSettings = loadSettingsFromToml(configFile)
+
 FILEMAKER_SETTINGS = fileSettings.filemaker
+GENERAL_SETTINGS = fileSettings.general
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "WARNING",
+    },
+    "loggers": {
+        "lmming": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "lmming_celery": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+    },
+}

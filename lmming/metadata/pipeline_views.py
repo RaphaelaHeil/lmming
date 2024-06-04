@@ -5,8 +5,7 @@ from typing import List, Any
 from django.db import transaction
 from django.forms import formset_factory
 
-from metadata.forms import FileNameForm, FilemakerForm, \
-    ComputeForm, ImageForm, MintForm, PageForm
+from metadata.forms import FileNameForm, FilemakerForm, ComputeForm, ImageForm, MintForm, PageForm
 from metadata.models import Page, Status, ProcessingStep
 from metadata.tasks import scheduleTask
 
@@ -197,7 +196,7 @@ def ner(request, job):
             return {"job": job}
     else:
         nerForm = NerFormSet(initial=initial)
-        return {"form":nerForm, "job": job, "stepName":ProcessingStep.ProcessingStepType.NER.label}
+        return {"form": nerForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.NER.label}
 
 
 def mint(request, job):

@@ -8,10 +8,25 @@ import tomli
 @dataclass(init=False)
 class GeneralSettings():
     archive: str = "FAC"
+    minterUrl: str = ""
+    minterAuthorisation: str = ""
+    minterOrgId: str = ""
+    iiifBaseUrl: str = ""
+    catalogueBaseUrl: str = ""
 
     def __init__(self, values: Dict[str, Any]):
         if "archive" in values:
             self.archive = values["archive"]
+        if "minterUrl" in values:
+            self.minterUrl = values["minterUrl"]
+        if "minterAuthorisation" in values["minterAuthorisation"]:
+            self.minterAuthorisation = values["minterAuthorisation"]
+        if "minterOrgId" in values["minterOrgId"]:
+            self.minterOrgId = values["minterOrgId"]
+        if "iiifBaseUrl" in values["iiifBaseUrl"]:
+            self.iiifBaseUrl = values["iiifBaseUrl"]
+        if "catalogueBaseUrl" in values["catalogueBaseUrl"]:
+            self.catalogueBaseUrl = values["catalogueBaseUrl"]
 
 
 @dataclass(init=False)

@@ -1,17 +1,23 @@
+import logging
 from pathlib import Path
 
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
 from django.db import transaction
+from django.conf import settings
 
 from metadata.enum_utils import PipelineStepName
 from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry, DefaultNumberSettings, \
-    DefaultValueSettings, UrlSettings
+    DefaultValueSettings
 from metadata.nlp.ner import processPage
+import requests
+from requests.compat import urljoin
+
+logger = logging.getLogger("lmming_celery")
 
 
 @shared_task()
-def extractFromFileNames(jobPk: int, pipeline:bool=True):
+def extractFromFileNames(jobPk: int, pipeline: bool = True):
     # nothing to do at the moment ...
     step = ProcessingStep.objects.filter(job_id=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILENAME).first()
@@ -26,7 +32,7 @@ def extractFromFileNames(jobPk: int, pipeline:bool=True):
 
 
 @shared_task()
-def fileMakerLookup(jobPk: int, pipeline:bool=True):
+def fileMakerLookup(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
 
     # fields: creator*[1], relation[n], coverage*[1], spatial*[N]
@@ -74,7 +80,7 @@ def fileMakerLookup(jobPk: int, pipeline:bool=True):
 
 
 @shared_task()
-def computeFromExistingFields(jobPk: int,pipeline:bool=True):
+def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     # fields: title*[1], created[1], description[1], available[1]
     report = Report.objects.get(job__pk=jobPk)
 
@@ -117,7 +123,7 @@ def computeFromExistingFields(jobPk: int,pipeline:bool=True):
 
 
 @shared_task()
-def extractFromImage(jobPk: int, pipeline:bool=True):
+def extractFromImage(jobPk: int, pipeline: bool = True):
     # fields: isFormatOf*[N]
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
@@ -129,7 +135,7 @@ def extractFromImage(jobPk: int, pipeline:bool=True):
 
 
 @shared_task()
-def namedEntityRecognition(jobPk: int, pipeline:bool=True):
+def namedEntityRecognition(jobPk: int, pipeline: bool = True):
     # fields: everything in page, except minting
     report = Report.objects.get(job__pk=jobPk)
     for page in report.page_set.all():
@@ -159,20 +165,60 @@ def namedEntityRecognition(jobPk: int, pipeline:bool=True):
 
 
 @shared_task()
-def mintArks(jobPk: int, pipeline:bool=True):
-    # field: identifier*[1], isVersionOf*[1]
+def mintArks(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
-
-    iiifArk = "ark1234"
-    atomArk = "ark1234"
-
-    report.identifier = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + "/"+ iiifArk
-    report.isVersionOf = UrlSettings.objects.filter(pk=UrlSettings.UrlSettingsType.IIIF).first().url + "/"+atomArk
-    report.save()
-
-    print("mintARKs", jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
+
+    shoulder = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
+    if not shoulder:
+        shoulder = "/r1"
+    arkletBaseUrl = settings.GENERAL_SETTINGS.minterUrl
+    headers = {"Authorization": f"Bearer {settings.GENERAL_SETTINGS.minterAuthorisation}"}
+    mintBody = {"naan": settings.GENERAL_SETTINGS.minterOrgId, "shoulder": shoulder}
+
+    mintUrl = urljoin(arkletBaseUrl, "mint")
+
+    response = requests.post(mintUrl, headers=headers, json=mintBody)
+    if response.ok:
+        ark = response.json()["ark"]
+        noid = ark.split("/")[-1]
+
+        iiifBase = settings.GENERAL_SETTINGS.iiifBaseUrl
+
+        resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}/manifest")
+
+        details = {"ark": ark,
+                   "url": resolveTo,
+                   "title": report.title,
+                   # "metadata": metadata, # TODO: other things to add?
+                   "type": report.get_type_display(),
+                   # "commitment": commitment,
+                   # "identifier": identifier,
+                   "format": report.get_isFormatOf_display(),
+                   "relation": report.get_relation_display(),
+                   "source": report.get_source_display()}
+
+        updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers, json=details)
+        if updateResponse.ok:
+            report.noid = noid
+            report.identifier = ark
+            report.save()
+        else:
+            step.log = (f"An error occurred while updating the ARK {ark}, status: {response.status_code}. Please verify"
+                        f" that ARKlet is running and try again.")
+            step.save()
+            logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
+                           f"{ark} ({jobPk} - {report.title})")
+
+    else:
+        step.log = (f"An error occurred while obtaining a new ARK: {response.status_code}. Please verify that ARKlet is"
+                    f" running and try again.")
+        step.save()
+        logger.warning(f"ARKlet returned status {response.status_code} while trying to mint ARK for {jobPk} - "
+                       f"{report.title}")
+
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
