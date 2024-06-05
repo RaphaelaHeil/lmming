@@ -12,22 +12,49 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import logging
 import os
 from pathlib import Path
-from lmming.setting_utils import loadSettingsFromToml
+
+import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Default env values:
+env = environ.Env(
+    POSTGRES_DB=(str, "lmming"),
+    POSTGRES_USER=(str, "lmming"),
+    POSTGRES_PASSWORD=(str, "12345LM"),
+    POSTGRES_HOST=(str, "localhost"),
+    POSTGRES_PORT=(str, "5432"),
+    ARCHIVE_INST=(str, "FAC"),
+    MINTER_URL=(str, ""),
+    MINTER_AUTH=(str, ""),
+    MINTER_ORG_ID=(str, "12345"),
+    IIIF_BASE_URL=(str, "iiif.example.com"),
+    CATALOGUE_BASE_URL=(str, "atom.example.com"),
+    FM_ARCHIVE_ID=(str, "PostID_Arkivbildare"),
+    FM_ORGANISATION_NAME=(str, "Organisation"),
+    FM_COUNTY=(str, "Distrikt län"),
+    FM_MUNICIPALITY=(str, "Kommun"),
+    FM_CITY=(str, "Ort"),
+    FM_PARISH=(str, "Socken"),
+    REDIS_HOST=(str, "redis://localhost"),
+    REDIS_PORT=(str, "6379")
+)
+
+environ.Env.read_env(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-j*%(^$9$_kyq3l)u(b@@hx40x%zzn8fudj1yi9umt+on#!e*6y'
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = []
+
+ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "localhost"]
 
 # Application definition
 
@@ -73,17 +100,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'lmming.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'lmming',
-        'USER': 'lmming',
-        'PASSWORD': '12345LM',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': env("POSTGRES_DB"),
+        'USER': env("POSTGRES_USER"),
+        'PASSWORD': env("POSTGRES_PASSWORD"),
+        'HOST': env("POSTGRES_HOST"),
+        'PORT': env("POSTGRES_PORT")
     }
 }
 
@@ -119,32 +145,38 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
-
-STATICFILES_DIRS = [
-    BASE_DIR / "static",
-]
+STATIC_URL = "/django_static/"
+STATIC_ROOT = BASE_DIR / "django_static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BROKER_URL = os.environ.get("REDIS", "redis://localhost:6379")
-CELERY_RESULT_BACKEND = os.environ.get("REDIS", "redis://localhost:6379")
+REDIS_HOST = env("REDIS_HOST")
+REDIS_PORT = env("REDIS_PORT")
+
+CELERY_BROKER_URL = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", "redis://localhost:6379")
+CELERY_RESULT_BACKEND = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", "redis://localhost:6379")
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = Path(os.environ.get("MEDIA_PATH", "../tmp")) / "media"  # BASE_DIR / "media"
+MEDIA_ROOT = Path(env("MEDIA_PATH")) / "media"  # BASE_DIR / "media"
+MEDIA_ROOT.mkdir(exist_ok=True)
 
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
-
-configFile = BASE_DIR.parent / "config.toml" # TODO: read from env/cmd args?
-
-fileSettings = loadSettingsFromToml(configFile)
-
-FILEMAKER_SETTINGS = fileSettings.filemaker
-GENERAL_SETTINGS = fileSettings.general
+ARCHIVE_INST = env("ARCHIVE_INST")
+MINTER_URL = env("MINTER_URL")
+MINTER_AUTH = env("MINTER_AUTH")
+MINTER_ORG_ID = env("MINTER_ORG_ID")
+IIIF_BASE_URL = env("IIIF_BASE_URL")
+CATALOGUE_BASE_URL = env("CATALOGUE_BASE_URL")
+FM_ARCHIVE_ID = env("FM_ARCHIVE_ID")
+FM_ORGANISATION_NAME = env("FM_ORGANISATION_NAME")
+FM_COUNTY = env("FM_COUNTY")
+FM_MUNICIPALITY = env("FM_MUNICIPALITY")
+FM_CITY = env("FM_CITY")
+FM_PARISH = env("FM_PARISH")
 
 LOGGING = {
     "version": 1,

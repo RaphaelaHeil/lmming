@@ -34,16 +34,16 @@ def extractFromFileNames(jobPk: int, pipeline: bool = True):
 @shared_task()
 def fileMakerLookup(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
-
+    step = ProcessingStep.objects.filter(job__pk=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
     # fields: creator*[1], relation[n], coverage*[1], spatial*[N]
 
     entries = FilemakerEntry.objects.filter(archiveId=report.unionId)
     if entries.count() == 0:
-        # log
-        report.creator = "unknown"
-        report.relation = [""]
-        report.spatial = ["SE"]
-        report.coverage = Report.UnionLevel.OTHER
+        step.log = f"No Filemaker entry found for union with ID {report.unionId}."
+        step.status = Status.ERROR
+        step.save()
+        return
     else:
         filemaker = entries.first()
 
@@ -66,8 +66,6 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
 
     report.save()
 
-    step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -93,7 +91,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     if pageCount != 1:
         report.description = f"{pageCount} pages"
     else:
-        report.description = f"1 page"
+        report.description = "1 page"
     report.available = created + relativedelta(
         years=DefaultNumberSettings.objects.filter(
             pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first().value)
@@ -174,9 +172,9 @@ def mintArks(jobPk: int, pipeline: bool = True):
         pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
     if not shoulder:
         shoulder = "/r1"
-    arkletBaseUrl = settings.GENERAL_SETTINGS.minterUrl
-    headers = {"Authorization": f"Bearer {settings.GENERAL_SETTINGS.minterAuthorisation}"}
-    mintBody = {"naan": settings.GENERAL_SETTINGS.minterOrgId, "shoulder": shoulder}
+    arkletBaseUrl = settings.MINTER_URL
+    headers = {"Authorization": f"Bearer {settings.MINTER_AUTH}"}
+    mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}
 
     mintUrl = urljoin(arkletBaseUrl, "mint")
 
@@ -185,7 +183,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
         ark = response.json()["ark"]
         noid = ark.split("/")[-1]
 
-        iiifBase = settings.GENERAL_SETTINGS.iiifBaseUrl
+        iiifBase = settings.IIIF_BASE_URL
 
         resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}/manifest")
 

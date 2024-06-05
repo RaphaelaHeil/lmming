@@ -1,10 +1,10 @@
 from enum import Enum
 from pathlib import Path
 
-from django.conf import settings
-from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 import torch
-from huggingface_hub import hf_hub_download, snapshot_download
+from django.conf import settings
+from huggingface_hub import snapshot_download
+from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
 
 
 def download():

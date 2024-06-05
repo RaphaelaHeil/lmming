@@ -153,11 +153,12 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
 def updateFilemakerData(df: pd.DataFrame):
     FilemakerEntry.objects.all().delete()
     df = df.fillna("")
-    keys = settings.FILEMAKER_SETTINGS
+
     for idx, row in df.iterrows():
-        if row[keys.archiveId] and row[keys.organisationName]:
-            FilemakerEntry.objects.create(archiveId=row[keys.archiveId], organisationName=row[keys.organisationName],
-                                          county=row[keys.county], municipality=row[keys.municipality],
-                                          city=row[keys.city], parish=row[keys.parish])
+        if row[settings.FM_ARCHIVE_ID] and row[settings.FM_ORGANISATION_NAME]:
+            FilemakerEntry.objects.create(archiveId=row[settings.FM_ARCHIVE_ID],
+                                          organisationName=row[settings.FM_ORGANISATION_NAME],
+                                          county=row[settings.FM_COUNTY], municipality=row[settings.FM_MUNICIPALITY],
+                                          city=row[settings.FM_CITY], parish=row[settings.FM_PARISH])
         else:
             continue  # TODO: add logging about skipping an entry!

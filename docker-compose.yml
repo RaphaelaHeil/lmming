@@ -1,0 +1,64 @@
+
+
+
+
+services:
+  nginx:
+    restart: always
+    image: nginx:1.23-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/lmming/django_static
+  redis:
+    restart: unless-stopped
+    image: "redis:alpine"
+    expose:
+      - 6379
+  db:
+    restart: unless-stopped
+    image: "postgres:alpine"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./docker/lmming/.env
+    expose:
+      - 5432
+  server:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./docker/lmming/Dockerfile
+    entrypoint: /app/docker/lmming/server-entrypoint.sh
+    volumes:
+      - static_volume:/app/lmming/django_static
+      - media_volume:/app/lmming/media
+    expose:
+      - 8000
+    env_file:
+      - ./docker/lmming/.env
+    depends_on:
+      - db
+  worker:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: ./docker/lmming/Dockerfile
+    entrypoint: /app/docker/lmming/worker-entrypoint.sh
+    volumes:
+      - static_volume:/app/lmming/django_static
+      - media_volume:/app/lmming/media
+    env_file:
+      - ./docker/lmming/.env
+    depends_on:
+      - server
+      - redis
+
+volumes:
+    static_volume: {}
+    postgres_data: {}
+    media_volume: {}
+
+# volumes?
+# networks?
