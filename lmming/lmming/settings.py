@@ -160,8 +160,7 @@ CELERY_BROKER_URL = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", "red
 CELERY_RESULT_BACKEND = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", "redis://localhost:6379")
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = Path(env("MEDIA_PATH")) / "media"  # BASE_DIR / "media"
-MEDIA_ROOT.mkdir(exist_ok=True)
+MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH")) # BASE_DIR / "media"
 
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
