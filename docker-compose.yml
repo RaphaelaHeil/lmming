@@ -1,19 +1,11 @@
-
-
-
-
 services:
-  nginx:
-    restart: always
-    image: nginx:1.23-alpine
-    ports:
-      - 80:80
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - static_volume:/app/lmming/django_static
   redis:
     restart: unless-stopped
     image: "redis:alpine"
+    healthcheck:
+      start_period: 20s
+      interval: 40s
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
     expose:
       - 6379
   db:
@@ -23,6 +15,10 @@ services:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./docker/lmming/.env
+    healthcheck:
+      test: pg_isready -U $$POSTGRES_USER -d $${POSTGRES_DB}
+      start_period: 20s
+      interval: 10s
     expose:
       - 5432
   server:
@@ -39,7 +35,8 @@ services:
     env_file:
       - ./docker/lmming/.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   worker:
     restart: unless-stopped
     build:
@@ -52,13 +49,24 @@ services:
     env_file:
       - ./docker/lmming/.env
     depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+  nginx:
+    restart: always
+    image: nginx:1.23-alpine
+    ports:
+      - 80:80
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/app/lmming/django_static
+    depends_on:
       - server
-      - redis
-
 volumes:
-    static_volume: {}
-    postgres_data: {}
-    media_volume: {}
+  static_volume: { }
+  postgres_data: { }
+  media_volume: { }
 
 # volumes?
 # networks?
