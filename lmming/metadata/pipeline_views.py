@@ -29,7 +29,7 @@ def filename(request, job):
     if request.method == "POST":
         filenameForm = FileNameForm(request.POST, initial={"organisationID": job.report.unionId,
                                                            "type": job.report.type,
-                                                           "date": __toDisplayList__(job.report.date)})
+                                                           "date": job.report.get_date_display()})
         if filenameForm.is_valid():
             if filenameForm.has_changed():
                 if "organisationID" in filenameForm.changed_data:
@@ -51,13 +51,13 @@ def filename(request, job):
             return {"job": job}
     else:
         filenameForm = FileNameForm(initial={"organisationID": job.report.unionId, "type": job.report.type,
-                                             "date": __toDisplayList__(job.report.date)})
+                                             "date": job.report.get_date_display()})
         return {"form": filenameForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FILENAME.label}
 
 
 def filemaker(request, job):
-    initial = {"creator": job.report.creator, "relation": __toDisplayList__(job.report.relation),
-               "coverage": job.report.coverage, "spatial": __toDisplayList__(job.report.spatial)}
+    initial = {"creator": job.report.creator, "relation": job.report.get_relation_display(),
+               "coverage": job.report.coverage, "spatial": job.report.get_spatial_display()}
     if request.method == "POST":
         filemakerForm = FilemakerForm(request.POST, initial=initial)
         if filemakerForm.is_valid():
@@ -88,8 +88,8 @@ def filemaker(request, job):
 def compute(request, job):
     initial = {"title": job.report.title, "created": job.report.created.year if job.report.created else "",
                "available": job.report.available, "description": job.report.description,
-               "language": __toDisplayList__(job.report.language), "license": __toDisplayList__(job.report.license),
-               "source": __toDisplayList__(job.report.source), "accessRights": job.report.accessRights}
+               "language": job.report.get_language_display(), "license": job.report.get_license_display(),
+               "source": job.report.get_source_display(), "accessRights": job.report.accessRights}
     if request.method == "POST":
         computeForm = ComputeForm(request.POST, initial=initial)
         if computeForm.is_valid():

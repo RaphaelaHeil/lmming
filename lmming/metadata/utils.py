@@ -127,9 +127,7 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
 
         for page in report.page_set.all().order_by("order"):
             pageSummary.append({"dcterms:isPartOf": report.identifier,
-                                "dcterms:identifier": 0,
-                                # TODO: build from report base # TODO: requires changes in Archival .... :S
-                                # TODO: image naming needs to be pre-determined and cannot depend on Archivematica >.<
+                                "dcterms:identifier": page.identifier,
                                 "lm:transcription": page.transcription,
                                 "lm:normalised": page.normalisedTranscription,
                                 "lm:person": __toOmekaList__(page.persons),

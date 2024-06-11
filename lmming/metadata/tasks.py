@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import List
 
 import requests
 from celery import shared_task, signals
@@ -11,8 +12,8 @@ from requests.compat import urljoin
 from metadata.enum_utils import PipelineStepName
 from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry, DefaultNumberSettings, \
     DefaultValueSettings
-from metadata.nlp.ner import processPage
 from metadata.nlp.hf_utils import download
+from metadata.nlp.ner import processPage, NlpResult
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -37,8 +38,6 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
-    # fields: creator*[1], relation[n], coverage*[1], spatial*[N]
-
     entries = FilemakerEntry.objects.filter(archiveId=report.unionId)
     if entries.count() == 0:
         step.log = f"No Filemaker entry found for union with ID {report.unionId}."
@@ -48,8 +47,14 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
     else:
         filemaker = entries.first()
 
+        if not filemaker.organisationName:
+            step.log = f"Organisation name is empty for union with ID {report.unionId}."
+            step.status = Status.ERROR
+            step.save()
+            return
+
         report.creator = filemaker.organisationName
-        report.relation = [""]  # TODO: not yet in FAC Filemaker CSV
+        report.relation = [filemaker.nadLink if filemaker.nadLink else ""]
         report.spatial = ["SE"] + [x for x in
                                    [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
                                    if x]
@@ -78,8 +83,17 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
         scheduleTask(jobPk)
 
 
+def __splitIfNotNone__(value: str) -> List[str]:
+    if value:
+        return [x.strip() for x in value.split(",")]
+    else:
+        return []
+
+
 @shared_task()
 def computeFromExistingFields(jobPk: int, pipeline: bool = True):
+    step = ProcessingStep.objects.filter(job__pk=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
     # fields: title*[1], created[1], description[1], available[1]
     report = Report.objects.get(job__pk=jobPk)
 
@@ -89,27 +103,51 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     report.created = created
 
     pageCount = report.page_set.count()
-    if pageCount != 1:
-        report.description = f"{pageCount} pages"
-    else:
+    if pageCount == 0:
         report.description = "1 page"
-    report.available = created + relativedelta(
-        years=DefaultNumberSettings.objects.filter(
-            pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first().value)
-    # TODO: language fix array vs comma separated string!
-    report.language = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first().value.split(",")
-    report.license = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first().value.split(",")
-    report.accessRights = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first().value
-    report.source = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first().value.split("|")
+    else:
+        report.description = f"{pageCount} pages"
+
+    # available[1], language*[n], license*[n], accessRights*[1], source[n]
+    language = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first()
+    if language:
+        report.language = __splitIfNotNone__(language.value)
+    else:
+        step.log = "No language was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
+    license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
+    if license:
+        report.license = __splitIfNotNone__(license.value)
+    else:
+        step.log = "No license was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
+    accessRights = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
+    if accessRights:
+        report.accessRights = accessRights.value
+    else:
+        step.log = "No accessRights was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
+    yearOffset = DefaultNumberSettings.objects.filter(
+        pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
+    if yearOffset:
+        report.available = created + relativedelta(years=yearOffset.value)
+
+    source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
+    if source:
+        report.source = __splitIfNotNone__(source.value)
 
     report.save()
 
-    step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -139,6 +177,8 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     for page in report.page_set.all():
         result = processPage(Path(page.transcriptionFile.path))
+        if not result:
+            result = NlpResult()
         page.transcription = result.text
         page.normalisedTranscription = result.normalised
         page.persons = list(result.persons)
@@ -179,12 +219,12 @@ def mintArks(jobPk: int, pipeline: bool = True):
 
     mintUrl = urljoin(arkletBaseUrl, "mint")
 
+    iiifBase = settings.IIIF_BASE_URL
+
     response = requests.post(mintUrl, headers=headers, json=mintBody)
     if response.ok:
         ark = response.json()["ark"]
         noid = ark.split("/")[-1]
-
-        iiifBase = settings.IIIF_BASE_URL
 
         resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}/manifest")
 
@@ -205,18 +245,26 @@ def mintArks(jobPk: int, pipeline: bool = True):
             report.identifier = ark
             report.save()
         else:
+            step.status = Status.ERROR
             step.log = (f"An error occurred while updating the ARK {ark}, status: {response.status_code}. Please verify"
                         f" that ARKlet is running and try again.")
             step.save()
             logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
                            f"{ark} ({jobPk} - {report.title})")
-
+            return
     else:
+        step.status = Status.ERROR
         step.log = (f"An error occurred while obtaining a new ARK: {response.status_code}. Please verify that ARKlet is"
                     f" running and try again.")
         step.save()
         logger.warning(f"ARKlet returned status {response.status_code} while trying to mint ARK for {jobPk} - "
                        f"{report.title}")
+        return
+
+    for page in report.page_set.all():
+        page.iiifId = f"{noid}_{page.order}"
+        page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
+        page.save()
 
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
@@ -278,6 +326,7 @@ def scheduleTask(jobId: int) -> bool:
             # either error or unknown state, don't do anything, just return
             # TODO: maybe add some logging?
             return False
+
 
 @signals.worker_ready.connect
 def prepareNLP(**kwargs):

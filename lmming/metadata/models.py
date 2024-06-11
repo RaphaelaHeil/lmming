@@ -1,7 +1,7 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField, Q
-from django.db.models.signals import pre_delete, post_save
+from django.db.models.signals import pre_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
 
@@ -164,6 +164,8 @@ class Page(Model):
     ner_objects = ArrayField(CharField(), blank=True, null=True)  # optional
     measures = BooleanField(default=False)  # optional/default = False
 
+    iiifId = CharField(blank=True, default="") # iiif URL + structmap
+
 
 @receiver(pre_delete, sender=Page)
 def pageFileDeleteHandler(sender, instance, **kwargs):
@@ -244,6 +246,12 @@ class ProcessingStep(Model):
 
     def __str__(self):
         return f"{self.job.pk} - {self.processingStepType} ({self.mode}{', human validation' if self.humanValidation else ''})"
+
+
+@receiver(pre_save, sender=ProcessingStep)
+def processLog(sender, instance, **kwargs):
+    if instance.status != Status.ERROR:
+        instance.log = ""
 
 
 @receiver(post_save, sender=ProcessingStep)
