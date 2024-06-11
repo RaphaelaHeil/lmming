@@ -129,4 +129,4 @@ class SettingsForm(Form):
 
 class FilemakerSettingsForm(Form):
     filemaker_csv = FileField(label="Filemaker CSV",
-                              widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}))
+                              widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}), required=False)

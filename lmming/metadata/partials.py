@@ -88,7 +88,7 @@ def settingsModal(request):
                 if "source" in settingsForm.changed_data:
                     if source:
                         source.value = settingsForm.cleaned_data["source"]
-                        source.value()
+                        source.save()
                     else:
                         DefaultValueSettings.objects.create(
                             pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE,
@@ -111,7 +111,8 @@ def settingsModal(request):
                             value=settingsForm.cleaned_data["avilableYearOffset"])
         if filemakerForm.is_valid():
             filemakerCsv = filemakerForm.cleaned_data["filemaker_csv"]
-            updateFilemakerData(pd.read_csv(filemakerCsv))  # TODO: technically needs a loading indicator ...
+            if filemakerCsv:
+                updateFilemakerData(pd.read_csv(filemakerCsv))  # TODO: technically needs a loading indicator ...
         else:
             pass  # TODO: return error or smth
         return redirect("/")
