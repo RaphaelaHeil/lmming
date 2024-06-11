@@ -291,3 +291,4 @@ class FilemakerEntry(Model):
     municipality = CharField(blank=True, default="")
     city = CharField(blank=True, default="")
     parish = CharField(blank=True, default="")
+    nadLink = URLField(blank=True, default="")

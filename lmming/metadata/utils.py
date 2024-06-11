@@ -159,6 +159,7 @@ def updateFilemakerData(df: pd.DataFrame):
             FilemakerEntry.objects.create(archiveId=row[settings.FM_ARCHIVE_ID],
                                           organisationName=row[settings.FM_ORGANISATION_NAME],
                                           county=row[settings.FM_COUNTY], municipality=row[settings.FM_MUNICIPALITY],
-                                          city=row[settings.FM_CITY], parish=row[settings.FM_PARISH])
+                                          city=row[settings.FM_CITY], parish=row[settings.FM_PARISH],
+                                          nadLink=row[settings.FM_NAD_LINK])
         else:
             continue  # TODO: add logging about skipping an entry!

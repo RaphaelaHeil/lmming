@@ -36,6 +36,7 @@ env = environ.Env(
     FM_MUNICIPALITY=(str, "Kommun"),
     FM_CITY=(str, "Ort"),
     FM_PARISH=(str, "Socken"),
+    FM_NAD_LINK=(str, "NAD_LINK"),
     REDIS_HOST=(str, "redis://localhost"),
     REDIS_PORT=(str, "6379"),
     HF_CRINA_HASH=(str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b"),
@@ -175,6 +176,7 @@ FM_COUNTY = env("FM_COUNTY")
 FM_MUNICIPALITY = env("FM_MUNICIPALITY")
 FM_CITY = env("FM_CITY")
 FM_PARISH = env("FM_PARISH")
+FM_NAD_LINK = env("FM_NAD_LINK")
 
 HF_CRINA_HASH = env("HF_CRINA_HASH")
 HF_KB_HASH = env("HF_KB_HASH")
