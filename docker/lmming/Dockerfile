@@ -14,7 +14,6 @@ RUN pip install psycopg2-binary
 
 ADD ./lmming /app/lmming
 ADD ./docker /app/docker
-ADD ./ner_data /app/ner_data
 
 RUN chmod +x /app/docker/lmming/server-entrypoint.sh
 RUN chmod +x /app/docker/lmming/worker-entrypoint.sh

@@ -2,13 +2,10 @@ import itertools
 from pathlib import Path
 from typing import Dict, List, Tuple, Set
 
-from django.conf import settings
-
 
 def loadAbbreviations() -> Dict[str, List[str]]:
     abbreviations = {}
-
-    with (Path(settings.NER_BASE_DIR) / "abbreviations.txt").open("r") as inFile:
+    with (Path(__file__).resolve().parent / "abbreviations.txt").open("r") as inFile:
         lines = inFile.read().split("\n")
         for line in lines:
             entry = line.split(",")
@@ -18,7 +15,7 @@ def loadAbbreviations() -> Dict[str, List[str]]:
 
 def loadSynonyms() -> Tuple[Dict[str, Set[str]], List]:
     dalin = {}
-    with (Path(settings.NER_BASE_DIR) / "synonyms.txt").open("r") as inFile:
+    with (Path(__file__).resolve().parent / "synonyms.txt").open("r") as inFile:
         pairs = inFile.read().split("\n")
         for pair in pairs:
             entry = pair.split(",")

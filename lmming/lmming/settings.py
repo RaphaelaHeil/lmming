@@ -9,7 +9,6 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-import logging
 import os
 from pathlib import Path
 
@@ -38,11 +37,12 @@ env = environ.Env(
     FM_CITY=(str, "Ort"),
     FM_PARISH=(str, "Socken"),
     REDIS_HOST=(str, "redis://localhost"),
-    REDIS_PORT=(str, "6379")
+    REDIS_PORT=(str, "6379"),
+    HF_CRINA_HASH=(str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b"),
+    HF_KB_HASH=(str, "8e1e0bdcacc4dc230d2199de47b61ce9cac321c7")
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -52,7 +52,6 @@ SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
-
 
 ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "localhost"]
 
@@ -160,7 +159,7 @@ CELERY_BROKER_URL = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", "red
 CELERY_RESULT_BACKEND = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", "redis://localhost:6379")
 
 MEDIA_URL = "/media/"
-MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH")) # BASE_DIR / "media"
+MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH"))  # BASE_DIR / "media"
 
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
@@ -177,6 +176,12 @@ FM_MUNICIPALITY = env("FM_MUNICIPALITY")
 FM_CITY = env("FM_CITY")
 FM_PARISH = env("FM_PARISH")
 
+HF_CRINA_HASH = env("HF_CRINA_HASH")
+HF_KB_HASH = env("HF_KB_HASH")
+
+SERVER_LOG_NAME = "lmming"
+WORKER_LOG_NAME = "lmming_celery"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -190,12 +195,12 @@ LOGGING = {
         "level": "WARNING",
     },
     "loggers": {
-        "lmming": {
+        SERVER_LOG_NAME: {
             "handlers": ["console"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },
-        "lmming_celery": {
+        WORKER_LOG_NAME: {
             "handlers": ["console"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,

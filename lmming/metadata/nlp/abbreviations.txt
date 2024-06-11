@@ -1,0 +1,511 @@
+a.a.,ad acta
+a.-b.,aktiebolag,aktiebolaget
+abs.,absolvera,absens
+a.d.,anno domini
+adm.,admitterad
+a.f.,annan fastighet,andra fastigheter
+afg.,afgång
+afl.,afliden
+afsk.,afskedade
+afsked.,afskedade
+afskr.,afskrift
+allm.,allmän,almänna
+a.n.,ante nuptius
+ank.,ankommande
+anm.,anmärkning
+annot.,annotation
+arb.,arbetare
+arb. bet.,arbetsbetyg
+arrend.,arrendator
+art.,artikel,artikeln
+arv.,arvingar
+avd.,avdelning,avdelningar
+avg.,avgående
+avs.,avsöndring,avsöndringar
+avskr.,afskift
+backst.,backstugesittare
+bandl.,bandland
+banktj:man,banktjänsteman
+bar.,barn
+b.b.,bär barnet,barnbördshus
+BD,Norrbotten
+bef.,befordrande
+beg.,begraven
+begr.,begraven
+bg.,bergslag
+b.i.1stg.,barn i förste gift
+bisp.,biskop
+bl.a.,bland annat
+Blek.,Blekinge
+blg.,bergslag
+bond.,bonde
+bondeförb.,bondeförbundet
+borgerl.,borgerliga
+bou.,bouppteckning
+br.,bror,brukare,bröder
+brod.,broder
+brudg.,brudgum
+bröd.,bröderna
+byggm.,byggmästare
+ca.,circa
+c:a,circa
+caut.,cautionister
+Christd.kunsk.,Christendomskunskap
+c:o,kompani
+cop.,copulerad
+copul.,copulatus
+cr.,crono
+cr.h.,crono hem
+cr.hem,crono hem
+dagl.,dagligen
+d.b.,denna bok
+db,dödbok
+d.g.,den gamla
+d.h.,dess hustru
+d.i.1stg.,dotter i förste giftet
+dir.,direktör,direktörer
+disp.,disponeras
+distr.,distrikt
+distr. vet.,distriktsveterinär
+div.,diverse
+dkfg,domkyrkoförsamling
+dkfs,domkyrkoförsamling
+D.M.,danneman
+Dmca.,Dominica
+Dnca,Dominica
+d.o.,detta ord,dessa ord
+d:o,det ovan,ditto
+do.,dito
+doms.,domsaga
+doms:s,domsagas
+doms:or,domsagor
+dot.,dotter
+dr.,dräng,dotter
+Dr.,doktor
+drag.,dragon
+dt.,dotter
+dtr.,dotter
+d.v.s.,det vill säga
+d.y.,den yngre
+d.å,detta år
+d.ä.,den äldre
+ejusd.,ejusdem
+e.d.,ejusdem
+eg.,egare
+e.Kr.,efter Kristus
+el.,eller
+e.m.,efter middag
+e.m.f.,enka moder född
+end.,endast
+enk.,enka
+enkl.,enkling,enkeman
+evang.-luth.,evangeliskt-lutherska
+fabr.,fabrikör,fabrikörer
+fad.,fader
+fadd.,fadder
+fam.,familj
+fast.,fastighet
+fb.,födelsebok
+F.B.,före boken
+f.b.,före boken
+f.d.,före detta
+fg,församling
+Fhr.,Friherre
+fil.dr,filosofie doctor
+fil.mag.,filosofie magister
+f.Kr.,före Kristus
+fl.,flicka,flyttar
+f.m.,förmiddag
+forts.,fortsättning
+fr.,från
+fris.,frisinnad,frisinnade
+fr. o. m.,från och med
+frih.,friherre,friherrar
+frkn.,fröken
+frånsk.,frånskild
+frånv.,frånvarande
+fs.,församling
+fsg.,församling
+f.ö.,för övrigt
+fögd.,fögderi
+fögder,fögderier
+följ.,följande
+för.,föräldrar
+förb.,förbindelse
+föreg.,föregående
+förkl.,förklaring
+förl.,förlofvad
+förs.,församling,förestående
+förslg.,församling
+församl.,församling
+försv.,försvarlös
+fört.,förteckning
+förteckn.,förteckning
+gam.,gamla,gammal
+g.b.,gamla bok
+G.B.,gamla bok
+gb.,gårdsbrukägare
+gd.,gård
+gdm.,gudmoder
+ges.,gesäll
+G.kil,Gammalkil socken
+G.Kil sn.,Gammalkil socken
+gl.,gammal
+g.m.,gift med
+Gotl.,Gotland
+graff.,begrafning
+grat.,gratialist
+grdbr.,gårdsbrukägare
+grdf.,gårdsfolk
+grdfolk.,gårdsfolk
+grossh.,grosshandlande
+grufarb.,grufarbetare
+grufveg.,grufvegare
+Gävl.,Gävleborg
+Göteb.,Göteborg
+Hu.,hustru
+Hall.,Halland
+handl.,handlande
+hd.,härad
+hdt.,häradet
+hds.,häradets
+hdr.,härader
+hrds.,häraders
+h.eg.,hemmansegare
+hem.,hemman
+hem.d.,hemmadotter
+hem.eg.,hemmansegare
+hem.äg.,hemmansegare
+hemäg.,hemmansegare
+hem.s.,hemmason
+herrg.,herrgård,herrgården
+herrg:ar.,herrgårdar,herrgårdarna
+HFL,husförhörslängd
+hkr.,hästkrafter
+h:n.,hemman
+hn.,hemman
+hpl.,hållplats,hållplatsen
+hplr.,hållplatser,hållplatserna
+H:r.,Herr,Herre
+hsm.,husman
+husm.,husman
+hu.,hustru
+hust.,hustru
+h.äg.,hemmansägare
+härst.,härstädes
+ib.,ibidem
+ibid.,ibidem
+ibm,ibidem
+ifr.,ifrån.
+i.l.,in loco
+I.L.,in loco
+infl.,inflyttad
+ing.,ingenjör,ingenjörer
+inh.,inhyses
+inhys.,inhyses
+inneh.,innehåll
+intend,intendent
+introd.,introducera
+inv.,invånare
+j.arb.,jernarbetare,jernvägsarbetare
+jbr.,jordbrukare
+jbrf,jordbruksfastighet,jordbruksfastigheten,jordbruksfastigheter,jordbruksfastigheterna
+jbrv,jordbrukvärde
+jerns.arb.,jernvägsarbetare
+jernv.,jernväg
+jernvägsarb.,jernvägsarbetare
+jernväkt.,jernbaneväktare
+jfr.,jungfru
+jgfr.,jungfru
+Jlght.,jordbrukslägenhet
+jlghtn.,jordbrukslägenhet
+jlghtr.,jordbrukslägenhet
+j:or.,junior
+jordbr.,jordbrukare
+jordbruksarb.,jordbruksarbetare
+jordk.,jordkasta
+järnv.,järnväg
+jvg.,järnväg
+jvgr.,järnvägar
+jvgsförb.,järnvägsförbindelse,järnvägsförbindelser
+jvgstn.,järnvägsstation,järnvägsstationen
+jvgstnr.,järnvägsstationer,järnvägsstationerna
+Jäg.,Jägare
+jägm.,jägmästare
+Jönk.,Jönköping
+Jämt.,Jämtland
+K:a.,kyrka
+Kalm.,Kalmar
+kbfd,Kyrkobokföringsdistrikt
+kbm.,kubikmeter
+k.f.,kvinnsfaddrar
+kh.,kyrkoherde
+khde.,kyrkoherde
+k.k.,kvinnoklinik
+k.kg.,kyrkogång
+kl.,klockan
+km.,kilometer
+K.Maj:t.,Kunglig Magestät
+kmt,kopparmynt
+kn.,kommun
+k:en,kommunen
+k:ens,kommunens
+k:er,kommuner
+k:ers,kommuners
+kommunal-nämndsordf.,kommunalsnämndsordförande
+Kongl.Maj:t,Kunglig Majestät
+kontr.,kontrakt
+Kopp.,Kopparberg
+kr.,kronor
+KRA,Krigsarkivet
+ktg.,kyrkotagning
+Kungl.Maj:t,Kunglis Majestät
+kv.,kvinna
+kvf.,kvinnlig fadder,Kvinnsfaddrar
+kvkm.,kvadratkilometer
+kyrkl.,kyrklig
+kyrkov.,kyrkovaktare
+kyrkovakt.,kyrkovaktare
+köp.,köping,köpingen,köpingens,köpingar,köpingars
+köpm.,köpman
+l:a,lilla
+La,lilla
+L:a,lilla
+landsf.-distr.,landsfisalsdistrikt
+landsförslg.,landsförsamling
+landsh.,landshövding
+lb.,landbonde
+lfg.,landsförsamling
+lfs.,landsförsamling
+lg.,lärling
+lärl.,lärling
+lght.,lägenhet
+lghtn.,lägenheten
+lghtr.,lägenheter
+lib.,liberal,liberala
+Luth. Cat.,Lutherska katekismen
+Luth. Kat.,Lutherska katekismen
+lysn.,lysning
+löjtn.,löjtnant,löjtnanter
+m.,man,mater,mor,moder,måg,med,meter
+m:s.,meters
+Mad.,Madam
+Malm.,Malmöhus
+mams.,mamsell
+mek.,mekanik
+mell.,mellersta
+m.f.,mansfaddrar
+m. fl.,med flera
+mil.,militära
+mm.,millimeter
+m.m.,med mera
+mod.,moder,moderat,moderata
+modr.,moder
+mort.,mortua
+motorf.,motorfartyg
+mtl.,mantal
+mun. samh.,municipalsamhälle,municipalsamhället
+munsamh:en,municipalsamhällen
+murges.,murargesäll
+mvh,med vänlig hälsning
+mån.,månad
+månd., tis., o.s.v.,måndag, tisdag, och så vidare
+mäst.,mästare,mäster
+N:a.,norra
+nat.,natur,nata
+nattvak.,nattvaktare
+nattv.g.,nattvardsgång
+N.B.,nya bok
+n.b.,nya bok
+Ne,nedre
+n:m:,nämndeman
+NN.,nomen nescio
+nn.,nomen nescio
+nom.,nomine
+n:r,nummer
+nr.,nummer
+NO.,nordost
+NNO.,nordnordost
+Norrb.,Norrbotten
+NV,nordväst
+NNV,nordnordväst
+nup.,nuptiae
+nuv.,nuvarande
+näml.,nämligen
+obs.,observera
+o.d.,oäkta dotter
+o.ä.d.,oäkta dotter
+o.d.h.,och dess hustru
+o.h.h.,och hans hustru
+og.,ogift
+ok.barnsj.,okänd barnsjuka
+omkr.,omkring
+ONO.,ostnordost
+o.s.,oäkte son
+o.ä.s.,oäkte son
+OSO.,ostsydost
+o.s.v.,och så vidare
+oä.,oäkta
+o.ä.,oäkta
+pag.,pagina
+pig,piga
+past.,pastorat
+p.b.,pigebarn
+pg.,penning
+pgr.,penningar
+pgld.,penningland
+postexp.,postexpedition
+posth.,posthumus
+prakt.,praktiserande
+prof.,professor,professorer
+prov.-läk.,provinsialläkare
+P.Ä.,pastorsämbete
+Qvf.,qvinnfaddrar
+Qv.mil,qvadratmil
+RA,Riksarkivet
+Rdr.,Riksdaler
+reg.,regemente
+reg.ton.,registerton
+ren.,renata,renati,renatus
+rep.verkstad.,reparationsverkstad
+resp.,respektive
+r:hu.,ryttare hustru
+riksd.,riksdaler
+runst.,runstycken
+rymd.,rymmande
+rymt,rymmande
+rytt.,ryttare
+ryttm.,ryttmästare
+sal.,salig
+samn.,samhälle,samhället
+samh:en,samhällen
+SCB,Statistiska Centralbyrån
+sd.,samma dag,sonsdotter
+segelf.,segelfartyg
+sek.,sekund
+sekr.,sekreterare
+sep.,sepultus
+sfg,stadsförsamling
+s:ger,svåger
+s:hu,soldat hustru,sonhustru
+s.k.,så kallad
+s:ka,svägerska
+Skar.,Skaraborg
+skattm.,skattmästare
+Sk.Dr.,Skånska Dragonregementet
+skgsv.,skogsvärde
+skill.,skilling,skillingar
+skogsv.,skogsvaktare
+skom.arb.,skomakerarbetare
+skplg.,skeppslag
+skräd.,skräddare
+s:kt,sankt
+sl.,salig
+smt,silvermynt
+sn.,socken
+snesl.,snesland
+SO.,sydost
+soc.,socialdemokratisk
+sockn.,sockenman
+sold.,soldat
+s:or,senior
+spannl.,spannland
+spons.,sponsorer
+ss.,sonson,såsom
+SSO.,sydsydost
+SSV,sydsydväst
+st.,stycken,stora
+St.,stad,stora
+S:t,Sankt
+S:ta,Sankta,stora
+St:a,stora
+stallm.,stallmästare
+stbhs.,stärbhus
+st:dr,statdräng
+stds.,standard
+Sthlm.,Stockholm
+stn.,station,stationen
+stnr.,stationer,stationerna
+stud.,student
+susc.,susceptrix
+SV,sydväst
+sv.,svensk
+Svf.,svärfar,svärfader
+Sv:f,,svärfar,svärfader
+Svm.,svärmor
+sv:m,svärmor
+Svåg.,Svåger
+Sväg.,Svägerska
+Svärf.,Svärfader
+Svärm.,Svärmoder
+sy.,syster
+syst.,syster
+s.å.,samma år
+Söder.,Södermanland
+takt.,taktäckare
+tandläk.,tandläkare
+tax.,taxera
+tax.v.,taxeringsvärde
+test.,testes
+t.ex.,till exempel
+tg.,tingslag
+tgslg.,tingslag
+t.h.,till höger
+tills.,tillsammans
+tillverkn.,tillverkning
+tj.,tjäna
+tnld.,tunnland
+t.o.m.,till och med
+tomt-o. industriv,tomt o. industrivärde
+torp.,torpare
+tp.,torpare
+trol.,trolofvad
+trädgårdsmäst.,trädgårdsmästare
+tunnl.,tunnland
+t.v.,till vänster,tills vidare
+txv.,taxeringsvärde
+txvn.,taxeringsvärde
+Ty.,Tysk
+uk.,ungkarl
+ungk.,ungkarl
+u.m.,utom mantal
+u.n.u.,utan namn under
+undant.enka,undantagsmans enka
+undt.,undantagsman
+ung.,ungefär
+u.p.a.,utan personligt ansvar
+uppf.,uppförd,uppförda,uppfördes,uppfört
+Upps.,Uppsala
+U.R.,ute roten
+utfl,utflyttad
+u.ä.,utom äktenskap
+vacc.,vaccinera
+vb,vigselbok
+VNV.,västnordväst
+VSV.,västsydväst
+vard.,vardag
+vägh.-dist.,väghållningsdistrikt
+välb.,välboren
+Värml.,Värmland
+Västerb.,Västerbotten
+Västern.,Västernorrland
+Västm.,Västmanland
+Xbr,December
+yngl.,yngling
+yst.,yngste
+åb.,åborätt
+åbo.,åborätt
+ångb.förb.,ångbåtsförbindelse
+äg.,ägare
+äkt.,äktenskap
+Älvsb.,Älvsborg
+änk.,änka
+änkl.,änkling
+äst.,äldste
+Ö:a,östra
+Öf,öfra
+ö.h.,över havet
+Ör.,Örebro
+öresl,Öresland
+Östg.,Östergötland
+Öv,övre

@@ -8,9 +8,18 @@ from transformers import AutoTokenizer, AutoModelForTokenClassification, pipelin
 
 
 def download():
-    for modelName in ["crina-t/histbert-finetuned-ner", "KBLab/bert-base-swedish-cased-ner"]:
-        snapshot_download(repo_id=modelName,
-                          local_dir=settings.NER_BASE_DIR / "checkpoints" / modelName.replace("/", "_"))
+    for modelName, revision in [("crina-t/histbert-finetuned-ner", settings.HF_CRINA_HASH),
+                                ("KBLab/bert-base-swedish-cased-ner", settings.HF_KB_HASH)]:
+        modelDir = Path(settings.NER_BASE_DIR) / "checkpoints" / modelName.replace("/", "_")
+        if (modelDir / "version.txt").exists():
+            with (modelDir / "version.txt").open("r") as inFile:
+                existingRevision = inFile.read()
+                if existingRevision == revision:
+                    continue
+
+        snapshot_download(repo_id=modelName, revision=revision, local_dir=modelDir)
+        with (settings.NER_BASE_DIR / "version.txt").open("w") as outFile:
+            outFile.write(revision)
 
 
 class Model(Enum):

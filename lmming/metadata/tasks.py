@@ -1,19 +1,20 @@
 import logging
 from pathlib import Path
 
-from celery import shared_task
+import requests
+from celery import shared_task, signals
 from dateutil.relativedelta import relativedelta
-from django.db import transaction
 from django.conf import settings
+from django.db import transaction
+from requests.compat import urljoin
 
 from metadata.enum_utils import PipelineStepName
 from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry, DefaultNumberSettings, \
     DefaultValueSettings
 from metadata.nlp.ner import processPage
-import requests
-from requests.compat import urljoin
+from metadata.nlp.hf_utils import download
 
-logger = logging.getLogger("lmming_celery")
+logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
 
 @shared_task()
@@ -277,3 +278,8 @@ def scheduleTask(jobId: int) -> bool:
             # either error or unknown state, don't do anything, just return
             # TODO: maybe add some logging?
             return False
+
+@signals.worker_ready.connect
+def prepareNLP(**kwargs):
+    download()
+    logger.info("Model download complete")
