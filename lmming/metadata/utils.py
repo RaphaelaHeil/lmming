@@ -1,9 +1,12 @@
 import io
 import re
 import zipfile
+from functools import partial
+from pathlib import Path
 from typing import Dict, Union, List, Any
 
 import pandas as pd
+from lxml.etree import SubElement, register_namespace, QName, Element, tostring
 
 from lmming import settings
 from metadata.models import Report, ExtractionTransfer, FilemakerEntry
@@ -146,6 +149,34 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
     zip_buffer.seek(0)
 
     return zip_buffer
+
+
+def buildStructMap(transfer: ExtractionTransfer) -> str:
+    METS = "http://www.loc.gov/METS/"
+    register_namespace("mets", METS)
+    f = partial(QName, METS)
+
+    root = Element(f("mets"))
+    structMap = SubElement(root, f("structMap"), TYPE="logical", ID="structMap_lm", LABEL="LM structure")
+    outerDiv = SubElement(structMap, f("div"))
+
+    for report in transfer.report_set.all():
+        reportNode = SubElement(outerDiv, f("div"), TYPE="report", LABEL=report.title, ID=str(report.noid))
+
+        for page in report.page_set.all():
+            pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER=str(page.order), LABEL=page.originalFileName,
+                                  ID=f"{report.noid}_{page.order}")
+            filename = Path(page.originalFileName).stem
+
+            SubElement(pageNode, f("fptr"), FILEID=f"{filename}.tif", CONTENTIDS=f"objects/preservation/{filename}.tif")
+            SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",
+                       CONTENTIDS=f"objects/transcription/{filename}.xml")
+
+    return tostring(root, pretty_print=True).decode("utf-8")
+
+
+def buildFolderStructure(transfer: ExtractionTransfer):
+    pass
 
 
 def updateFilemakerData(df: pd.DataFrame):

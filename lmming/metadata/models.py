@@ -151,6 +151,7 @@ class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
     order = PositiveIntegerField(default=1)  # internal use, not for CSV
     transcriptionFile = FileField(blank=False, null=True)  # mandatory, file type can be plain text or ALTO xml
+    originalFileName = CharField(blank=False, null=True)
 
     identifier = URLField(blank=True, null=True)  # URL
     transcription = TextField(blank=True, default="")  # optional, single value

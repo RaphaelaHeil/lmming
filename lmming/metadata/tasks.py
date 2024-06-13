@@ -277,14 +277,6 @@ def mintArks(jobPk: int, pipeline: bool = True):
         scheduleTask(jobPk)
 
 
-def buildStructMap(transferId: int):
-    pass
-
-
-def buildFolderStructure(transferId: int):
-    pass
-
-
 TASK_INDEX = {PipelineStepName.FILENAME.name: extractFromFileNames,
               PipelineStepName.FILEMAKER_LOOKUP.name: fileMakerLookup,
               PipelineStepName.GENERATE.name: computeFromExistingFields,
