@@ -2,14 +2,12 @@
     <div class="modal-content">
         <div class="modal-header">
             <h5 class="modal-title" id="exampleModalLabel">
-                Details for Extraction Process "{{transfer.name}}"
+                Details for Extraction Process "{{transfer.name}}" (Status: {{transfer.get_status_display}})
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-            <p><strong>Processing Status:</strong> {{transfer.status}}</p>
             {%if transfer.jobs.count > 0 %}
-
             <h4 class="mt-4">Jobs</h4>
             <table class="table table-sm">
                 <thead>
@@ -17,7 +15,6 @@
                 <th scope="row" class="text-center">Date</th>
                 <th scope="row" class="text-center">Org. ID</th>
                 <th scope="row" class="text-center">Pages</th>
-                <th scope="row" class="text-center">Job Stage</th>
                 <th scope="row" class="text-center">Job Status</th>
                 <th></th>
                 </thead>
@@ -28,7 +25,6 @@
                     <td class="text-center">{{job.report.dateString}}</td>
                     <td class="text-center">{{job.report.unionId}}</td>
                     <td class="text-center">{{job.report.page_set.count}}</td>
-                    <td class="text-center">Unknown</td>
                     <td class="text-center">{{job.get_status_display}}</td>
                     <td class="text-center">
                         <a href="{% url 'metadata:job' job.pk %}">

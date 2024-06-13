@@ -4,13 +4,6 @@
     </a>
 
     <div hx-include="#checked-contacts" hx-target="#tbody">
-        <button class="btn btn-secondary checkbox-action-button disabled">
-            {% comment %}
-            {#hx-get="{% url 'metadata:batch_download_modal'%}" hx-target="#exampleModal" hx-trigger="click"
-            data-bs-toggle="modal" data-bs-target="#exampleModal"#}
-            {% endcomment %}
-            <i class="fa-solid fa-download"></i> Download Selected
-        </button>
         <button class="btn btn-danger checkbox-action-button"
                 hx-delete="{% url 'metadata:transfer_batch_delete'%}" hx-target="#modalContainer" hx-trigger="click"
                 data-bs-toggle="modal" data-bs-target="#modalContainer">

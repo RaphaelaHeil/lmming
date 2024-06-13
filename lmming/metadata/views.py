@@ -6,8 +6,9 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
 
-from metadata.models import ExtractionTransfer, Job
-from metadata.pipeline_views import filename, filemaker, compute, imageBased, ner, mint
+from metadata.lookup import URL_STEP_INDEX
+from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
+from metadata.pipeline_views import filename, filemaker, compute, facManual, ner, mint
 from metadata.utils import buildTransferCsvs
 
 
@@ -18,9 +19,19 @@ def index(request):
 def waitingJobs(request):
     return render(request, "partial/waiting_partial.html", {})
 
+
 def jobDetails(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
-    return render(request, "partial/job.html", {"job": job})
+    stepData = []
+    for step in job.processingSteps.order_by("order"):
+        stepData.append({"step": step, "urlName": URL_STEP_INDEX[step.processingStepType]})
+
+    error = {}
+    if job.status == Status.ERROR:
+        step = job.processingSteps.filter(status=Status.ERROR).first()
+        error["message"] = step.log
+        error["step"] = ProcessingStep.ProcessingStepType[step.processingStepType].label
+    return render(request, "partial/job.html", {"job": job, "error": error, "steps":stepData})
 
 
 def downloadTransfer(request, transfer_id):
@@ -113,7 +124,7 @@ class JobEditView(View):
             return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
 
     def __handleView__(self, request, job, stepName) -> Tuple[str, Dict[str, Any]]:
-        stepIndex = {"filename": filename, "filemaker": filemaker, "generate": compute, "image": imageBased, "ner": ner,
+        stepIndex = {"filename": filename, "filemaker": filemaker, "generate": compute, "image": facManual, "ner": ner,
                      "mint": mint}
         context = stepIndex[stepName](request, job)
         context["stepParam"] = stepName

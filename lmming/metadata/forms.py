@@ -40,10 +40,11 @@ class ExtractionTransferSettingsForm(Form):
                                initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     generateHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                   required=False)
-    imageMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                            initial=ProcessingStep.ProcessingStepMode.MANUAL, disabled=True)
-    imageHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False,
-                               disabled=True)
+    facManualMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
+                                initial=ProcessingStep.ProcessingStepMode.MANUAL, disabled=True)
+    facManualHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
+                                   required=False, disabled=True)
+
     nerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
                           initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
     nerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
@@ -84,12 +85,13 @@ class ComputeForm(Form):
 
 
 class ImageForm(Form):
+    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True)
     isFormatOf = MultipleChoiceField(label="Format", choices=Report.DocumentFormat, required=True,
-                        widget=CheckboxSelectMultiple)
+                                     widget=CheckboxSelectMultiple)
+
 
 class MintForm(Form):
     identifier = URLField(label="IIIF URL", required=True)
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True)
 
 
 class PageForm(Form):
@@ -129,4 +131,5 @@ class SettingsForm(Form):
 
 class FilemakerSettingsForm(Form):
     filemaker_csv = FileField(label="Filemaker CSV",
-                              widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}), required=False)
+                              widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}),
+                              required=False)

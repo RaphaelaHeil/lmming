@@ -124,16 +124,18 @@ def compute(request, job):
         return {"form": computeForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.GENERATE.label}
 
 
-def imageBased(request, job):
-    initial = {"isFormatOf": job.report.isFormatOf}
+def facManual(request, job):
+    initial = {"isFormatOf": job.report.isFormatOf, "isVersionOf":job.report.isVersionOf}
     if request.method == "POST":
         imageForm = ImageForm(request.POST, initial=initial)
         if imageForm.is_valid():
             if imageForm.has_changed():
                 if "isFormatOf" in imageForm.changed_data:
                     job.report.isFormatOf = imageForm.cleaned_data["isFormatOf"]
+                if "isVersionOf" in imageForm.changed_data:
+                    job.report.isVersionOf = imageForm.cleaned_data["isVersionOf"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -143,7 +145,7 @@ def imageBased(request, job):
             return {"job": job}
     else:
         imageForm = ImageForm(initial=initial)
-        return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.IMAGE.label}
+        return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.label}
 
 
 def ner(request, job):
@@ -200,15 +202,14 @@ def ner(request, job):
 
 
 def mint(request, job):
-    initial = {"identifier": job.report.identifier, "isVersionOf": job.report.identifier}
+    initial = {"identifier": job.report.identifier}
     if request.method == "POST":
         mintForm = MintForm(request.POST, initial=initial)
         if mintForm.is_valid():
             if mintForm.has_changed():
                 if "identifier" in mintForm.changed_data:
                     job.report.identifier = mintForm.cleaned_data["identifier"]
-                if "isVersionOf" in mintForm.changed_data:
-                    job.report.isVersionOf = mintForm.cleaned_data["isVersionOf"]
+                # TDOD: fix this field! (noid vs identifier, etc)
                 job.report.save()
             step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
             step.status = Status.COMPLETE

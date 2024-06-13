@@ -230,6 +230,7 @@ class ProcessingStep(Model):
         IMAGE = PipelineStepName.IMAGE.name, PipelineStepName.IMAGE.value[1]
         NER = PipelineStepName.NER.name, PipelineStepName.NER.value[1]
         MINT_ARKS = PipelineStepName.MINT_ARKS.name, PipelineStepName.MINT_ARKS.value[1]
+        FAC_MANUAL = PipelineStepName.FAC_MANUAL.name, PipelineStepName.FAC_MANUAL.value[1]
 
     class ProcessingStepMode(TextChoices):
         MANUAL = "MANUAL", "Manual"

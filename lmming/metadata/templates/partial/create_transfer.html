@@ -72,19 +72,20 @@
                 </tr>
                 <tr>
                     <td scope="row">
-                        Extract from Images
+                        Manual Data Entry
                     </td>
                     <td class="text-left">
                         <span data-bs-toggle="tooltip"
                               data-bs-placement="top"
-                              data-bs-title="Not implemented yet! - Identifies the type of text (printed, handwritten,...), based on images."><i
+                              {# data-bs-title="Not implemented yet! - Identifies the type of text (printed, handwritten,...), based on images." #}
+                              data-bs-title="Any piece of data that can not be handled automatically at the moment."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
                     </td>
                     <td class="text-center">
-                        {{ settings.imageMode }}
+                        {{ settings.facManualMode }}
                     </td>
                     <td class="text-center">
-                        {{settings.imageHumVal}}
+                        {{settings.facManualVal}}
                     </td>
                 </tr>
                 <tr>

@@ -8,6 +8,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm, \
     FilemakerSettingsForm
+from metadata.lookup import URL_STEP_INDEX
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
 from metadata.tasks import restartTask
@@ -138,7 +139,8 @@ def __buildProcessingSteps__(data, job):
     stepKeys = [("filenameMode", "filenameHumVal", PipelineStepName.FILENAME),
                 ("filemakerMode", "filemakerHumVal", PipelineStepName.FILEMAKER_LOOKUP),
                 ("generateMode", "generateHumVal", PipelineStepName.GENERATE),
-                ("imageMode", "imageHumVal", PipelineStepName.IMAGE),
+                # ("imageMode", "imageHumVal", PipelineStepName.IMAGE),
+                ("facManualMode", "facManualHumVal", PipelineStepName.FAC_MANUAL),
                 ("nerMode", "nerHumVal", PipelineStepName.NER),
                 ("mintMode", "mintHumVal", PipelineStepName.MINT_ARKS)]
 
@@ -189,7 +191,7 @@ def createTransfer(request):
 
                 for page in pages:
                     Page.objects.create(report=r, order=int(page["page"]), transcriptionFile=page["file"],
-                                        originalFilename=page["file"])
+                                        originalFileName=page["file"])
 
                 j = Job.objects.create(transfer=transferInstance, report=r)
                 if not processingSteps:
@@ -200,7 +202,7 @@ def createTransfer(request):
                         step._state.adding = True
                         step.job = j
                         step.save()
-                r.job = j  # do I need a save after this?
+                r.job = j
                 r.save()
 
             return redirect("metadata:verify_transfer", transfer_id=transferInstance.pk)
@@ -210,12 +212,6 @@ def createTransfer(request):
 
 
 def awaitingHumanInteraction(request):
-    stepNameIndex = {ProcessingStep.ProcessingStepType.FILENAME: "filename",
-                     ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP: "filemaker",
-                     ProcessingStep.ProcessingStepType.GENERATE: "generate",
-                     ProcessingStep.ProcessingStepType.IMAGE: "image",
-                     ProcessingStep.ProcessingStepType.NER: "ner",
-                     ProcessingStep.ProcessingStepType.MINT_ARKS: "mint"}
     stepData = []
     jobPks = set()
     processingSteps = ProcessingStep.objects.filter(
@@ -225,7 +221,7 @@ def awaitingHumanInteraction(request):
             continue
         jobPks.add(step.job.pk)
         stepData.append(
-            {"stepName": stepNameIndex[step.processingStepType], "processName": step.job.transfer.name,
+            {"stepName": URL_STEP_INDEX[step.processingStepType], "processName": step.job.transfer.name,
              "stepDisplay": ProcessingStep.ProcessingStepType[step.processingStepType].label,
              "status": Status[step.status].label, "job": step.job.pk, "startDate": step.job.startDate})
 

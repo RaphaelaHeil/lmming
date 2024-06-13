@@ -3,13 +3,14 @@
 {% block title %}Job #{{job.pk}}{% endblock %}
 
 {% block content %}
+
 <div class="p-0">
     <div class="row">
         <div class="col-2 text-center">
             <strong>Status:</strong>
         </div>
         <div class="col">
-            <p>{{job.status}}</p>
+            <p>{{job.get_status_display}}</p>
         </div>
     </div>
     <div class="row">
@@ -48,80 +49,49 @@
 
     <hr/>
 
+    <h2 class="mt-2">Processing Steps</h2>
+    <div class="row">
+        <div class="col-7">
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="row" class="text-center">Step Name</th>
+                    <th scope="row" class="text-center">Status</th>
+                    <th scope="row" class="text-center">Options</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for stepData in steps%}
+                <tr>
+                    <th scope="row" class="text-center">{{stepData.step.get_processingStepType_display}}</th>
+                    <td class="text-center">{{stepData.step.get_status_display}}</td>
+                    <td class="text-center">
+                        <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk stepData.urlName%}"><i
+                                class="fa-solid fa-pencil text-dark"></i></a>
+                        {%if stepData.step.mode == 'AUTOMATIC'%}
+                        <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk stepData.urlName%}"><i
+                                class="fa-solid fa-repeat text-dark"></i></a>
+                        {%endif%}
+                    </td>
+                </tr>
+
+                {%endfor%}
+
+                </tbody>
+            </table>
+
+        </div>
+        <div class="col-3">
+            {% if error%}
+            <h5>Error in Step: {{error.step}}</h5>
+            <p>{{error.message}}</p>
+            {% endif %}
+        </div>
+    </div>
+    <hr/>
 
     {% include "components/report_details.html" with report=job.report %}
 
-    <h2 class="mt-2">Processing Steps</h2>
-    <table class="table table-sm">
-        <thead>
-        <tr>
-            <th scope="row" class="text-center">Step Name</th>
-            <th scope="row" class="text-center">Status</th>
-            <th scope="row" class="text-center">Options</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <th scope="row" class="text-center">Filename Lookup</th>
-            <td class="text-center"></td>
-            <td class="text-center">
-                <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk 'filename'%}"><i
-                        class="fa-solid fa-pencil text-dark"></i></a>
-                <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'filename'%}"><i
-                        class="fa-solid fa-repeat text-dark"></i></a>
 
-            </td>
-        </tr>
-        <tr>
-            <th scope="row" class="text-center">Filemaker</th>
-            <td class="text-center"></td>
-            <td class="text-center">
-                <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk 'filemaker'%}"><i
-                        class="fa-solid fa-pencil text-dark"></i></a>
-                <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'filemaker'%}"><i
-                        class="fa-solid fa-repeat text-dark"></i></a>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row" class="text-center">Generate</th>
-            <td class="text-center"></td>
-            <td class="text-center">
-                <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk 'generate'%}"><i
-                        class="fa-solid fa-pencil text-dark"></i></a>
-                <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'generate'%}"><i
-                        class="fa-solid fa-repeat text-dark"></i></a>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row" class="text-center">Image</th>
-            <td class="text-center"></td>
-            <td class="text-center">
-                <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk 'image'%}"><i
-                        class="fa-solid fa-pencil text-dark"></i></a>
-            </td>
-            {#<i class="fa-solid fa-repeat text-white"></i>#}
-        </tr>
-        <tr>
-            <th scope="row" class="text-center">Named Entity Recognition</th>
-            <td class="text-center"></td>
-            <td class="text-center">
-                <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk 'ner'%}"><i
-                        class="fa-solid fa-pencil text-dark"></i></a>
-                <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'ner'%}"><i
-                        class="fa-solid fa-repeat text-dark"></i></a>
-            </td>
-        </tr>
-        <tr>
-            <th scope="row" class="text-center">ARK Minting</th>
-            <td class="text-center"></td>
-            <td class="text-center">
-                <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk 'mint'%}"><i
-                    class="fa-solid fa-pencil text-dark"></i></a>
-                <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk 'mint'%}"><i
-                    class="fa-solid fa-repeat text-dark"></i></a>
-            </td>
-        </tr>
-        </tbody>
-    </table>
 </div>
 {% endblock %}
