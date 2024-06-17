@@ -234,7 +234,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
             ark = response.json()["ark"]
             noid = ark.split("/")[-1]
             report.noid = noid
-            report.identifier = ark
+            report.identifier = f"https://ark.fauppsala.se/{ark}/manifest" # TODO: remove hardcoding once arklet is set up properly
             report.save()
         else:
             step.status = Status.ERROR
@@ -245,18 +245,20 @@ def mintArks(jobPk: int, pipeline: bool = True):
                            f"{report.title}")
             return
 
-    resolveTo = urljoin(iiifBase, f"iiif/presentation/{report.noid}/manifest")
+    ark = f"ark:/{settings.MINTER_ORG_ID}/{report.noid}"
+
+    resolveTo = urljoin(iiifBase, f"iiif/presentation/{report.noid}")
 
     # only adding the bare minimum for now:
-    details = {"ark": report.identifier, "url": resolveTo, "title": report.title, }
+    details = {"ark": ark, "url": resolveTo, "title": report.title, }
     # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
 
     updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers,
                                   data=json.dumps(details).encode("utf-8"))
     if not updateResponse.ok:
         step.status = Status.ERROR
-        step.log = (f"An error occurred while updating the ARK {ark}, status: {updateResponse.status_code}. Please "
-                    f"verify that ARKlet is running and try again.")
+        step.log = (f"An error occurred while updating the ARK {ark}, status: {updateResponse.status_code}"
+                    f". Please verify that ARKlet is running and try again.")
         step.save()
         logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
                        f"{ark} ({jobPk} - {report.title})")
