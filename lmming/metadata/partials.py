@@ -16,14 +16,6 @@ from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
 
 
-def downloadTransfer():
-    pass
-
-
-def donwloadModal():
-    pass
-
-
 def restart(request, job_id: int, step: str):
     stepLookup = {"filename": ProcessingStep.ProcessingStepType.FILENAME,
                   "filemaker": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
@@ -31,7 +23,7 @@ def restart(request, job_id: int, step: str):
                   "mint": ProcessingStep.ProcessingStepType.MINT_ARKS}
 
     restartTask(job_id, stepLookup[step])
-    return render(request, "partial/job.html", {"job": Job.objects.get(pk=job_id)})
+    return redirect("metadata:job", job_id=job_id)
 
 
 def batchDeleteModal(request):

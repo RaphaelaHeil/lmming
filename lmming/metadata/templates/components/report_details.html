@@ -5,7 +5,11 @@
             <strong>Identifier:</strong>
         </div>
         <div class="col">
-            <p>{{report.identifier|default:'not assigned yet'}}</p>
+            {%if report.identifier%}
+            <p data-bs-toggle="tooltip"><a href="{{report.identifier}}" target="_blank" title="Opens in new tab">{{report.identifier}} <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></p>
+            {%else%}
+            <p>not assigned yet</p>
+            {%endif%}
         </div>
     </div>
     <div class="row">

@@ -66,11 +66,15 @@
                     <th scope="row" class="text-center">{{stepData.step.get_processingStepType_display}}</th>
                     <td class="text-center">{{stepData.step.get_status_display}}</td>
                     <td class="text-center">
-                        <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk stepData.urlName%}"><i
-                                class="fa-solid fa-pencil text-dark"></i></a>
+                        <span data-bs-toggle="tooltip" class="px-2">
+                            <a style="cursor:pointer;" href="{% url 'metadata:edit_job' job.pk stepData.urlName%}"
+                               title="Manually Edit Fields"><i class="fa-solid fa-pencil text-dark"></i></a>
+                        </span>
                         {%if stepData.step.mode == 'AUTOMATIC'%}
-                        <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk stepData.urlName%}"><i
-                                class="fa-solid fa-repeat text-dark"></i></a>
+                        <span data-bs-toggle="tooltip">
+                            <a style="cursor:pointer;" href="{% url 'metadata:restart' job.pk stepData.urlName%}"
+                               title="Rerun Processing Step"><i class="fa-solid fa-repeat text-dark"></i></a>
+                        </span>
                         {%endif%}
                     </td>
                 </tr>
