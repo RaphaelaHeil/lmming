@@ -76,7 +76,7 @@ def __extractFromAlto__(root):
 
 def __extractFromPage__(root):
     namespace = {"": root.tag.replace("PcGts", "").strip("{}")}
-    textLines = root.findall(".//Unicode", namespace)
+    textLines = root.findall(".//TextLine/TextEquiv/Unicode", namespace)
     lines = []
     for line in textLines:
         text = line.text
