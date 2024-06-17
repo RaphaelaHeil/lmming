@@ -5,8 +5,6 @@ from typing import Set
 
 import nltk
 
-nltk.download('punkt')
-
 from .aux import loadAbbreviations, loadSynonyms, get_key
 from .hf_utils import getKBPipeline, getHistbertPipeline
 from .utils import correction, handleLinebreakChars, extractTranscriptionsFromXml
@@ -16,15 +14,8 @@ TIME_EXPRESSIONS = ["Januari", "januari", "Jan", "jan", "Februari", "februari", 
                     "Jul", "jul", "Augusti", "augusti", "Aug", "aug", "September", "september", "Sept", "sept",
                     "Oktober", "oktober", "Okt", "okt", "November", "november", "Nov", "nov", "December", "decemer",
                     "Dec", "dec"]
-
 VOWELS = "[aeiouäöåAEIOUÄÖÅ]"
 CONSONANTS = "[bcdfghjklmnpqrstvwxyz]"
-
-ABBREVIATIONS = loadAbbreviations()
-dalin, dalin_values_flat = loadSynonyms()
-
-NER_RA = getHistbertPipeline()
-NER_KB = getKBPipeline()
 
 EMPTY = ""
 
@@ -43,14 +34,40 @@ class NlpResult():
     measures: bool = False
 
 
+class NerHelper():
+
+    def __init__(self):
+        nltk.download('punkt')
+        self.ABBREVIATIONS = loadAbbreviations()
+        self.DALIN, self.DALIN_VALUES_FLAT = loadSynonyms()
+
+        self._ner_ra = None
+        self._ner_kb = None
+
+    @property
+    def NER_RA(self):
+        if not self._ner_ra:
+            self._ner_ra = getHistbertPipeline()
+        return self._ner_ra
+
+    @property
+    def NER_KB(self):
+        if not self._ner_kb:
+            self._ner_kb = getKBPipeline()
+        return self._ner_kb
+
+
+NER_HELPER = NerHelper()
+
+
 def normalize(document):
     edited = ''
     processed = nltk.word_tokenize(document)
     for word in processed:
-        if word in ABBREVIATIONS.keys():
-            word = ABBREVIATIONS[word][0]
-        if word in dalin_values_flat:
-            normalized = get_key(word, dalin)
+        if word in NER_HELPER.ABBREVIATIONS.keys():
+            word = NER_HELPER.ABBREVIATIONS[word][0]
+        if word in NER_HELPER.DALIN_VALUES_FLAT:
+            normalized = get_key(word, NER_HELPER.DALIN)
             edited += normalized + ' '
         else:
             # Rule #1 qvart > kvart
@@ -124,8 +141,8 @@ def normalize(document):
 
 def filtered_entities(text: str, result: NlpResult):
     msr = 0
-    processed_ra = NER_RA(text)
-    processed_kb = NER_KB(text)
+    processed_ra = NER_HELPER.NER_RA(text)
+    processed_kb = NER_HELPER.NER_KB(text)
     for element in processed_ra:
         entity = correction(element["word"])
         label = element["entity_group"]

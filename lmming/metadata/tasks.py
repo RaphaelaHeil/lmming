@@ -321,9 +321,3 @@ def scheduleTask(jobId: int) -> bool:
             # either error or unknown state, don't do anything, just return
             # TODO: maybe add some logging?
             return False
-
-
-@signals.worker_ready.connect
-def prepareNLP(**kwargs):
-    download()
-    logger.info("Model download complete")
