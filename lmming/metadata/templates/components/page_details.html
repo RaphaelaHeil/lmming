@@ -62,9 +62,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {% if page.persons %}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for prs in page.persons%}
-                                        <li class="border" style="display: inline-block">{{prs}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{prs}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
@@ -79,9 +79,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {% if page.organisations %}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for prs in page.organisations%}
-                                        <li class="border" style="display: inline-block">{{prs}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{prs}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
@@ -96,9 +96,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {%if page.locations %}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for loc in page.locations%}
-                                        <li class="border" style="display: inline-block">{{loc}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{loc}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
@@ -113,9 +113,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {%if page.times %}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for prs in page.times%}
-                                        <li class="border" style="display: inline-block">{{prs}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{prs}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
@@ -129,9 +129,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {%if page.works %}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for prs in page.works%}
-                                        <li class="border" style="display: inline-block">{{prs}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{prs}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
@@ -145,9 +145,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {% if page.events %}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for prs in page.events%}
-                                        <li class="border" style="display: inline-block">{{prs}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{prs}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
@@ -161,9 +161,9 @@
                                 </div>
                                 <div class="col text-center">
                                     {%if page.ner_objects%}
-                                    <ul class="list-unstyled card-columns" style="column-count: 4;">
+                                    <ul class="row justify-content-center">
                                         {% for prs in page.ner_objects%}
-                                        <li class="border" style="display: inline-block">{{prs}}</li>
+                                        <li class="badge border border-dark text-dark col-sm-2 py-2 m-1">{{prs}}</li>
                                         {%endfor%}
                                     </ul>
                                     {%else%}
