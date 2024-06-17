@@ -1,3 +1,4 @@
+import json
 import logging
 from pathlib import Path
 from typing import List
@@ -17,6 +18,8 @@ from metadata.nlp.ner import processPage, NlpResult
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
+
+# TODO: add error handling in case a transfer was deleted between scheduling and start of the respective step
 
 @shared_task()
 def extractFromFileNames(jobPk: int, pipeline: bool = True):
@@ -215,54 +218,52 @@ def mintArks(jobPk: int, pipeline: bool = True):
         shoulder = "/r1"
     arkletBaseUrl = settings.MINTER_URL
     headers = {"Authorization": f"Bearer {settings.MINTER_AUTH}"}
-    mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}
 
     mintUrl = urljoin(arkletBaseUrl, "mint")
 
     iiifBase = settings.IIIF_BASE_URL
 
-    response = requests.post(mintUrl, headers=headers, json=mintBody)
-    if response.ok:
-        ark = response.json()["ark"]
-        noid = ark.split("/")[-1]
+    # TODO: do not request a new noid if report already has one -- only run update in that case!
+    # TODO: maybe double check if noid exists?
 
-        resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}/manifest")
+    if not report.noid:
+        mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}
+        response = requests.post(mintUrl, headers=headers, json=mintBody)
 
-        details = {"ark": ark,
-                   "url": resolveTo,
-                   "title": report.title,
-                   # "metadata": metadata, # TODO: other things to add?
-                   "type": report.get_type_display(),
-                   # "commitment": commitment,
-                   # "identifier": identifier,
-                   "format": report.get_isFormatOf_display(),
-                   "relation": report.get_relation_display(),
-                   "source": report.get_source_display()}
-
-        updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers, json=details)
-        if updateResponse.ok:
+        if response.ok:
+            ark = response.json()["ark"]
+            noid = ark.split("/")[-1]
             report.noid = noid
             report.identifier = ark
             report.save()
         else:
             step.status = Status.ERROR
-            step.log = (f"An error occurred while updating the ARK {ark}, status: {response.status_code}. Please verify"
-                        f" that ARKlet is running and try again.")
+            step.log = (f"An error occurred while obtaining a new ARK: {response.status_code}. Please verify that "
+                        f"ARKlet is running and try again.")
             step.save()
-            logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
-                           f"{ark} ({jobPk} - {report.title})")
+            logger.warning(f"ARKlet returned status {response.status_code} while trying to mint ARK for {jobPk} - "
+                           f"{report.title}")
             return
-    else:
+
+    resolveTo = urljoin(iiifBase, f"iiif/presentation/{report.noid}/manifest")
+
+    # only adding the bare minimum for now:
+    details = {"ark": report.identifier, "url": resolveTo, "title": report.title, }
+    # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
+
+    updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers,
+                                  data=json.dumps(details).encode("utf-8"))
+    if not updateResponse.ok:
         step.status = Status.ERROR
-        step.log = (f"An error occurred while obtaining a new ARK: {response.status_code}. Please verify that ARKlet is"
-                    f" running and try again.")
+        step.log = (f"An error occurred while updating the ARK {ark}, status: {updateResponse.status_code}. Please "
+                    f"verify that ARKlet is running and try again.")
         step.save()
-        logger.warning(f"ARKlet returned status {response.status_code} while trying to mint ARK for {jobPk} - "
-                       f"{report.title}")
+        logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
+                       f"{ark} ({jobPk} - {report.title})")
         return
 
     for page in report.page_set.all():
-        page.iiifId = f"{noid}_{page.order}"
+        page.iiifId = f"{report.noid}_{page.order}"
         page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
         page.save()
 
