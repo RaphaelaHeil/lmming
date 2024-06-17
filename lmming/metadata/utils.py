@@ -1,9 +1,9 @@
-import io
+from io import BytesIO
 import re
 import zipfile
 from functools import partial
 from pathlib import Path
-from typing import Dict, Union, List, Any
+from typing import Dict, Union, List, Any, Tuple
 
 import pandas as pd
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring
@@ -104,11 +104,11 @@ def __toOmekaList__(ll: List[Any]) -> str:
         return ""
 
 
-def buildTransferCsvs(transfer: ExtractionTransfer):
+def __buildOmekaSummaries__(transfer: ExtractionTransfer) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
     reportSummary = []
     pageSummary = []
     for report in transfer.report_set.all():
-        # TODO: add null/none checks!! 
+        # TODO: add null/none checks!!
         reportSummary.append({"dcterms:identifier": report.identifier,
                               "dcterms:title": report.title,
                               "dcterms:creator": report.creator,
@@ -141,8 +141,13 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
                                 "lm:event": __toOmekaList__(page.events),
                                 "lm:object": __toOmekaList__(page.ner_objects),
                                 "lm:measure": page.measures})
+    return reportSummary, pageSummary
 
-    zip_buffer = io.BytesIO()
+
+def buildTransferCsvs(transfer: ExtractionTransfer):
+    reportSummary, pageSummary = __buildOmekaSummaries__(transfer)
+
+    zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
         zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
@@ -172,11 +177,65 @@ def buildStructMap(transfer: ExtractionTransfer) -> str:
             SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",
                        CONTENTIDS=f"objects/transcription/{filename}.xml")
 
-    return tostring(root, pretty_print=True).decode("utf-8")
+    return tostring(root, pretty_print=True, encoding="utf-8").decode("utf-8")
+
+
+def buildNormalizationCsv(srcNames) -> str:
+    data = []
+    for f in srcNames:
+        file = Path(f)
+        if file.suffix == ".tif":
+            filename = file.stem
+            dest = Path("manualNormalization") / "access" / f"{filename}.jpg"
+            data.append((f, dest))
+        else:
+            data.append((f,))
+    df = pd.DataFrame.from_records(data)
+    return df.to_csv(header=False, index=False)
+
+
+def buildMetadataCsv(filenames) -> str:
+    DC_FIELDS = ["dc.identifier", "dc.type", "dc.date", "dc.rights", "dc.description", "dc.language", "dc.coverage",
+                 "dc.title", "dc.subject", "dc.creator", "dc.contributor", "dc.publisher", "dc.source", "dc.format",
+                 "dc.relation"]
+    records = []
+    for filename in filenames:
+        d = {"filename": filename}
+        d.update({x: "" for x in DC_FIELDS})
+        records.append(d)
+    return pd.DataFrame.from_records(records).to_csv(index=False)
 
 
 def buildFolderStructure(transfer: ExtractionTransfer):
-    pass
+    outfile = BytesIO()
+    filenames = []
+
+    with zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED) as zf:
+
+        zf.writestr("preservation\\.placeholder", "")
+
+        for report in transfer.report_set.all():
+            for page in report.page_set.all():
+                pageFileName = page.originalFileName
+                filenames.append(pageFileName)
+                filenames.append(str(Path(pageFileName).with_suffix(".tif")))
+                zf.write(page.transcriptionFile.path, f"transcription\\{pageFileName}")
+
+        filenames.sort(key=lambda x: (x[-3:], x[:-4]))
+
+        zf.writestr("manualNormalization\\normalization.csv", buildNormalizationCsv(filenames))
+        zf.writestr("manualNormalization\\access\\.placeholder", "")
+        zf.writestr("metadata\\metadata.csv", buildMetadataCsv(filenames))
+        zf.writestr("metadata\\mets_structmap.xml", buildStructMap(transfer))
+
+        reportSummary, pageSummary = __buildOmekaSummaries__(transfer)
+        zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
+        zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
+
+        zf.close()
+    outfile.seek(0)
+
+    return outfile
 
 
 def updateFilemakerData(df: pd.DataFrame):

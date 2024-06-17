@@ -1,4 +1,5 @@
 from datetime import datetime
+from io import BytesIO
 from typing import Tuple, Dict, Any
 
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
@@ -9,7 +10,7 @@ from django.views.generic import View
 from metadata.lookup import URL_STEP_INDEX
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
 from metadata.pipeline_views import filename, filemaker, compute, facManual, ner, mint
-from metadata.utils import buildTransferCsvs
+from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure
 
 
 def index(request):
@@ -31,17 +32,26 @@ def jobDetails(request, job_id):
         step = job.processingSteps.filter(status=Status.ERROR).first()
         error["message"] = step.log
         error["step"] = ProcessingStep.ProcessingStepType[step.processingStepType].label
-    return render(request, "partial/job.html", {"job": job, "error": error, "steps":stepData})
+    return render(request, "partial/job.html", {"job": job, "error": error, "steps": stepData})
 
 
-def downloadTransfer(request, transfer_id):
-    # TODO: add a check if transfer is complete!
+def downloadTransfer(request, transfer_id: int, filetype: str):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
-
-    if transfer:
+    if filetype == "csv":
         outFile = buildTransferCsvs(transfer)
         return FileResponse(outFile, as_attachment=True,
                             filename=f"Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
+    elif filetype == "struct_map":
+        outFile = buildStructMap(transfer)
+        filename = "mets_structmap.xml"
+        return FileResponse(BytesIO(outFile.encode()), as_attachment=True, filename=filename)
+    elif filetype == "zip":
+        outFile = buildFolderStructure(transfer)
+        filename = f"{transfer.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
+        return FileResponse(outFile, as_attachment=True, filename=filename)
+    else:
+        # TODO: raise error
+        pass
 
 
 class Transfers(View):
@@ -124,8 +134,8 @@ class JobEditView(View):
             return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
 
     def __handleView__(self, request, job, stepName) -> Tuple[str, Dict[str, Any]]:
-        stepIndex = {"filename": filename, "filemaker": filemaker, "generate": compute, "image": facManual, "ner": ner,
-                     "mint": mint}
+        stepIndex = {"filename": filename, "filemaker": filemaker, "generate": compute, "fac_manual": facManual,
+                     "ner": ner, "mint": mint}
         context = stepIndex[stepName](request, job)
         context["stepParam"] = stepName
         return context
