@@ -19,7 +19,7 @@
                 <th></th>
                 </thead>
                 <tbody>
-                {%for job in transfer.jobs.all %}
+                {%for job in transfer.jobs.all|dictsort:"pk" %}
                 <tr>
                     <th scope="row" class="text-center">{{job.report.id}}</th>
                     <td class="text-center">{{job.report.dateString}}</td>
