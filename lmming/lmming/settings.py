@@ -40,7 +40,8 @@ env = environ.Env(
     REDIS_HOST=(str, "redis://localhost"),
     REDIS_PORT=(str, "6379"),
     HF_CRINA_HASH=(str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b"),
-    HF_KB_HASH=(str, "8e1e0bdcacc4dc230d2199de47b61ce9cac321c7")
+    HF_KB_HASH=(str, "8e1e0bdcacc4dc230d2199de47b61ce9cac321c7"),
+    LMMING_HOST=(str, "localhost")
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -54,7 +55,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = ["127.0.0.1", "0.0.0.0", "localhost"]
+ALLOWED_HOSTS = [env("LMMING_HOST")]#"127.0.0.1", "0.0.0.0", "localhost"]
 
 # Application definition
 
