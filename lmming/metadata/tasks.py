@@ -234,7 +234,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
             ark = response.json()["ark"]
             noid = ark.split("/")[-1]
             report.noid = noid
-            report.identifier = f"https://ark.fauppsala.se/{ark}/manifest" # TODO: remove hardcoding once arklet is set up properly
+            report.identifier = f"https://ark.fauppsala.se/{ark}/manifest"  # TODO: remove hardcoding once arklet is set up properly
             report.save()
         else:
             step.status = Status.ERROR
@@ -321,3 +321,9 @@ def scheduleTask(jobId: int) -> bool:
             # either error or unknown state, don't do anything, just return
             # TODO: maybe add some logging?
             return False
+
+
+@signals.worker_ready.connect
+def prepareNLP(**kwargs):
+    download()
+    logger.info("Model download complete")
