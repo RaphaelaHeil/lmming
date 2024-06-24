@@ -1,161 +1,149 @@
-<div class="p-0">
+<div class="p-2 border rounded">
     <h2>Report Details</h2>
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Identifier:</strong>
         </div>
         <div class="col">
             {%if report.identifier%}
-            <p data-bs-toggle="tooltip"><a href="{{report.identifier}}" target="_blank" title="Opens in new tab">{{report.identifier}} <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></p>
+            <span data-bs-toggle="tooltip"><a href="{{report.identifier}}" target="_blank" title="Opens in new tab">{{report.identifier}}
+                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
             {%else%}
-            <p>not assigned yet</p>
+            not assigned yet
             {%endif%}
         </div>
     </div>
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Title:</strong>
         </div>
         <div class="col">
-            <p>{{report.title|default:'not assigned yet'}}</p>
+            {{report.title|default:'not assigned yet'}}
         </div>
     </div>
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Creator:</strong>
         </div>
         <div class="col">
-            <p> {{report.creator|default:'name not assigned yet'}}</p>
+            {{report.creator|default:'name not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Date:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_date_display|default:'not assigned yet'}}</p>
+            {{report.get_date_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Coverage:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_coverage_display|default:'not assigned yet'}}</p>
+            {{report.get_coverage_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Language:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_language_display|default:'not assigned yet'}}</p>
+            {{report.get_language_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Spatial:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_spatial_display|default:'not assigned yet'}}</p>
+            {{report.get_spatial_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Report Type:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_type_display|default:'not assigned yet'}}</p>
+            {{report.get_type_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>License:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_license_display|default:'not assigned yet'}}</p>
+            {{report.get_license_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>isVersionOf:</strong>
         </div>
         <div class="col">
-            <p>{{report.isVersionOf|default:'not assigned yet'}}</p>
+            {{report.isVersionOf|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>isFormatOf:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_isFormatOf_display|default:'not assigned yet'}}</p>
+            {{report.get_isFormatOf_display|default:'not assigned yet'}}
         </div>
     </div>
-
-     <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>accessRights:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_accessRights_display|default:'not assigned yet'}}</p>
+            {{report.get_accessRights_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Relation:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_relation_display|default:'not assigned yet'}}</p>
+            {{report.get_relation_display|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Created:</strong>
         </div>
         <div class="col">
-            <p>{{report.created.year|default:'not assigned yet'}}</p>
+            {{report.created.year|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Available:</strong>
         </div>
         <div class="col">
-            <p>{{report.available|default:'not assigned yet'}}</p>
+            {{report.available|default:'not assigned yet'}}
         </div>
     </div>
-
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Source:</strong>
         </div>
         <div class="col">
-            <p>{{report.get_source_display|default:'not assigned yet'}}</p>
+            {{report.get_source_display|default:'not assigned yet'}}
         </div>
-
     </div>
-    <div class="row">
-        <div class="col-2 text-center">
+    <div class="row d-flex align-items-center py-2">
+        <div class="col-3">
             <strong>Description:</strong>
         </div>
         <div class="col">
-            <p>{{report.description|default:'not assigned yet'}}</p>
+            {{report.description|default:'not assigned yet'}}
         </div>
     </div>
-
-
-    {% include "components/page_details.html" with pages=report.page_set.all %}
-
 </div>
+{%if show_pages == True%}
+<div class="pt-5">
+    {% include "components/page_details.html" with pages=report.page_set.all %}
+</div>
+{%endif%}

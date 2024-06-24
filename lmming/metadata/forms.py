@@ -1,5 +1,6 @@
 from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, IntegerField
+    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, IntegerField, TextInput, \
+    Select
 
 from metadata.models import ProcessingStep, Report
 
@@ -23,21 +24,25 @@ class MultipleFileField(FileField):
 
 
 class ExtractionTransferDetailForm(Form):
-    processName = CharField(max_length=100, label="Extraction Process Name:", required=True)
+    processName = CharField(max_length=100, label="Extraction Process Name:", required=True,
+                            widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}))
     file_field = MultipleFileField(label="Select transcription files (*.xml):")
 
 
 class ExtractionTransferSettingsForm(Form):
     filenameMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                               initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
+                               initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                               widget=Select(attrs={"class": "form-select"}))
     filenameHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                   required=False)
     filemakerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                                initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
+                                initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                                widget=Select(attrs={"class": "form-select"}))
     filemakerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                    required=False)
     generateMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                               initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
+                               initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                               widget=Select(attrs={"class": "form-select"}))
     generateHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
                                   required=False)
     facManualMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
@@ -46,10 +51,12 @@ class ExtractionTransferSettingsForm(Form):
                                    required=False, disabled=True)
 
     nerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                          initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
+                          initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                          widget=Select(attrs={"class": "form-select"}))
     nerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
     mintMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                           initial=ProcessingStep.ProcessingStepMode.AUTOMATIC)
+                           initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                           widget=Select(attrs={"class": "form-select"}))
     mintHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
 
 
@@ -59,39 +66,50 @@ class ZipForm(Form):
 
 
 class FileNameForm(Form):
-    organisationID = CharField(label="Organisation ID", required=True)
+    organisationID = CharField(label="Organisation ID", required=True,
+                               widget=TextInput(attrs={'class': 'form-control'}))
     type = MultipleChoiceField(label="Report Type", choices=Report.DocumentType, required=True,
-                               widget=CheckboxSelectMultiple)
-    date = CharField(label="Report date by year (comma-separted for multiple years)", required=True)
+                               widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    date = CharField(label="Report date by year (comma-separted for multiple years)", required=True,
+                     widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class FilemakerForm(Form):
-    creator = CharField(label="Creator Name", required=True)
-    relation = CharField(label="Relation (comma-separated)", required=False)
-    coverage = ChoiceField(choices=Report.UnionLevel, required=True)
-    spatial = CharField(label="Spatial (comma-separated)", required=True)
+    creator = CharField(label="Creator Name", required=True, widget=TextInput(attrs={'class': 'form-control'}))
+    relation = CharField(label="Relation (comma-separated)", required=False,
+                         widget=TextInput(attrs={'class': 'form-control'}))
+    coverage = ChoiceField(choices=Report.UnionLevel, required=True, widget=Select(attrs={"class": "form-select"}))
+    spatial = CharField(label="Spatial (comma-separated)", required=True,
+                        widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class ComputeForm(Form):
-    title = CharField(label="Title", required=True)
-    created = CharField(label="Year Created", required=False)
+    title = CharField(label="Title", required=True, widget=TextInput(attrs={'class': 'form-control'}))
+    created = CharField(label="Year Created", required=False, widget=TextInput(attrs={'class': 'form-control'}))
     available = DateField(label="Available from", required=False, input_formats=['%Y-%m-%d'],
                           widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
-    accessRights = ChoiceField(choices=Report.AccessRights, required=True)
-    description = CharField(label="Report description", required=False, widget=Textarea())
-    language = CharField(label="Language (comma-separated)", required=True)
-    license = CharField(label="License (comma-separated)", required=True, widget=Textarea())
-    source = CharField(label="Source (comma-separated)", required=False)
+    accessRights = ChoiceField(choices=Report.AccessRights, required=True, label="Access Rights",
+                               widget=Select(attrs={"class": "form-select"}))
+    description = CharField(label="Report description", required=False,
+                            widget=Textarea(attrs={"class": "form-control"}))
+    language = CharField(label="Language (comma-separated)", required=True,
+                         widget=TextInput(attrs={'class': 'form-control'}))
+    license = CharField(label="License (comma-separated)", required=True,
+                        widget=Textarea(attrs={'class': 'form-control'}))
+    source = CharField(label="Source (comma-separated)", required=False,
+                       widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class ImageForm(Form):
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True, max_length=200)
+    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True, max_length=200,
+                           widget=TextInput(attrs={'class': 'form-control'}))
     isFormatOf = MultipleChoiceField(label="Format", choices=Report.DocumentFormat, required=True,
-                                     widget=CheckboxSelectMultiple)
+                                     widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
 
 
 class MintForm(Form):
-    identifier = URLField(label="IIIF URL", required=True, max_length=200)
+    identifier = URLField(label="IIIF URL", required=True, max_length=200,
+                          widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class PageForm(Form):
@@ -119,11 +137,15 @@ class PageForm(Form):
 
 
 class SettingsForm(Form):
-    language = CharField(label="Default Language(s) (comma-separated)", required=True)
-    license = CharField(label="Default License(s) (comma-separated)", required=True)
-    source = CharField(label="Default Source(s) (comma-separated)", required=True)
+    language = CharField(label="Default Language(s) (comma-separated)", required=True,
+                         widget=TextInput(attrs={'class': 'form-control'}))
+    license = CharField(label="Default License(s) (comma-separated)", required=True,
+                        widget=TextInput(attrs={'class': 'form-control'}))
+    source = CharField(label="Default Source(s) (comma-separated)", required=True,
+                       widget=TextInput(attrs={'class': 'form-control'}))
 
-    accessRights = ChoiceField(label="Default accessRights Value", choices=Report.AccessRights, required=True)
+    accessRights = ChoiceField(label="Default accessRights Value", choices=Report.AccessRights, required=True,
+                               widget=Select(attrs={"class": "form-select"}))
 
     avilableYearOffset = IntegerField(label="Default number of years after publication", required=True, min_value=0,
                                       step_size=1)

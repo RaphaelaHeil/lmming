@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% block title %}Metadata Extraction Overview{% endblock %}
-
 {% block content %}
 <div class="p-0" hx-get="{% url 'metadata:transfer_table'%}?sort=created:asc" hx-trigger="load" hx-target="#tablediv">
 
