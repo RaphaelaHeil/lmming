@@ -85,13 +85,13 @@ class ComputeForm(Form):
 
 
 class ImageForm(Form):
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True)
+    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True, max_length=200)
     isFormatOf = MultipleChoiceField(label="Format", choices=Report.DocumentFormat, required=True,
                                      widget=CheckboxSelectMultiple)
 
 
 class MintForm(Form):
-    identifier = URLField(label="IIIF URL", required=True)
+    identifier = URLField(label="IIIF URL", required=True, max_length=200)
 
 
 class PageForm(Form):
