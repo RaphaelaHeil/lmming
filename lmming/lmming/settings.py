@@ -19,6 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Default env values:
 env = environ.Env(
+    #DEBUG=(bool, True),
     POSTGRES_DB=(str, "lmming"),
     POSTGRES_USER=(str, "lmming"),
     POSTGRES_PASSWORD=(str, "12345LM"),
