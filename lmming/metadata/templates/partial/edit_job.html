@@ -33,9 +33,9 @@
         {%else%}
         <div class="container">
             <div class="row">
-                <div class="col-7 pe-5">
+                <div class="col-7 px-3 border rounded h-100">
                     {% for field in form %}
-                    <div class="row py-3">
+                    <div class="row py-3 px-2">
                         {%if field.field.widget.input_type == 'checkbox'%}
                         <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
                         <fieldset>
@@ -52,7 +52,7 @@
                         {%endif%}
                     </div>
                     {% endfor %}
-                    <input type="submit" value="Confirm" class="btn btn-success my-5" name="confirm">
+                    <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 float-end" name="confirm">
                 </div>
                 <div class="col">
                     {% include "components/report_details.html" with report=job.report show_pages=False%}
