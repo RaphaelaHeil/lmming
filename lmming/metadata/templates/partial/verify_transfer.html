@@ -25,7 +25,7 @@
                     <p>Pages:</p>
                     <ul class="list-group list-group-flush">
                         {%for page in report.page_set.all%}
-                        <li class="list-group-item">{{page.transcriptionFile}}</li>
+                        <li class="list-group-item">{{page.originalFileName}}</li>
                         {%endfor%}
                     </ul>
                 </div>
