@@ -181,9 +181,8 @@ def createTransfer(request):
 
                 r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType, date=dateList)
 
-                for page in pages:
-                    Page.objects.create(report=r, order=int(page["page"]), transcriptionFile=page["file"],
-                                        originalFileName=page["file"])
+                Page.objects.bulk_create([Page(report=r, order=int(page["page"]), transcriptionFile=page["file"],
+                                               originalFileName=page["file"]) for page in pages])
 
                 j = Job.objects.create(transfer=transferInstance, report=r)
                 if not processingSteps:
