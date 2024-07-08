@@ -212,21 +212,21 @@ def buildFolderStructure(transfer: ExtractionTransfer):
 
     with zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED) as zf:
 
-        zf.writestr("preservation\\.placeholder", "")
+        zf.writestr("preservation/.placeholder", "")
 
         for report in transfer.report_set.all():
             for page in report.page_set.all():
                 pageFileName = page.originalFileName
                 filenames.append(pageFileName)
                 filenames.append(str(Path(pageFileName).with_suffix(".tif")))
-                zf.write(page.transcriptionFile.path, f"transcription\\{pageFileName}")
+                zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
 
         filenames.sort(key=lambda x: (x[-3:], x[:-4]))
 
-        zf.writestr("manualNormalization\\normalization.csv", buildNormalizationCsv(filenames))
-        zf.writestr("manualNormalization\\access\\.placeholder", "")
-        zf.writestr("metadata\\metadata.csv", buildMetadataCsv(filenames))
-        zf.writestr("metadata\\mets_structmap.xml", buildStructMap(transfer))
+        zf.writestr("manualNormalization/normalization.csv", buildNormalizationCsv(filenames))
+        zf.writestr("manualNormalization/access/.placeholder", "")
+        zf.writestr("metadata/metadata.csv", buildMetadataCsv(filenames))
+        zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer))
 
         reportSummary, pageSummary = __buildOmekaSummaries__(transfer)
         zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
