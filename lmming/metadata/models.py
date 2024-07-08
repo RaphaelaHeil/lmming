@@ -24,7 +24,7 @@ class ExtractionTransfer(Model):
     endDate = DateTimeField(null=True, blank=True)
     status = CharField(choices=Status.choices, default=Status.PENDING)
 
-    def updateStatus(self):
+    def updateTransferStatus(self):
         jobStatuses = set([job.status for job in self.jobs.all()])
 
         if self.status == Status.PENDING and len(jobStatuses) > 1:
@@ -168,7 +168,7 @@ class Page(Model):
     iiifId = CharField(blank=True, default="") # iiif URL + structmap
 
 
-@receiver(pre_delete, sender=Page)
+@receiver(pre_delete, sender=Page, weak=False)
 def pageFileDeleteHandler(sender, instance, **kwargs):
     instance.transcriptionFile.delete(save=False)
 
@@ -217,9 +217,9 @@ class Job(Model):
                 status=Status.AWAITING_HUMAN_VALIDATION)).first().get_processingStepType_display()
 
 
-@receiver(post_save, sender=Job)
-def statusUpdate(sender, instance, **kwargs):
-    instance.transfer.updateStatus()
+@receiver(post_save, sender=Job, weak=False)
+def statusUpdateTransfer(sender, instance, **kwargs):
+    instance.transfer.updateTransferStatus()
 
 
 class ProcessingStep(Model):
@@ -250,13 +250,13 @@ class ProcessingStep(Model):
         return f"{self.job.pk} - {self.processingStepType} ({self.mode}{', human validation' if self.humanValidation else ''})"
 
 
-@receiver(pre_save, sender=ProcessingStep)
+@receiver(pre_save, sender=ProcessingStep, weak=False)
 def processLog(sender, instance, **kwargs):
     if instance.status != Status.ERROR:
         instance.log = ""
 
 
-@receiver(post_save, sender=ProcessingStep)
+@receiver(post_save, sender=ProcessingStep, weak=False)
 def statusUpdate(sender, instance, **kwargs):
     instance.job.updateStatus()
 
