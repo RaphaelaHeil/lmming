@@ -82,7 +82,12 @@
             <strong>isVersionOf:</strong>
         </div>
         <div class="col">
-            {{report.isVersionOf|default:'not assigned yet'}}
+            {%if report.isVersionOf%}
+            <span data-bs-toggle="tooltip"><a href="{{report.isVersionOf}}" target="_blank" title="Opens in new tab">{{report.isVersionOf}}
+                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
+            {%else%}
+            not assigned yet
+            {%endif%}
         </div>
     </div>
     <div class="row d-flex align-items-center py-2">
@@ -106,7 +111,16 @@
             <strong>Relation:</strong>
         </div>
         <div class="col">
-            {{report.get_relation_display|default:'not assigned yet'}}
+            {%if report.relation%}
+            {%for relation in report.relation%}
+            <ul class="list-unstyled">
+                <li><span data-bs-toggle="tooltip"><a href="{{relation}}" target="_blank" title="Opens in new tab">{{relation}}
+                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span></li>
+            </ul>
+            {%endfor%}
+            {%else%}
+            not assigned yet
+            {%endif%}
         </div>
     </div>
     <div class="row d-flex align-items-center py-2">
