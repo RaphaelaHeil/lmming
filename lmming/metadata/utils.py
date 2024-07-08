@@ -242,12 +242,10 @@ def updateFilemakerData(df: pd.DataFrame):
     FilemakerEntry.objects.all().delete()
     df = df.fillna("")
 
-    for idx, row in df.iterrows():
-        if row[settings.FM_ARCHIVE_ID] and row[settings.FM_ORGANISATION_NAME]:
-            FilemakerEntry.objects.create(archiveId=row[settings.FM_ARCHIVE_ID],
-                                          organisationName=row[settings.FM_ORGANISATION_NAME],
-                                          county=row[settings.FM_COUNTY], municipality=row[settings.FM_MUNICIPALITY],
-                                          city=row[settings.FM_CITY], parish=row[settings.FM_PARISH],
-                                          nadLink=row[settings.FM_NAD_LINK])
-        else:
-            continue  # TODO: add logging about skipping an entry!
+    FilemakerEntry.objects.bulk_create([FilemakerEntry(archiveId=row[settings.FM_ARCHIVE_ID],
+                                                       organisationName=row[settings.FM_ORGANISATION_NAME],
+                                                       county=row[settings.FM_COUNTY],
+                                                       municipality=row[settings.FM_MUNICIPALITY],
+                                                       city=row[settings.FM_CITY], parish=row[settings.FM_PARISH],
+                                                       nadLink=row[settings.FM_NAD_LINK]) for _, row in df.iterrows()
+                                        if row[settings.FM_ARCHIVE_ID] and row[settings.FM_ORGANISATION_NAME]])
