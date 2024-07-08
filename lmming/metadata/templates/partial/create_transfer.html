@@ -7,126 +7,136 @@
     <form class="form" method="POST" enctype="multipart/form-data" action="{% url 'metadata:create_transfer'%}">
         {% csrf_token %}
         {{detailform.as_p}}
-        <br>
-        <div class="table-responsive">
-            <table class="table table-hover">
-                <thead>
-                <tr>
-                    <th>Processing Step</th>
-                    <th></th>
-                    <th class="text-center">Mode</th>
-                    <th class="text-center">Human Validation</th>
-                </tr>
-                </thead>
-                <tbody id="tbody">
-                <tr>
-                    <td scope="row" class="align-middle">
-                        Filename Information
-                    </td>
-                    <td class="text-left align-middle">
-                        <span data-bs-toggle="tooltip"
-                              data-bs-placement="top"
+
+        <div class="accordion pt-3" id="advancedSettingsAcc">
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="headingOne">
+                    <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        Advanced Settings
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne"
+                     data-bs-parent="#advancedSettingsAcc">
+                    <div class="accordion-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                <tr>
+                                    <th>Processing Step</th>
+                                    <th></th>
+                                    <th class="text-center">Mode</th>
+                                    <th class="text-center">Human Validation</th>
+                                </tr>
+                                </thead>
+                                <tbody id="tbody">
+                                <tr>
+                                    <td scope="row" class="align-middle">
+                                        Filename Information
+                                    </td>
+                                    <td class="text-left align-middle">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top"
                               data-bs-title="Extracts 'date' and 'type' information, as well as the organisation's id, from the filename."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
-                    </td>
-                    <td class="text-center align-middle">
-                        {{ settings.filenameMode }}
-                    </td>
-                    <td class="text-center align-middle">
-                        {{settings.filenameHumVal}}
-                    </td>
-                </tr>
-                <tr>
-                    <td scope="row" class="align-middle">
-                        Filemaker Information
-                    </td>
-                    <td class="text-left align-middle">
-                        <span data-bs-toggle="tooltip"
-                              data-bs-placement="top"
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{ settings.filenameMode }}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{settings.filenameHumVal}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row" class="align-middle">
+                                        Filemaker Information
+                                    </td>
+                                    <td class="text-left align-middle">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top"
                               data-bs-title="Uses the organisation's ID to extract informationen from Filemaker-based data. Fills the fields 'creator', 'relation', 'coverage', and 'spatial'."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
-                    </td>
-                    <td class="text-center align-middle">
-                        {{ settings.filemakerMode }}
-                    </td>
-                    <td class="text-center align-middle">
-                        {{settings.filemakerHumVal}}
-                    </td>
-                </tr>
-                <tr>
-                    <td scope="row" class="align-middle">
-                        Generate/Calculate from existing data
-                    </td>
-                    <td class="text-left align-middle">
-                        <span data-bs-toggle="tooltip"
-                              data-bs-placement="top"
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{ settings.filemakerMode }}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{settings.filemakerHumVal}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row" class="align-middle">
+                                        Generate/Calculate from existing data
+                                    </td>
+                                    <td class="text-left align-middle">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top"
                               data-bs-title="Fills the fields 'title', 'created', 'description' and 'available', based on information collected in the previous two steps."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
-                    </td>
-                    <td class="text-center align-middle">
-                        {{ settings.generateMode }}
-                    </td>
-                    <td class="text-center align-middle">
-                        {{settings.generateHumVal}}
-                    </td>
-                </tr>
-                <tr>
-                    <td scope="row" class="align-middle">
-                        Manual Data Entry
-                    </td>
-                    <td class="text-left align-middle" >
-                        <span data-bs-toggle="tooltip"
-                              data-bs-placement="top"
-                              {# data-bs-title="Not implemented yet! - Identifies the type of text (printed, handwritten,...), based on images." #}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{ settings.generateMode }}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{settings.generateHumVal}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row" class="align-middle">
+                                        Manual Data Entry
+                                    </td>
+                                    <td class="text-left align-middle">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top"
                               data-bs-title="Any piece of data that can not be handled automatically at the moment."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
-                    </td>
-                    <td class="text-center align-middle">
-                        {{ settings.facManualMode }}
-                    </td>
-                    <td class="text-center align-middle">
-                        {{settings.facManualVal}}
-                    </td>
-                </tr>
-                <tr>
-                    <td scope="row" class="align-middle">
-                        Named Entity Recognition
-                    </td>
-                    <td class="text-left align-middle">
-                        <span data-bs-toggle="tooltip"
-                              data-bs-placement="top"
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{ settings.facManualMode }}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{settings.facManualVal}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row" class="align-middle">
+                                        Named Entity Recognition
+                                    </td>
+                                    <td class="text-left align-middle">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top"
                               data-bs-title="Extracts named entities from the provided transcriptions."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
-                    </td>
-                    <td class="text-center align-middle">
-                        {{ settings.nerMode }}
-                    </td>
-                    <td class="text-center align-middle">
-                        {{settings.nerHumVal}}
-                    </td>
-                </tr>
-                <tr>
-                    <td scope="row" class="align-middle">
-                        Mint ARKs
-                    </td>
-                    <td class="text-left align-middle ">
-                        <span data-bs-toggle="tooltip"
-                              data-bs-placement="top" id="abctest"
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{ settings.nerMode }}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{settings.nerHumVal}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td scope="row" class="align-middle">
+                                        Mint ARKs
+                                    </td>
+                                    <td class="text-left align-middle ">
+                        <span data-bs-toggle="tooltip" data-bs-placement="top" id="abctest"
                               data-bs-title="Mints ARKs for IIIF and AtoM, to be included in the CSV for Omeka."><i
                                 class="fa-solid fa-circle-question" style="cursor: pointer;"></i></span>
-                    </td>
-                    <td class="text-center align-middle">
-                        {{ settings.mintMode }}
-                    </td>
-                    <td class="text-center align-middle">
-                        {{settings.mintHumVal}}
-                    </td>
-                </tr>
-            </table>
-        </div>
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{ settings.mintMode }}
+                                    </td>
+                                    <td class="text-center align-middle">
+                                        {{settings.mintHumVal}}
+                                    </td>
+                                </tr>
+                            </table>
 
-        <div class="modal-footer">
-            <button type="submit" class="btn btn-success">
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="modal-footer pt-4">
+            <button type="submit" class="btn btn-success ">
                 Create
             </button>
         </div>
