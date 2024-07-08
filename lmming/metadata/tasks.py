@@ -313,8 +313,6 @@ def scheduleTask(jobId: int) -> bool:
             else:
                 step.status = Status.IN_PROGRESS
                 step.save()
-                job.updateStatus()
-                job.save()
                 transaction.on_commit(lambda: TASK_INDEX[step.processingStepType].delay(jobId))
                 return True
         else:
