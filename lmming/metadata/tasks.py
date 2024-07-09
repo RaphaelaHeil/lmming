@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 from pathlib import Path
@@ -130,20 +131,26 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
         step.save()
         return
 
-    accessRights = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
-    if accessRights:
-        report.accessRights = accessRights.value
-    else:
-        step.log = "No accessRights was specified. Please update the system settings."
-        step.status = Status.ERROR
-        step.save()
-        return
-
     yearOffset = DefaultNumberSettings.objects.filter(
         pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
     if yearOffset:
         report.available = created + relativedelta(years=yearOffset.value)
+
+    if settings.ARCHIVE_INST == "FAC":
+        if report.available > datetime.date.today():
+            report.accessRights = Report.AccessRights.RESTRICTED
+        else:
+            report.accessRights = Report.AccessRights.NOT_RESTRICTED
+    else:
+        accessRights = DefaultValueSettings.objects.filter(
+            pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
+        if accessRights:
+            report.accessRights = accessRights.value
+        else:
+            step.log = "No accessRights was specified. Please update the system settings."
+            step.status = Status.ERROR
+            step.save()
+            return
 
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
     if source:
