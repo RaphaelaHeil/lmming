@@ -1,9 +1,11 @@
-from io import BytesIO
 import re
 import zipfile
+from datetime import date
 from functools import partial
+from io import BytesIO
 from pathlib import Path
 from typing import Dict, Union, List, Any, Tuple
+from requests.compat import urljoin
 
 import pandas as pd
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring
@@ -14,6 +16,8 @@ from metadata.models import Report, ExtractionTransfer, FilemakerEntry
 __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
                          "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
                          "revisionsberattelse": Report.DocumentType.FINANCIAL_STATEMENT}
+
+__DUMMY_DIR__ = Path(__file__).parent.resolve() / "dummy_content"
 
 
 def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
@@ -104,7 +108,12 @@ def __toOmekaList__(ll: List[Any]) -> str:
         return ""
 
 
-def __buildOmekaSummaries__(transfer: ExtractionTransfer) -> Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
+def __isRestricted__(availableDate) -> bool:
+    return availableDate > date.today()
+
+
+def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool = False) -> Tuple[
+    List[Dict[str, str]], List[Dict[str, str]]]:
     reportSummary = []
     pageSummary = []
     for report in transfer.report_set.all():
@@ -128,24 +137,37 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer) -> Tuple[List[Dict[str
                               "dcterms:source": __toOmekaList__(report.source),
                               "dcterms:description": report.description})
 
-        for page in report.page_set.all().order_by("order"):
+        if checkRestriction and __isRestricted__(report.available):
             pageSummary.append({"dcterms:isPartOf": report.identifier,
-                                "dcterms:identifier": page.identifier,
-                                "lm:transcription": page.transcription,
-                                "lm:normalised": page.normalisedTranscription,
-                                "lm:person": __toOmekaList__(page.persons),
-                                "lm:organisation": __toOmekaList__(page.organisations),
-                                "lm:location": __toOmekaList__(page.locations),
-                                "lm:time": __toOmekaList__(page.times),
-                                "lm:work": __toOmekaList__(page.works),
-                                "lm:event": __toOmekaList__(page.events),
-                                "lm:object": __toOmekaList__(page.ner_objects),
-                                "lm:measure": page.measures})
+                                "dcterms:identifier": urljoin(settings.IIIF_BASE_URL,
+                                                              f"iiif/image/{report.noid}_1/info.json"),
+                                "lm:transcription": "FOLKRÖRELSEARKVET FÖR UPPSALA LÄN The contents of this report are "
+                                                    "not publicly available. Please contact Folkrörelsearkivet för "
+                                                    "Uppsala Län for more information. Email: info@fauppsala.se "
+                                                    "https://www.fauppsala.se/kontakt/ FOLKRÖRELSEARKIVET FÖR UPPSALA "
+                                                    "LÄN", "lm:normalised": "", "lm:person": "", "lm:organisation": "",
+                                "lm:location": "", "lm:time": "", "lm:work": "", "lm:event": "", "lm:object": "",
+                                "lm:measure": False})
+        else:
+            for page in report.page_set.all().order_by("order"):
+                pageSummary.append({"dcterms:isPartOf": report.identifier,
+                                    "dcterms:identifier": page.identifier,
+                                    "lm:transcription": page.transcription,
+                                    "lm:normalised": page.normalisedTranscription,
+                                    "lm:person": __toOmekaList__(page.persons),
+                                    "lm:organisation": __toOmekaList__(page.organisations),
+                                    "lm:location": __toOmekaList__(page.locations),
+                                    "lm:time": __toOmekaList__(page.times),
+                                    "lm:work": __toOmekaList__(page.works),
+                                    "lm:event": __toOmekaList__(page.events),
+                                    "lm:object": __toOmekaList__(page.ner_objects),
+                                    "lm:measure": page.measures})
+
     return reportSummary, pageSummary
 
 
-def buildTransferCsvs(transfer: ExtractionTransfer):
-    reportSummary, pageSummary = __buildOmekaSummaries__(transfer)
+def buildTransferCsvs(transfer: ExtractionTransfer, checkRestriction: bool = False):
+    reportSummary, pageSummary = __buildOmekaSummaries__(transfer, checkRestriction)
 
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -156,7 +178,7 @@ def buildTransferCsvs(transfer: ExtractionTransfer):
     return zip_buffer
 
 
-def buildStructMap(transfer: ExtractionTransfer) -> str:
+def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False) -> str:
     METS = "http://www.loc.gov/METS/"
     register_namespace("mets", METS)
     f = partial(QName, METS)
@@ -168,14 +190,22 @@ def buildStructMap(transfer: ExtractionTransfer) -> str:
     for report in transfer.report_set.all():
         reportNode = SubElement(outerDiv, f("div"), TYPE="report", LABEL=report.title, ID=str(report.noid))
 
-        for page in report.page_set.all():
-            pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER=str(page.order), LABEL=page.originalFileName,
-                                  ID=f"{report.noid}_{page.order}")
-            filename = Path(page.originalFileName).stem
-
-            SubElement(pageNode, f("fptr"), FILEID=f"{filename}.tif", CONTENTIDS=f"objects/preservation/{filename}.tif")
+        if checkRestriction and __isRestricted__(report.available):
+            filename = f"page_not_available_{report.noid}"
+            pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER="1", LABEL=filename, ID=f"{report.noid}_1")
+            SubElement(pageNode, f("fptr"), FILEID=f"{filename}.tif",
+                       CONTENTIDS=f"objects/preservation/{filename}.tif")
             SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",
                        CONTENTIDS=f"objects/transcription/{filename}.xml")
+        else:
+            for page in report.page_set.all():
+                pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER=str(page.order),
+                                      LABEL=page.originalFileName, ID=f"{report.noid}_{page.order}")
+                filename = Path(page.originalFileName).stem
+                SubElement(pageNode, f("fptr"), FILEID=f"{filename}.tif",
+                           CONTENTIDS=f"objects/preservation/{filename}.tif")
+                SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",
+                           CONTENTIDS=f"objects/transcription/{filename}.xml")
 
     return tostring(root, pretty_print=True, encoding="utf-8").decode("utf-8")
 
@@ -206,29 +236,43 @@ def buildMetadataCsv(filenames) -> str:
     return pd.DataFrame.from_records(records).to_csv(index=False)
 
 
-def buildFolderStructure(transfer: ExtractionTransfer):
+def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = False):
     outfile = BytesIO()
     filenames = []
 
     with zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zif = zipfile.ZipInfo("preservation/")
+        zf.writestr(zif, "")
 
-        zf.writestr("preservation/.placeholder", "")
+        zif = zipfile.ZipInfo("manualNormalization/access/")
+        zf.writestr(zif, "")
 
         for report in transfer.report_set.all():
-            for page in report.page_set.all():
-                pageFileName = page.originalFileName
-                filenames.append(pageFileName)
-                filenames.append(str(Path(pageFileName).with_suffix(".tif")))
-                zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
+            if checkRestriction and __isRestricted__(report.available):
+                page_name = f"page_not_available_{report.noid}"
+                zf.write(__DUMMY_DIR__ / "page_not_available.jpg", f"manualNormalization/access/{page_name}.jpg")
+
+                filenames.append(f"{page_name}.tif")
+                zf.write(__DUMMY_DIR__ / "page_not_available.tif", f"preservation/{page_name}.tif")
+
+                filenames.append(f"{page_name}.xml")
+
+                zf.write(__DUMMY_DIR__ / "page_not_available.xml", f"transcription/{page_name}.xml")
+            else:
+                for page in report.page_set.all():
+                    pageFileName = page.originalFileName
+                    filenames.append(pageFileName)
+                    filenames.append(str(Path(pageFileName).with_suffix(".tif")))
+                    zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
 
         filenames.sort(key=lambda x: (x[-3:], x[:-4]))
 
         zf.writestr("manualNormalization/normalization.csv", buildNormalizationCsv(filenames))
-        zf.writestr("manualNormalization/access/.placeholder", "")
-        zf.writestr("metadata/metadata.csv", buildMetadataCsv(filenames))
-        zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer))
 
-        reportSummary, pageSummary = __buildOmekaSummaries__(transfer)
+        zf.writestr("metadata/metadata.csv", buildMetadataCsv(filenames))
+        zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer, checkRestriction))
+
+        reportSummary, pageSummary = __buildOmekaSummaries__(transfer, checkRestriction)
         zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
         zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
 

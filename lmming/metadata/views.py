@@ -41,10 +41,18 @@ def downloadTransfer(request, transfer_id: int, filetype: str):
         outFile = buildTransferCsvs(transfer)
         return FileResponse(outFile, as_attachment=True,
                             filename=f"Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
+    elif filetype == "csv_restricted":
+        outFile = buildTransferCsvs(transfer, checkRestriction=True)
+        return FileResponse(outFile, as_attachment=True,
+                            filename=f"restricted_Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     elif filetype == "struct_map":
         outFile = buildStructMap(transfer)
         filename = "mets_structmap.xml"
         return FileResponse(BytesIO(outFile.encode()), as_attachment=True, filename=filename)
+    elif filetype == "zip_restricted":
+        outFile = buildFolderStructure(transfer, checkRestriction=True)
+        filename = f"restricted_{transfer.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
+        return FileResponse(outFile, as_attachment=True, filename=filename)
     elif filetype == "zip":
         outFile = buildFolderStructure(transfer)
         filename = f"{transfer.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
@@ -85,8 +93,6 @@ class Transfers(View):
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:desc"
             context = {"jobs": ExtractionTransfer.objects.order_by(orderBy), "viewStatus": viewStatus,
                        "searchParams": f"sort={viewKey}:asc"}
-
-        # return render(request, "partial/extraction_transfer_table.html", context)
 
         return render(request, "partial/extraction_transfer_table.html", context)
 

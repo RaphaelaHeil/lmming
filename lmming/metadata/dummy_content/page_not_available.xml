@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.loc.gov/standards/alto/ns-v4#"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
+      xmlns:page="http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15"
+      xmlns:map="http://www.w3.org/2005/xpath-functions/map"
+      xmlns:local="local"
+      xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v4# https://www.loc.gov/standards/alto/v4/alto.xsd">
+   <Description>
+      <MeasurementUnit>pixel</MeasurementUnit>
+      <sourceImageInformation>
+         <fileName>page_not_available.jpg</fileName>
+      </sourceImageInformation>
+      <Processing ID="IdOcr">
+         <processingDateTime>2024-07-05T12:49:05.941+02:00</processingDateTime>
+         <processingSoftware>
+            <softwareCreator>READ COOP</softwareCreator>
+            <softwareName>Transkribus</softwareName>
+         </processingSoftware>
+      </Processing>
+   </Description>
+   <Layout>
+      <Page ID="Page1" PHYSICAL_IMG_NR="1" HEIGHT="1123" WIDTH="794">
+         <TopMargin HEIGHT="0" WIDTH="794" VPOS="0" HPOS="0"/>
+         <LeftMargin HEIGHT="1123" WIDTH="0" VPOS="0" HPOS="0"/>
+         <RightMargin HEIGHT="1123" WIDTH="0" VPOS="0" HPOS="794"/>
+         <BottomMargin HEIGHT="0" WIDTH="794" VPOS="1123" HPOS="0"/>
+         <PrintSpace HEIGHT="1123" WIDTH="794" VPOS="0" HPOS="0">
+            <TextBlock ID="tr_1" HEIGHT="866" WIDTH="625" VPOS="150" HPOS="87">
+               <Shape>
+                  <Polygon POINTS="87,150 87,1016 712,1016 712,150"/>
+               </Shape>
+               <TextLine ID="tr_1_tl_1"
+                         BASELINE="252,177 278,174 304,174 331,174 357,173 383,173 410,173 436,174 463,173 489,173 515,173 542,173 568,173 595,170"
+                         HEIGHT="95"
+                         WIDTH="346"
+                         VPOS="107"
+                         HPOS="247">
+                  <String ID="string_tr_1_tl_1"
+                          HEIGHT="95"
+                          WIDTH="346"
+                          VPOS="107"
+                          HPOS="247"
+                          CONTENT="FOLKRÖRELSEARKVET"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_2"
+                         BASELINE="272,203 299,206 327,206 355,206 382,206 410,206 438,207 465,207 493,205 521,202"
+                         HEIGHT="37"
+                         WIDTH="253"
+                         VPOS="181"
+                         HPOS="266">
+                  <String ID="string_tr_1_tl_2"
+                          HEIGHT="37"
+                          WIDTH="253"
+                          VPOS="181"
+                          HPOS="266"
+                          CONTENT="FÖR UPPSALA LÄN"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_3"
+                         BASELINE="121,357 148,358 176,357 204,358 232,358 260,359 288,358 316,359 344,357 372,358 400,358 427,359 455,358 483,358 511,358 539,358 567,358 595,358 623,358 651,357 679,357"
+                         HEIGHT="56"
+                         WIDTH="561"
+                         VPOS="314"
+                         HPOS="116">
+                  <String ID="string_tr_1_tl_3"
+                          HEIGHT="56"
+                          WIDTH="561"
+                          VPOS="314"
+                          HPOS="116"
+                          CONTENT="The contents of this report are not"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_4"
+                         BASELINE="244,404 270,406 297,406 324,406 351,405 378,404 404,406 431,405 458,406 485,404 512,406 539,407"
+                         HEIGHT="46"
+                         WIDTH="299"
+                         VPOS="372"
+                         HPOS="239">
+                  <String ID="string_tr_1_tl_4"
+                          HEIGHT="46"
+                          WIDTH="299"
+                          VPOS="372"
+                          HPOS="239"
+                          CONTENT="publicly available."/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_5"
+                         BASELINE="272,497 298,497 325,498 351,498 378,498 404,498 431,498 457,498 484,498 511,498"
+                         HEIGHT="41"
+                         WIDTH="242"
+                         VPOS="465"
+                         HPOS="267">
+                  <String ID="string_tr_1_tl_5"
+                          HEIGHT="41"
+                          WIDTH="242"
+                          VPOS="465"
+                          HPOS="267"
+                          CONTENT="Please contact"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_6"
+                         BASELINE="87,544 118,544 149,546 180,546 212,546 243,546 274,546 305,546 337,546 368,544 399,544 430,544 462,544 493,546 524,544 555,547 587,547 618,547 649,546 680,546 712,546"
+                         HEIGHT="38"
+                         WIDTH="629"
+                         VPOS="515"
+                         HPOS="82">
+                  <String ID="string_tr_1_tl_6"
+                          HEIGHT="38"
+                          WIDTH="629"
+                          VPOS="515"
+                          HPOS="82"
+                          CONTENT="Folkrörelsearkivet för Uppsala Län"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_7"
+                         BASELINE="222,592 248,592 275,592 301,593 328,592 354,592 381,592 407,592 434,592 460,592 487,592 513,592 540,592 567,592"
+                         HEIGHT="35"
+                         WIDTH="349"
+                         VPOS="566"
+                         HPOS="217">
+                  <String ID="string_tr_1_tl_7"
+                          HEIGHT="35"
+                          WIDTH="349"
+                          VPOS="566"
+                          HPOS="217"
+                          CONTENT="for more information."/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_8"
+                         BASELINE="181,686 206,685 231,685 257,686 282,686 307,685 333,685 358,685 383,686 409,686 434,687 459,686 485,687 510,687 535,687 561,686 586,686 612,683"
+                         HEIGHT="43"
+                         WIDTH="435"
+                         VPOS="654"
+                         HPOS="176">
+                  <String ID="string_tr_1_tl_8"
+                          HEIGHT="43"
+                          WIDTH="435"
+                          VPOS="654"
+                          HPOS="176"
+                          CONTENT="Email: info@fauppsala.se"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_9"
+                         BASELINE="113,777 141,779 169,780 197,780 225,780 253,781 281,781 309,780 337,780 365,780 393,779 421,780 449,780 477,780 505,780 533,780 561,780 589,780 617,780 645,779 673,779"
+                         HEIGHT="45"
+                         WIDTH="564"
+                         VPOS="749"
+                         HPOS="108">
+                  <String ID="string_tr_1_tl_9"
+                          HEIGHT="45"
+                          WIDTH="564"
+                          VPOS="749"
+                          HPOS="108"
+                          CONTENT="https://www.fauppsala.se/kontakt/"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_10"
+                         BASELINE="285,970 311,973 337,973 363,973 389,973 415,973 441,973 467,973 493,973 519,972 545,972 571,972 597,970"
+                         HEIGHT="30"
+                         WIDTH="315"
+                         VPOS="948"
+                         HPOS="280">
+                  <String ID="string_tr_1_tl_10"
+                          HEIGHT="30"
+                          WIDTH="315"
+                          VPOS="948"
+                          HPOS="280"
+                          CONTENT="FOLKRÖRELSEARKIVET"/>
+               </TextLine>
+               <TextLine ID="tr_1_tl_11"
+                         BASELINE="272,1004 297,1005 322,1005 348,1006 373,1006 399,1005 424,1005 449,1005 475,1005 500,1004 526,1002"
+                         HEIGHT="39"
+                         WIDTH="257"
+                         VPOS="979"
+                         HPOS="267">
+                  <String ID="string_tr_1_tl_11"
+                          HEIGHT="39"
+                          WIDTH="257"
+                          VPOS="979"
+                          HPOS="267"
+                          CONTENT="FÖR UPPSALA LÄN"/>
+               </TextLine>
+            </TextBlock>
+         </PrintSpace>
+      </Page>
+   </Layout>
+</alto>
