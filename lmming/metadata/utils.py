@@ -283,7 +283,6 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
 
 
 def updateFilemakerData(df: pd.DataFrame):
-    FilemakerEntry.objects.all().delete()
     df = df.fillna("")
 
     FilemakerEntry.objects.bulk_create([FilemakerEntry(archiveId=row[settings.FM_ARCHIVE_ID],
@@ -292,4 +291,7 @@ def updateFilemakerData(df: pd.DataFrame):
                                                        municipality=row[settings.FM_MUNICIPALITY],
                                                        city=row[settings.FM_CITY], parish=row[settings.FM_PARISH],
                                                        nadLink=row[settings.FM_NAD_LINK]) for _, row in df.iterrows()
-                                        if row[settings.FM_ARCHIVE_ID] and row[settings.FM_ORGANISATION_NAME]])
+                                        if row[settings.FM_ARCHIVE_ID] and row[settings.FM_ORGANISATION_NAME]],
+                                       update_conflicts=True, unique_fields=["archiveId"],
+                                       update_fields=["organisationName", "county", "municipality", "city", "nadLink"],
+                                       )

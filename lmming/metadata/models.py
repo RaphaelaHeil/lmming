@@ -295,7 +295,7 @@ class DefaultNumberSettings(Model):
 
 
 class FilemakerEntry(Model):
-    archiveId = CharField()
+    archiveId = CharField( primary_key=True)
     organisationName = CharField()
     county = CharField(blank=True, default="")
     municipality = CharField(blank=True, default="")
