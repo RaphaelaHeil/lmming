@@ -217,9 +217,9 @@ def buildNormalizationCsv(srcNames) -> str:
         if file.suffix == ".tif":
             filename = file.stem
             dest = Path("manualNormalization") / "access" / f"{filename}.jpg"
-            data.append((f, dest, ""))
+            data.append((f"preservation/{f}", dest, ""))
         else:
-            data.append((f, "", ""))
+            data.append((f"transcription/{f}", "", ""))
     df = pd.DataFrame.from_records(data)
     return df.to_csv(header=False, index=False)
 
