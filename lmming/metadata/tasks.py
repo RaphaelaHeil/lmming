@@ -219,10 +219,29 @@ def mintArks(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
 
-    shoulder = DefaultValueSettings.objects.filter(
+    shoulderSetting = DefaultValueSettings.objects.filter(
         pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
+    if not shoulderSetting:
+        step.status = Status.ERROR
+        step.log = "The ARK Shoulder is not set. Please contact your admin to verify LMMing's configuration."
+        step.save()
+        logger.warning("ARK Shoulder is not set!")
+        return
+
+    shoulder: str = shoulderSetting.value
     if not shoulder:
-        shoulder = "/r1"
+        step.status = Status.ERROR
+        step.log = "The ARK Shoulder is empty. Please contact your admin to verify LMMing's configuration."
+        step.save()
+        logger.warning("Empty ARK Shoulder!")
+        return
+    if not shoulder.startswith("/"):
+        step.status = Status.ERROR
+        step.log = (f"The ARK Shoulder should start with a slash but it is {shoulder}. Please contact your admin to "
+                    f"verify LMMing's configuration.")
+        step.save()
+        logger.warning(f"ARK Shoulder does not start with a slash - {shoulder}")
+        return
     arkletBaseUrl = settings.MINTER_URL
     headers = {"Authorization": f"Bearer {settings.MINTER_AUTH}"}
 
