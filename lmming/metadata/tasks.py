@@ -107,7 +107,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     report.created = created
 
     pageCount = report.page_set.count()
-    if pageCount == 0:
+    if pageCount == 1:
         report.description = "1 page"
     else:
         report.description = f"{pageCount} pages"
