@@ -200,8 +200,7 @@ def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False)
         if checkRestriction and __isRestricted__(report.available):
             filename = f"page_not_available_{report.noid}"
             pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER="1", LABEL=filename, ID=f"{report.noid}_1")
-            SubElement(pageNode, f("fptr"), FILEID=f"{filename}.tif",
-                       CONTENTIDS=f"objects/preservation/{filename}.tif")
+            SubElement(pageNode, f("fptr"), FILEID=f"{filename}.jpg", CONTENTIDS=f"objects/{filename}.jpg")
             SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",
                        CONTENTIDS=f"objects/transcription/{filename}.xml")
         else:
@@ -209,8 +208,7 @@ def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False)
                 pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER=str(page.order),
                                       LABEL=page.originalFileName, ID=f"{report.noid}_{page.order}")
                 filename = Path(page.originalFileName).stem
-                SubElement(pageNode, f("fptr"), FILEID=f"{filename}.tif",
-                           CONTENTIDS=f"objects/preservation/{filename}.tif")
+                SubElement(pageNode, f("fptr"), FILEID=f"{filename}.jpg", CONTENTIDS=f"objects/{filename}.jpg")
                 SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",
                            CONTENTIDS=f"objects/transcription/{filename}.xml")
 
@@ -220,11 +218,8 @@ def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False)
 def buildNormalizationCsv(srcNames) -> str:
     data = []
     for f in srcNames:
-        file = Path(f)
-        if file.suffix == ".tif":
-            filename = file.stem
-            dest = Path("manualNormalization") / "access" / f"{filename}.jpg"
-            data.append((f"preservation/{f}", dest, ""))
+        if f.endswith(".jpg"):
+            data.append((f, f"manualNormalization/access/{f}", f"manualNormalization/preservation/{f[:-4]}.tif"))
         else:
             data.append((f"transcription/{f}", "", ""))
     df = pd.DataFrame.from_records(data)
@@ -257,7 +252,7 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
                    }
             filename = f"page_not_available_{report.noid}"
             transcriptionFilename = f"objects/transcription/{filename}.xml"
-            preserverationFilename = f"objects/preservation/{filename}.tif"
+            preserverationFilename = f"objects/{filename}.tif"
             a = {"filename": transcriptionFilename}
             a.update(row)
             b = {"filename": preserverationFilename}
@@ -276,14 +271,14 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
 
                    "dc.relation": __toCSList__(report.relation),
                    "dc.format": f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
-                   #"dc.description": report.description, # TODO: ???
+                   # "dc.description": report.description, # TODO: ???
                    "dc.rights1": Report.AccessRights[report.accessRights].label,
                    "dc.rights2": __toOmekaList__(report.license),
                    "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
                    }
             for page in report.page_set.all():
                 transcriptionFilename = f"objects/transcription/{page.originalFileName}"
-                preserverationFilename = f"objects/preservation/{page.originalFileName[:-4]}.tif"
+                preserverationFilename = f"objects/{page.originalFileName[:-4]}.tif"
                 a = {"filename": transcriptionFilename}
                 a.update(row)
                 b = {"filename": preserverationFilename}
@@ -303,19 +298,19 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
     filenames = []
 
     with zipfile.ZipFile(outfile, 'w', zipfile.ZIP_DEFLATED) as zf:
-        zif = zipfile.ZipInfo("preservation/")
-        zf.writestr(zif, "")
-
         zif = zipfile.ZipInfo("manualNormalization/access/")
+        zf.writestr(zif, "")
+        zif = zipfile.ZipInfo("manualNormalization/preservation/")
         zf.writestr(zif, "")
 
         for report in transfer.report_set.all():
             if checkRestriction and __isRestricted__(report.available):
                 page_name = f"page_not_available_{report.noid}"
                 zf.write(__DUMMY_DIR__ / "page_not_available.jpg", f"manualNormalization/access/{page_name}.jpg")
+                zf.write(__DUMMY_DIR__ / "page_not_available.jpg", f"{page_name}.jpg")
 
                 filenames.append(f"{page_name}.tif")
-                zf.write(__DUMMY_DIR__ / "page_not_available.tif", f"preservation/{page_name}.tif")
+                zf.write(__DUMMY_DIR__ / "page_not_available.tif", f"manualNormalization/preservation/{page_name}.tif")
 
                 filenames.append(f"{page_name}.xml")
 
@@ -324,7 +319,7 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
                 for page in report.page_set.all():
                     pageFileName = page.originalFileName
                     filenames.append(pageFileName)
-                    filenames.append(str(Path(pageFileName).with_suffix(".tif")))
+                    filenames.append(str(Path(pageFileName).with_suffix(".jpg")))
                     zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
 
         filenames.sort(key=lambda x: (x[-3:], x[:-4]))
