@@ -108,6 +108,13 @@ def __toOmekaList__(ll: List[Any]) -> str:
         return ""
 
 
+def __toCSList__(ll: List[Any]) -> str:
+    if ll:
+        return ",".join(str(e) for e in ll)
+    else:
+        return ""
+
+
 def __isRestricted__(availableDate) -> bool:
     return availableDate > date.today()
 
@@ -224,16 +231,47 @@ def buildNormalizationCsv(srcNames) -> str:
     return df.to_csv(header=False, index=False)
 
 
-def buildMetadataCsv(filenames) -> str:
+def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = False) -> str:
     DC_FIELDS = ["dc.identifier", "dc.type", "dc.date", "dc.rights", "dc.description", "dc.language", "dc.coverage",
                  "dc.title", "dc.subject", "dc.creator", "dc.contributor", "dc.publisher", "dc.source", "dc.format",
-                 "dc.relation"]
+                 "dc.relation"]  # extent and format
     records = []
-    for filename in filenames:
-        d = {"filename": filename}
-        d.update({x: "" for x in DC_FIELDS})
-        records.append(d)
-    return pd.DataFrame.from_records(records).to_csv(index=False)
+
+    for report in transfer.report_set.all():
+        if checkRestriction and __isRestricted__():
+            pass  # TODO: implement
+        else:
+            row = {"dc.identifier": report.noid,
+                   "dc.type": __toCSList__([Report.DocumentType[x].label for x in report.type]),
+                   "dc.date": "/".join([str(d.year) for d in report.date]),
+                   "dc.language": __toCSList__(report.language),
+                   "dc.coverage": Report.UnionLevel[report.coverage].label,
+                   "dc.title": report.title,
+                   "dc.creator": report.creator,
+                   "dc.source": __toCSList__(report.source),
+
+                   "dc.relation": __toCSList__(report.relation),
+                   "dc.format": f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
+                   #"dc.description": report.description, # TODO: ???
+                   "dc.rights1": Report.AccessRights[report.accessRights].label,
+                   "dc.rights2": __toOmekaList__(report.license),
+                   "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
+                   }
+            for page in report.page_set.all():
+                transcriptionFilename = f"objects/transcription/{page.originalFileName}"
+                preserverationFilename = f"objects/preservation/{page.originalFileName[:-4]}.tif"
+                a = {"filename": transcriptionFilename}
+                a.update(row)
+                b = {"filename": preserverationFilename}
+                b.update(row)
+                records.append(a)
+                records.append(b)
+    df = pd.DataFrame.from_records(records)
+    cols = df.columns.to_list()
+    cols[cols.index("dc.rights1")] = "dc.rights"
+    cols[cols.index("dc.rights2")] = "dc.rights"
+    print(cols)
+    return df.to_csv(index=False, header=cols)
 
 
 def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = False):
@@ -269,7 +307,7 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
 
         zf.writestr("manualNormalization/normalization.csv", buildNormalizationCsv(filenames))
 
-        zf.writestr("metadata/metadata.csv", buildMetadataCsv(filenames))
+        zf.writestr("metadata/metadata.csv", buildMetadataCsv(transfer, checkRestriction))
         zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer, checkRestriction))
 
         reportSummary, pageSummary = __buildOmekaSummaries__(transfer, checkRestriction)
