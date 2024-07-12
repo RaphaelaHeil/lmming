@@ -238,8 +238,32 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
     records = []
 
     for report in transfer.report_set.all():
-        if checkRestriction and __isRestricted__():
-            pass  # TODO: implement
+        if checkRestriction and __isRestricted__(report.available):
+            row = {"dc.identifier": report.noid,
+                   "dc.type": __toCSList__([Report.DocumentType[x].label for x in report.type]),
+                   "dc.date": "/".join([str(d.year) for d in report.date]),
+                   "dc.language": __toCSList__(report.language),
+                   "dc.coverage": Report.UnionLevel[report.coverage].label,
+                   "dc.title": report.title,
+                   "dc.creator": report.creator,
+                   "dc.source": __toCSList__(report.source),
+
+                   "dc.relation": __toCSList__(report.relation),
+                   "dc.format": f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
+                   # "dc.description": report.description, # TODO: ???
+                   "dc.rights1": Report.AccessRights[report.accessRights].label,
+                   "dc.rights2": __toOmekaList__(report.license),
+                   "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
+                   }
+            filename = f"page_not_available_{report.noid}"
+            transcriptionFilename = f"objects/transcription/{filename}.xml"
+            preserverationFilename = f"objects/preservation/{filename}.tif"
+            a = {"filename": transcriptionFilename}
+            a.update(row)
+            b = {"filename": preserverationFilename}
+            b.update(row)
+            records.append(a)
+            records.append(b)
         else:
             row = {"dc.identifier": report.noid,
                    "dc.type": __toCSList__([Report.DocumentType[x].label for x in report.type]),
