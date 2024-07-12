@@ -51,11 +51,13 @@ def downloadTransfer(request, transfer_id: int, filetype: str):
         return FileResponse(BytesIO(outFile.encode()), as_attachment=True, filename=filename)
     elif filetype == "zip_restricted":
         outFile = buildFolderStructure(transfer, checkRestriction=True)
-        filename = f"restricted_{transfer.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
+        folderName = transfer.name.replace(" ", "_")
+        filename = f"restricted_{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
         return FileResponse(outFile, as_attachment=True, filename=filename)
     elif filetype == "zip":
         outFile = buildFolderStructure(transfer)
-        filename = f"{transfer.name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
+        folderName = transfer.name.replace(" ", "_")
+        filename = f"{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
         return FileResponse(outFile, as_attachment=True, filename=filename)
     else:
         # TODO: raise error
