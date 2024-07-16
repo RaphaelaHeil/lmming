@@ -114,7 +114,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
 
     # available[1], language*[n], license*[n], accessRights*[1], source[n]
     language = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first()
-    if language:
+    if language and language.value:
         report.language = __splitIfNotNone__(language.value)
     else:
         step.log = "No language was specified. Please update the system settings."
@@ -123,7 +123,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
         return
 
     license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
-    if license:
+    if license and license.value:
         report.license = __splitIfNotNone__(license.value)
     else:
         step.log = "No license was specified. Please update the system settings."
@@ -134,7 +134,18 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     yearOffset = DefaultNumberSettings.objects.filter(
         pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
     if yearOffset:
-        report.available = created + relativedelta(years=yearOffset.value)
+        if yearOffset.value < 0:
+            step.log = "Specified year offset is negative. Please update the system settings."
+            step.status = Status.ERROR
+            step.save()
+            return
+        else:
+            report.available = created + relativedelta(years=yearOffset.value)
+    else:
+        step.log = "No year offset was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
 
     if settings.ARCHIVE_INST == "FAC":
         if report.available > datetime.date.today():
@@ -144,17 +155,19 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     else:
         accessRights = DefaultValueSettings.objects.filter(
             pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
-        if accessRights:
+        if accessRights and accessRights.value:
             report.accessRights = accessRights.value
         else:
-            step.log = "No accessRights was specified. Please update the system settings."
+            step.log = "No value was specified for 'accessRights'. Please update the system settings."
             step.status = Status.ERROR
             step.save()
             return
 
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
-    if source:
+    if source and source.value:
         report.source = __splitIfNotNone__(source.value)
+    else:
+        report.source = ""
 
     report.save()
 
