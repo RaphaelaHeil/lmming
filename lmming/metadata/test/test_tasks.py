@@ -3,8 +3,56 @@ from datetime import date
 from django.test import TestCase
 
 from metadata.models import Report, ProcessingStep, Status
-from metadata.tasks import computeFromExistingFields
+from metadata.tasks import computeFromExistingFields, fileMakerLookup
 from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
+
+
+class FilemakerLookup(TestCase):
+
+    def test_Task(self):
+        initDefaultValues()
+        initDummyFilemaker()
+        jobId = initDummyTransfer(reportData={"unionId": "1"})
+        fileMakerLookup(jobId, False)
+
+        r = Report.objects.get(job=jobId)
+
+        self.assertEqual("Test Orga", r.creator)
+        self.assertEqual(["http://nadLink.example.com"], r.relation)
+        self.assertEqual(["SE", "county", "municipality", "city", "parish"], r.spatial)
+        self.assertEqual("OTHER", r.coverage)
+
+    def test_missingOrganisationName(self):
+        initDefaultValues()
+        initDummyFilemaker({"archiveId": "1"})
+        jobId = initDummyTransfer(reportData={"unionId": "1"})
+        fileMakerLookup(jobId, False)
+
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)
+        self.assertEqual(step.status, Status.ERROR)
+        self.assertIn("Organisation name", step.log)
+
+    def test_missingSpatial(self):
+        initDefaultValues()
+        initDummyFilemaker({"archiveId": "1"})
+        jobId = initDummyTransfer(reportData={"unionId": "1"})
+        fileMakerLookup(jobId, False)
+
+        r = Report.objects.get(job=jobId)
+
+        self.assertEqual(["SE"], r.spatial)
+
+    def test_unknownUnionId(self):
+        initDefaultValues()
+        initDummyFilemaker()
+        jobId = initDummyTransfer(reportData={"unionId": "2"})
+        fileMakerLookup(jobId, False)
+
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)
+        self.assertEqual(step.status, Status.ERROR)
+        self.assertIn("union with ID 2", step.log)
 
 
 class ComputeFromExistingFields(TestCase):

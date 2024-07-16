@@ -66,10 +66,13 @@ def initDefaultValues(values: Dict[str, Any] = None):
                                              value=values["yearOffset"])
 
 
-def initDummyFilemaker():
-    FilemakerEntry.objects.create(archiveId="1", organisationName="Test Orga", county="county",
-                                  municipality="municipality", city="city", parish="parish",
-                                  nadLink="http://nadLink.example.com")
+def initDummyFilemaker(filemakerEntry: Dict[str, Any] = None):
+    if filemakerEntry is None:
+        FilemakerEntry.objects.create(archiveId="1", organisationName="Test Orga", county="county",
+                                      municipality="municipality", city="city", parish="parish",
+                                      nadLink="http://nadLink.example.com")
+    else:
+        FilemakerEntry.objects.create(**filemakerEntry)
 
 
 def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str, Any]] = None):
