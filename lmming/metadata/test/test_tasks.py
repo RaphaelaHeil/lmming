@@ -4,7 +4,7 @@ from django.test import TestCase
 
 from metadata.models import Report, ProcessingStep, Status
 from metadata.tasks import computeFromExistingFields
-from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, __TEST_PAGES__
+from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
 
 
 class ComputeFromExistingFields(TestCase):
@@ -15,12 +15,9 @@ class ComputeFromExistingFields(TestCase):
         report = {"creator": "Test Union", "type": [Report.DocumentType.ANNUAL_REPORT], "date": [date(1991, 1, 1)]}
 
         jobId = initDummyTransfer(reportData=report, pageData=[])
-        r = Report.objects.get(job=jobId)
-
-        # title, created, language, description, available, license, accessRights
 
         computeFromExistingFields(jobId, False)
-        r.refresh_from_db()
+        r = Report.objects.get(job=jobId)
 
         self.assertEqual("Test Union - annual report (1991)", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)
@@ -35,13 +32,10 @@ class ComputeFromExistingFields(TestCase):
         initDummyFilemaker()
         report = {"creator": "Test Union", "type": [Report.DocumentType.ANNUAL_REPORT], "date": [date(1991, 1, 1)]}
 
-        jobId = initDummyTransfer(reportData=report, pageData=[__TEST_PAGES__[0]])
-        r = Report.objects.get(job=jobId)
-
-        # title, created, language, description, available, license, accessRights
+        jobId = initDummyTransfer(reportData=report, pageData=[TEST_PAGES[0]])
 
         computeFromExistingFields(jobId, False)
-        r.refresh_from_db()
+        r = Report.objects.get(job=jobId)
 
         self.assertEqual("Test Union - annual report (1991)", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)
@@ -57,12 +51,9 @@ class ComputeFromExistingFields(TestCase):
         report = {"creator": "Test Union", "type": [Report.DocumentType.ANNUAL_REPORT], "date": [date(1991, 1, 1)]}
 
         jobId = initDummyTransfer(reportData=report)
-        r = Report.objects.get(job=jobId)
-
-        # title, created, language, description, available, license, accessRights
 
         computeFromExistingFields(jobId, False)
-        r.refresh_from_db()
+        r = Report.objects.get(job=jobId)
 
         self.assertEqual("Test Union - annual report (1991)", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)

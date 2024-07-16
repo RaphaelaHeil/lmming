@@ -6,41 +6,42 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from metadata.models import Report, Page, DefaultValueSettings, ExtractionTransfer, DefaultNumberSettings, Job, \
     FilemakerEntry
 from metadata.partials import __buildProcessingSteps__
+from copy import deepcopy
 
-__TEST_REPORT__ = {"identifier": "http://iiif.example.com", "title": "", "creator": "", "date": [date(1991, 1, 1)],
-                   "coverage": "workplace", "language": ["sv"], "spatial": ["SE"], "type": ["ANNUAL_REPORT"],
-                   "license": ["license", "url to def"], "isVersionOf": "http://atom.example.com",
-                   "isFormatOf": ["printed"], "relation": ["relation", "relation url"], "created": date(1992, 1, 1),
-                   "available": date(2082, 1, 1), "accessRights": "RESTRICTED", "source": ["source", "source url"],
-                   "description": "dummy description", "unionId": "1", "noid": "/testbcd"}
+TEST_REPORT = {"identifier": "http://iiif.example.com", "title": "", "creator": "", "date": [date(1991, 1, 1)],
+               "coverage": "workplace", "language": ["sv"], "spatial": ["SE"], "type": ["ANNUAL_REPORT"],
+               "license": ["license", "url to def"], "isVersionOf": "http://atom.example.com",
+               "isFormatOf": ["printed"], "relation": ["relation", "relation url"], "created": date(1992, 1, 1),
+               "available": date(2082, 1, 1), "accessRights": "RESTRICTED", "source": ["source", "source url"],
+               "description": "dummy description", "unionId": "1", "noid": "/testbcd"}
 
-__TEST_PAGES__ = [{"order": 1,
-                   "transcriptionFile": SimpleUploadedFile("fac_00001_arsberattelse_1991_sid-01.xml",
-                                                           b"these are the file contents!"),
-                   "originalFileName": "fac_00001_arsberattelse_1991_sid-01.xml",
-                   "identifier": "http://iiif.example.com/page1", "transcription": "transcription",
-                   "normalisedTranscription": "normalised transcription", "persons": ["person A", "person B"],
-                   "organisations": ["org 1", "org 2"], "locations": ["l1", "l2"],
-                   "times": ["time A", "time B"], "events": ["event A", "event B"],
-                   "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd1"},
-                  {"order": 2,
-                   "transcriptionFile": SimpleUploadedFile("fac_00001_arsberattelse_1991_sid-02.xml",
-                                                           b"these are the file contents!"),
-                   "originalFileName": "fac_00001_arsberattelse_1991_sid-02.xml",
-                   "identifier": "http://iiif.example.com/page1", "transcription": "transcription",
-                   "normalisedTranscription": "normalised transcription", "persons": ["person A", "person B"],
-                   "organisations": ["org 1", "org 2"], "locations": ["l1", "l2"],
-                   "times": ["time A", "time B"], "events": ["event A", "event B"],
-                   "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd2"}
-                  ]
+TEST_PAGES = [{"order": 1,
+               "transcriptionFile": SimpleUploadedFile("fac_00001_arsberattelse_1991_sid-01.xml",
+                                                       b"these are the file contents!"),
+               "originalFileName": "fac_00001_arsberattelse_1991_sid-01.xml",
+               "identifier": "http://iiif.example.com/page1", "transcription": "transcription",
+               "normalisedTranscription": "normalised transcription", "persons": ["person A", "person B"],
+               "organisations": ["org 1", "org 2"], "locations": ["l1", "l2"],
+               "times": ["time A", "time B"], "events": ["event A", "event B"],
+               "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd1"},
+              {"order": 2,
+               "transcriptionFile": SimpleUploadedFile("fac_00001_arsberattelse_1991_sid-02.xml",
+                                                       b"these are the file contents!"),
+               "originalFileName": "fac_00001_arsberattelse_1991_sid-02.xml",
+               "identifier": "http://iiif.example.com/page1", "transcription": "transcription",
+               "normalisedTranscription": "normalised transcription", "persons": ["person A", "person B"],
+               "organisations": ["org 1", "org 2"], "locations": ["l1", "l2"],
+               "times": ["time A", "time B"], "events": ["event A", "event B"],
+               "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd2"}
+              ]
 
-__DEFAULT_VALUES__ = {"license": "license", "language": "language", "source": "source", "accessRights": "RESTRICTED",
-                      "arkShoulder": "/test", "yearOffset": 70}
+DEFAULT_VALUES = {"license": "license", "language": "language", "source": "source", "accessRights": "RESTRICTED",
+                  "arkShoulder": "/test", "yearOffset": 70}
 
 
 def initDefaultValues(values: Dict[str, Any] = None):
     if values is None:
-        values = __DEFAULT_VALUES__.copy()
+        values = deepcopy(DEFAULT_VALUES)
 
     if "license" in values:
         DefaultValueSettings.objects.create(name=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE,
@@ -77,11 +78,11 @@ def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str
     # unionId="1", type=[Report.DocumentType.ANNUAL_REPORT], date=[date(1991, 1, 1)],
 
     if reportData is None:
-        reportData = __TEST_REPORT__.copy()
+        reportData = deepcopy(TEST_REPORT)
     if not "unionId" in reportData:
         reportData["unionId"] = "1"
     if pageData is None:
-        pageData = __TEST_PAGES__.copy()
+        pageData = deepcopy(TEST_PAGES)
 
     report = Report.objects.create(transfer=et, **reportData)
     for page in pageData:
