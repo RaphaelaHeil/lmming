@@ -262,9 +262,6 @@ def mintArks(jobPk: int, pipeline: bool = True):
 
     iiifBase = settings.IIIF_BASE_URL
 
-    # TODO: do not request a new noid if report already has one -- only run update in that case!
-    # TODO: maybe double check if noid exists?
-
     if not report.noid:
         mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}
         response = requests.post(mintUrl, headers=headers, json=mintBody)
@@ -275,6 +272,11 @@ def mintArks(jobPk: int, pipeline: bool = True):
             report.noid = noid
             report.identifier = f"https://ark.fauppsala.se/{ark}/manifest"  # TODO: remove hardcoding once arklet is set up properly
             report.save()
+
+            for page in report.page_set.all():
+                page.iiifId = f"{report.noid}_{page.order}"
+                page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
+                page.save()
         else:
             step.status = Status.ERROR
             step.log = (f"An error occurred while obtaining a new ARK: {response.status_code}. Please verify that "
@@ -301,11 +303,6 @@ def mintArks(jobPk: int, pipeline: bool = True):
         logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
                        f"{ark} ({jobPk} - {report.title})")
         return
-
-    for page in report.page_set.all():
-        page.iiifId = f"{report.noid}_{page.order}"
-        page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
-        page.save()
 
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
