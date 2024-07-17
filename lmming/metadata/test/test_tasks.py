@@ -1,11 +1,13 @@
 import logging
 from datetime import date
+from pathlib import Path
 from unittest import mock
 
 from django.test import TestCase
 
-from metadata.models import Report, ProcessingStep, Status
-from metadata.tasks import computeFromExistingFields, fileMakerLookup, mintArks
+from metadata.models import Report, ProcessingStep, Status, Page
+from metadata.nlp.ner import NlpResult
+from metadata.tasks import computeFromExistingFields, fileMakerLookup, mintArks, namedEntityRecognition
 from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
 
 
@@ -329,3 +331,61 @@ class MintArks(TestCase):
                                     json={"ark": "ark:/12345/testbcd", "title": "title",
                                           "url": "http://iiif.example.com/iiif/presentation/testbcd"}),
                           successfulPut.call_args_list)
+
+
+def successfulNerMock(path: Path):
+    if "sid-01" in path.name:
+        return NlpResult(text="new text", normalised="new normalised", persons={"A", "B"}, organisations={"o"},
+                         locations={"l1"}, times={"1991"}, works={"lotr"}, events={"easter"}, objects={"statue"},
+                         measures=True)
+    else:
+        return NlpResult(text="second text", normalised="second normalised", persons={"C"}, organisations={"WTO"},
+                         locations={"l2"}, times={"2020"}, works={"hobbit"}, events={"christmas"}, objects={"painting"},
+                         measures=False)
+
+
+def failedNerMock(path: Path):
+    raise ValueError("test")
+
+
+class NamedEntityRecognition(TestCase):
+
+    def setUp(self):
+        logging.disable(logging.CRITICAL)
+
+    @mock.patch("metadata.tasks.processPage", side_effect=successfulNerMock)
+    def test_ner(self, successfulNerMock):
+        initDefaultValues()
+        initDummyFilemaker()
+        jobId = initDummyTransfer({"unionId": "1", "title": "test title"})
+
+        namedEntityRecognition(jobId, False)
+        r = Report.objects.get(job=jobId)
+
+        page1 = Page.objects.get(report=r.id, order=1)
+        page2 = Page.objects.get(report=r.id, order=2)
+
+        self.assertEqual("new text", page1.transcription)
+        self.assertTrue(page1.measures)
+
+        self.assertEqual("second text", page2.transcription)
+        self.assertFalse(page2.measures)
+
+    @mock.patch("metadata.tasks.processPage", side_effect=failedNerMock)
+    def test_failedNer(self, failedNerMock):
+        initDefaultValues()
+        initDummyFilemaker()
+        jobId = initDummyTransfer({"unionId": "1", "title": "test title"})
+
+        namedEntityRecognition(jobId, False)
+
+        r = Report.objects.get(job=jobId)
+
+        page1 = Page.objects.get(report=r.id, order=1)
+        page2 = Page.objects.get(report=r.id, order=2)
+
+        self.assertEqual("", page1.transcription)
+        self.assertFalse(page1.measures)
+
+        self.assertEqual("", page2.transcription)
+        self.assertFalse(page2.measures)
