@@ -252,7 +252,7 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
                    }
             filename = f"page_not_available_{report.noid}"
             transcriptionFilename = f"objects/transcription/{filename}.xml"
-            preserverationFilename = f"objects/{filename}.tif"
+            preserverationFilename = f"objects/{filename}.jpg"
             a = {"filename": transcriptionFilename}
             a.update(row)
             b = {"filename": preserverationFilename}
@@ -278,7 +278,7 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
                    }
             for page in report.page_set.all():
                 transcriptionFilename = f"objects/transcription/{page.originalFileName}"
-                preserverationFilename = f"objects/{page.originalFileName[:-4]}.tif"
+                preserverationFilename = f"objects/{page.originalFileName[:-4]}.jpg"
                 a = {"filename": transcriptionFilename}
                 a.update(row)
                 b = {"filename": preserverationFilename}
