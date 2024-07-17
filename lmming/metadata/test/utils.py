@@ -1,3 +1,4 @@
+from copy import deepcopy
 from datetime import date
 from typing import Dict, List, Any
 
@@ -6,14 +7,14 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from metadata.models import Report, Page, DefaultValueSettings, ExtractionTransfer, DefaultNumberSettings, Job, \
     FilemakerEntry
 from metadata.partials import __buildProcessingSteps__
-from copy import deepcopy
 
-TEST_REPORT = {"identifier": "http://iiif.example.com", "title": "", "creator": "", "date": [date(1991, 1, 1)],
-               "coverage": "workplace", "language": ["sv"], "spatial": ["SE"], "type": ["ANNUAL_REPORT"],
-               "license": ["license", "url to def"], "isVersionOf": "http://atom.example.com",
-               "isFormatOf": ["printed"], "relation": ["relation", "relation url"], "created": date(1992, 1, 1),
-               "available": date(2082, 1, 1), "accessRights": "RESTRICTED", "source": ["source", "source url"],
-               "description": "dummy description", "unionId": "1", "noid": "/testbcd"}
+TEST_REPORT = {"identifier": "http://ark.example.com/ark:/12345/testbcd/manifest", "title": "title",
+               "creator": "creator", "date": [date(1991, 1, 1)], "coverage": "workplace", "language": ["sv"],
+               "spatial": ["SE"], "type": ["ANNUAL_REPORT"], "license": ["license", "url to def"],
+               "isVersionOf": "http://atom.example.com", "isFormatOf": ["printed"],
+               "relation": ["relation", "relation url"], "created": date(1992, 1, 1), "available": date(2082, 1, 1),
+               "accessRights": "RESTRICTED", "source": ["source", "source url"], "description": "dummy description",
+               "unionId": "1", "noid": "testbcd"}
 
 TEST_PAGES = [{"order": 1,
                "transcriptionFile": SimpleUploadedFile("fac_00001_arsberattelse_1991_sid-01.xml",
@@ -23,7 +24,7 @@ TEST_PAGES = [{"order": 1,
                "normalisedTranscription": "normalised transcription", "persons": ["person A", "person B"],
                "organisations": ["org 1", "org 2"], "locations": ["l1", "l2"],
                "times": ["time A", "time B"], "events": ["event A", "event B"],
-               "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd1"},
+               "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd_1"},
               {"order": 2,
                "transcriptionFile": SimpleUploadedFile("fac_00001_arsberattelse_1991_sid-02.xml",
                                                        b"these are the file contents!"),
@@ -32,7 +33,7 @@ TEST_PAGES = [{"order": 1,
                "normalisedTranscription": "normalised transcription", "persons": ["person A", "person B"],
                "organisations": ["org 1", "org 2"], "locations": ["l1", "l2"],
                "times": ["time A", "time B"], "events": ["event A", "event B"],
-               "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd2"}
+               "ner_objects": ["object1", "object2"], "measures": True, "iiifId": "testbcd_2"}
               ]
 
 DEFAULT_VALUES = {"license": "license", "language": "language", "source": "source", "accessRights": "RESTRICTED",
