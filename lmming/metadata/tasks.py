@@ -12,7 +12,7 @@ from django.db import transaction
 from requests.compat import urljoin
 
 from metadata.enum_utils import PipelineStepName
-from metadata.models import ProcessingStep, Job, Status, Report, FilemakerEntry, DefaultNumberSettings, \
+from metadata.models import ProcessingStep, Job, Status, Report, ExternalRecord, DefaultNumberSettings, \
     DefaultValueSettings
 from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
@@ -42,7 +42,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
-    entries = FilemakerEntry.objects.filter(archiveId=report.unionId)
+    entries = ExternalRecord.objects.filter(archiveId=report.unionId)
     if entries.count() == 0:
         step.log = f"No Filemaker entry found for union with ID {report.unionId}."
         step.status = Status.ERROR
@@ -58,7 +58,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
             return
 
         report.creator = filemaker.organisationName
-        report.relation = [filemaker.nadLink if filemaker.nadLink else ""]
+        report.relation = [filemaker.catalogueLink if filemaker.catalogueLink else ""]
         report.spatial = ["SE"] + [x for x in
                                    [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
                                    if x]

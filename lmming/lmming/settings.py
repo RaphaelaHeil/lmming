@@ -30,14 +30,13 @@ env = environ.Env(
     MINTER_AUTH=(str, ""),
     MINTER_ORG_ID=(str, "12345"),
     IIIF_BASE_URL=(str, "https://iiif.example.com"),
-    CATALOGUE_BASE_URL=(str, "https://atom.example.com"),
-    FM_ARCHIVE_ID=(str, "PostID_Arkivbildare"),
-    FM_ORGANISATION_NAME=(str, "Organisation"),
-    FM_COUNTY=(str, "Distrikt län"),
-    FM_MUNICIPALITY=(str, "Kommun"),
-    FM_CITY=(str, "Ort"),
-    FM_PARISH=(str, "Socken"),
-    FM_NAD_LINK=(str, "NAD_LINK"),
+    ER_ARCHIVE_ID=(str, "PostID_Arkivbildare"),
+    ER_ORGANISATION_NAME=(str, "Organisation"),
+    ER_COUNTY=(str, "Distrikt län"),
+    ER_MUNICIPALITY=(str, "Kommun"),
+    ER_CITY=(str, "Ort"),
+    ER_PARISH=(str, "Socken"),
+    ER_CATALOGUE_LINK=(str, "NAD_LINK"),
     REDIS_HOST=(str, "redis://localhost"),
     REDIS_PORT=(str, "6379"),
     HF_CRINA_HASH=(str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b"),
@@ -56,7 +55,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS = [env("LMMING_HOST")]#"127.0.0.1", "0.0.0.0", "localhost"]
+ALLOWED_HOSTS = [env("LMMING_HOST")]  # "127.0.0.1", "0.0.0.0", "localhost"]
 
 # Application definition
 
@@ -171,14 +170,13 @@ MINTER_URL = env("MINTER_URL")
 MINTER_AUTH = env("MINTER_AUTH")
 MINTER_ORG_ID = env("MINTER_ORG_ID")
 IIIF_BASE_URL = env("IIIF_BASE_URL")
-CATALOGUE_BASE_URL = env("CATALOGUE_BASE_URL")
-FM_ARCHIVE_ID = env("FM_ARCHIVE_ID")
-FM_ORGANISATION_NAME = env("FM_ORGANISATION_NAME")
-FM_COUNTY = env("FM_COUNTY")
-FM_MUNICIPALITY = env("FM_MUNICIPALITY")
-FM_CITY = env("FM_CITY")
-FM_PARISH = env("FM_PARISH")
-FM_NAD_LINK = env("FM_NAD_LINK")
+ER_ARCHIVE_ID = env("ER_ARCHIVE_ID")
+ER_ORGANISATION_NAME = env("ER_ORGANISATION_NAME")
+ER_COUNTY = env("ER_COUNTY")
+ER_MUNICIPALITY = env("ER_MUNICIPALITY")
+ER_CITY = env("ER_CITY")
+ER_PARISH = env("ER_PARISH")
+ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK")
 
 HF_CRINA_HASH = env("HF_CRINA_HASH")
 HF_KB_HASH = env("HF_KB_HASH")

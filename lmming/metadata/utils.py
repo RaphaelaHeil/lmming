@@ -11,7 +11,7 @@ import pandas as pd
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring
 
 from lmming import settings
-from metadata.models import Report, ExtractionTransfer, FilemakerEntry
+from metadata.models import Report, ExtractionTransfer, ExternalRecord
 
 __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
                          "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
@@ -339,16 +339,18 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
     return outfile
 
 
-def updateFilemakerData(df: pd.DataFrame):
+def updateExternalRecords(df: pd.DataFrame):
     df = df.fillna("")
 
-    FilemakerEntry.objects.bulk_create([FilemakerEntry(archiveId=row[settings.FM_ARCHIVE_ID],
-                                                       organisationName=row[settings.FM_ORGANISATION_NAME],
-                                                       county=row[settings.FM_COUNTY],
-                                                       municipality=row[settings.FM_MUNICIPALITY],
-                                                       city=row[settings.FM_CITY], parish=row[settings.FM_PARISH],
-                                                       nadLink=row[settings.FM_NAD_LINK]) for _, row in df.iterrows()
-                                        if row[settings.FM_ARCHIVE_ID] and row[settings.FM_ORGANISATION_NAME]],
+    ExternalRecord.objects.bulk_create([ExternalRecord(archiveId=row[settings.ER_ARCHIVE_ID],
+                                                       organisationName=row[settings.ER_ORGANISATION_NAME],
+                                                       county=row[settings.ER_COUNTY],
+                                                       municipality=row[settings.ER_MUNICIPALITY],
+                                                       city=row[settings.ER_CITY], parish=row[settings.ER_PARISH],
+                                                       catalogueLink=row[settings.ER_CATALOGUE_LINK]) for _, row in
+                                        df.iterrows()
+                                        if row[settings.ER_ARCHIVE_ID] and row[settings.ER_ORGANISATION_NAME]],
                                        update_conflicts=True, unique_fields=["archiveId"],
-                                       update_fields=["organisationName", "county", "municipality", "city", "nadLink"],
+                                       update_fields=["organisationName", "county", "municipality", "city",
+                                                      "catalogueLink"],
                                        )

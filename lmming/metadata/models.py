@@ -294,11 +294,11 @@ class DefaultNumberSettings(Model):
         return f"{self.name}: {self.value}"
 
 
-class FilemakerEntry(Model):
+class ExternalRecord(Model):
     archiveId = CharField( primary_key=True)
     organisationName = CharField()
     county = CharField(blank=True, default="")
     municipality = CharField(blank=True, default="")
     city = CharField(blank=True, default="")
     parish = CharField(blank=True, default="")
-    nadLink = URLField(blank=True, default="")
+    catalogueLink = URLField(blank=True, default="")

@@ -151,7 +151,7 @@ class SettingsForm(Form):
                                       step_size=1)
 
 
-class FilemakerSettingsForm(Form):
-    filemaker_csv = FileField(label="Filemaker CSV",
-                              widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}),
-                              required=False)
+class ExternalRecordsSettingsForm(Form):
+    externalRecordCsv = FileField(label="External Record CSV",
+                                  widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}),
+                                  required=False)

@@ -5,7 +5,7 @@ from typing import Dict, List, Any
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from metadata.models import Report, Page, DefaultValueSettings, ExtractionTransfer, DefaultNumberSettings, Job, \
-    FilemakerEntry
+    ExternalRecord
 from metadata.partials import __buildProcessingSteps__
 
 TEST_REPORT = {"identifier": "http://ark.example.com/ark:/12345/testbcd/manifest", "title": "title",
@@ -69,11 +69,11 @@ def initDefaultValues(values: Dict[str, Any] = None):
 
 def initDummyFilemaker(filemakerEntry: Dict[str, Any] = None):
     if filemakerEntry is None:
-        FilemakerEntry.objects.create(archiveId="1", organisationName="Test Orga", county="county",
+        ExternalRecord.objects.create(archiveId="1", organisationName="Test Orga", county="county",
                                       municipality="municipality", city="city", parish="parish",
-                                      nadLink="http://nadLink.example.com")
+                                      catalogueLink="http://nadLink.example.com")
     else:
-        FilemakerEntry.objects.create(**filemakerEntry)
+        ExternalRecord.objects.create(**filemakerEntry)
 
 
 def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str, Any]] = None):

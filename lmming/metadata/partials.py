@@ -7,13 +7,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 
 from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm, \
-    FilemakerSettingsForm
+    ExternalRecordsSettingsForm
 from metadata.lookup import URL_STEP_INDEX
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
 from metadata.tasks import restartTask
 from metadata.tasks import scheduleTask
-from metadata.utils import parseFilename, buildReportIdentifier, updateFilemakerData
+from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords
 
 
 def restart(request, job_id: int, step: str):
@@ -59,7 +59,7 @@ def settingsModal(request):
                }
     if request.method == 'POST':
         settingsForm = SettingsForm(request.POST, initial=initial)
-        filemakerForm = FilemakerSettingsForm(request.POST, request.FILES)
+        filemakerForm = ExternalRecordsSettingsForm(request.POST, request.FILES)
         if settingsForm.is_valid():
             if settingsForm.has_changed():
                 if "language" in settingsForm.changed_data:
@@ -103,15 +103,15 @@ def settingsModal(request):
                             pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET,
                             value=settingsForm.cleaned_data["avilableYearOffset"])
         if filemakerForm.is_valid():
-            filemakerCsv = filemakerForm.cleaned_data["filemaker_csv"]
+            filemakerCsv = filemakerForm.cleaned_data["externalRecordCsv"]
             if filemakerCsv:
-                updateFilemakerData(pd.read_csv(filemakerCsv))  # TODO: technically needs a loading indicator ...
+                updateExternalRecords(pd.read_csv(filemakerCsv))  # TODO: technically needs a loading indicator ...
         else:
             pass  # TODO: return error or smth
         return redirect("/")
     else:
         return render(request, 'modal/settings.html',
-                      {"form": SettingsForm(initial=initial), "filemaker": FilemakerSettingsForm()})
+                      {"form": SettingsForm(initial=initial), "filemaker": ExternalRecordsSettingsForm()})
 
 
 def verifyTransfer(request, transfer_id):
