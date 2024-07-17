@@ -199,9 +199,14 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
     # fields: everything in page, except minting
     report = Report.objects.get(job__pk=jobPk)
     for page in report.page_set.all():
-        result = processPage(Path(page.transcriptionFile.path))
-        if not result:
+        try:
+            result = processPage(Path(page.transcriptionFile.path))
+            if not result:
+                result = NlpResult()
+        except Exception as e:
+            logger.error(f"{type(e).__name__} occurred during NER. {e.args}")
             result = NlpResult()
+
         page.transcription = result.text
         page.normalisedTranscription = result.normalised
         page.persons = list(result.persons)
@@ -211,7 +216,7 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
         page.events = list(result.events)
         page.ner_objects = list(result.objects)
         page.times = list(result.times)
-        page.measures = True
+        page.measures = result.measures
         page.save()
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.NER).first()
