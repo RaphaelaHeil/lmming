@@ -292,8 +292,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
     details = {"ark": ark, "url": resolveTo, "title": report.title, }
     # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
 
-    updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers,
-                                  data=json.dumps(details).encode("utf-8"))
+    updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers, json=details)
     if not updateResponse.ok:
         step.status = Status.ERROR
         step.log = (f"An error occurred while updating the ARK {ark}, status: {updateResponse.status_code}"
