@@ -166,6 +166,9 @@ MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH"))  # BASE_DIR / "media"
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
 ARCHIVE_INST = env("ARCHIVE_INST")
+if ARCHIVE_INST not in ["FAC", "ARAB"]:
+    raise ValueError("Unknown Archival Institution")
+
 MINTER_URL = env("MINTER_URL")
 MINTER_AUTH = env("MINTER_AUTH")
 MINTER_ORG_ID = env("MINTER_ORG_ID")

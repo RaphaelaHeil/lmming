@@ -229,6 +229,9 @@ class ProcessingStep(Model):
         IMAGE = "IMAGE", 40, "Image-based extraction"
         NER = "NER", 50, "Named Entity Recognition"
         MINT_ARKS = "MINT_ARKS", 60, "Mint ARKs"
+        ARAB_GENERATE = "ARAB_GENERATE", 31, "Generate/Calculate"
+        ARAB_MANUAL = "ARAB_MANUAL", 36, "Manual"
+        ARAB_MINT_HANDLE = "ARAB_MINT_HANDLE", 61, "Mint Handle IDs"
 
         @property
         def order(self):

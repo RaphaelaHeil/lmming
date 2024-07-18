@@ -6,6 +6,7 @@ from django.db.models import Q
 from django.forms import formset_factory
 from django.http import QueryDict, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.conf import settings
 
 from metadata.forms import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, ProcessingStepForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
@@ -41,6 +42,33 @@ FAC_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILEN
                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                 "modeDisabled": False}
                                ]
+
+ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILENAME,
+                                 "tooltip": "Extracts 'date' and 'type' information, as well as the organisation's id, "
+                                            "from the filename.", "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                                 "humanValidation": False, "modeDisabled": False},
+                                {"label": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                                 "tooltip": "Uses the organisation's ID to extract informationen from Filemaker-based "
+                                            "data. Fills the fields 'creator', 'relation', 'coverage', and 'spatial'.",
+                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                 "modeDisabled": False},
+                                {"label": ProcessingStep.ProcessingStepType.ARAB_GENERATE,
+                                 "tooltip": "",  # TODO: add tooltip!
+                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                 "modeDisabled": False},
+                                {"label": ProcessingStep.ProcessingStepType.ARAB_MANUAL,
+                                 "tooltip": "Any piece of data that can not be handled automatically at the moment.",
+                                 "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": False,
+                                 "modeDisabled": True},
+                                {"label": ProcessingStep.ProcessingStepType.NER,
+                                 "tooltip": "Extracts named entities from the provided transcriptions.",
+                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                 "modeDisabled": False},
+                                {"label": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE,
+                                 "tooltip": "",  # TODO: add tooltip!
+                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                 "modeDisabled": False}
+                                ]
 
 
 def restart(request, job_id: int, step: str):
@@ -156,9 +184,14 @@ def createTransfer(request):
     detailform = ExtractionTransferDetailForm()
     StepFormSet = formset_factory(ProcessingStepForm, extra=0)
 
+    if settings.ARCHIVE_INST == "FAC":
+        initial = deepcopy(FAC_PROCESSING_STEP_INITIAL)
+    else:
+        initial = deepcopy(ARAB_PROCESSING_STEP_INITIAL)
+
     if request.method == 'POST':
         detailform = ExtractionTransferDetailForm(request.POST, request.FILES)
-        stepForm = StepFormSet(request.POST, initial=deepcopy(FAC_PROCESSING_STEP_INITIAL))
+        stepForm = StepFormSet(request.POST, initial=initial)
 
         if detailform.is_valid() and stepForm.is_valid():
             collectionName = detailform.cleaned_data['processName']
@@ -204,7 +237,7 @@ def createTransfer(request):
 
             return redirect("metadata:verify_transfer", transfer_id=transferInstance.pk)
 
-    stepForm = StepFormSet(initial=(deepcopy(FAC_PROCESSING_STEP_INITIAL)))
+    stepForm = StepFormSet(initial=initial)
     return render(request, 'partial/create_transfer.html', {"detailform": detailform, "steps": stepForm})
 
 
