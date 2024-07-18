@@ -159,12 +159,19 @@ class BuildProcessingStepsTests(TestCase):
         report.job = job
         report.save()
 
-        config = {"filenameMode": "AUTOMATIC", "filenameHumVal": False,
-                  "filemakerMode": "AUTOMATIC", "filemakerHumVal": False,
-                  "generateMode": "AUTOMATIC", "generateHumVal": False,
-                  "facManualMode": "MANUAL", "facManualHumVal": False,
-                  "nerMode": "AUTOMATIC", "nerHumVal": True,
-                  "mintMode": "AUTOMATIC", "mintHumVal": False, }
+        config = [{"stepType": ProcessingStep.ProcessingStepType.FILENAME,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.GENERATE,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.FAC_MANUAL,
+                   "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": True},
+                  {"stepType": ProcessingStep.ProcessingStepType.NER,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.MINT_ARKS,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False}
+                  ]
 
         buildProcessingSteps(config, job)
 
@@ -175,8 +182,8 @@ class BuildProcessingStepsTests(TestCase):
             (ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP, ProcessingStep.ProcessingStepMode.AUTOMATIC.value,
              False),
             (ProcessingStep.ProcessingStepType.GENERATE, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, False),
-            (ProcessingStep.ProcessingStepType.FAC_MANUAL, ProcessingStep.ProcessingStepMode.MANUAL.value, False),
-            (ProcessingStep.ProcessingStepType.NER, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, True),
+            (ProcessingStep.ProcessingStepType.FAC_MANUAL, ProcessingStep.ProcessingStepMode.MANUAL.value, True),
+            (ProcessingStep.ProcessingStepType.NER, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, False),
             (ProcessingStep.ProcessingStepType.MINT_ARKS, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, False)
         ]
 
@@ -211,4 +218,4 @@ class BuildProcessingStepsTests(TestCase):
         report.job = job
         report.save()
 
-        self.assertRaises(TypeError, buildProcessingSteps,{}, job)
+        self.assertRaises(TypeError, buildProcessingSteps, [], job)

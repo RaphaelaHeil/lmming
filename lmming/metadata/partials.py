@@ -1,17 +1,46 @@
+from copy import deepcopy
 from datetime import date
 
 import pandas as pd
 from django.db.models import Q
+from django.forms import formset_factory
 from django.http import QueryDict, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
-from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm, \
-    ExternalRecordsSettingsForm
+from metadata.forms import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, ProcessingStepForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
 from metadata.tasks import restartTask
 from metadata.tasks import scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps
+
+FAC_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILENAME,
+                                "tooltip": "Extracts 'date' and 'type' information, as well as the organisation's id, "
+                                           "from the filename.", "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                                "humanValidation": False, "modeDisabled": False},
+                               {"label": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                                "tooltip": "Uses the organisation's ID to extract informationen from Filemaker-based "
+                                           "data. Fills the fields 'creator', 'relation', 'coverage', and 'spatial'.",
+                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                "modeDisabled": False},
+                               {"label": ProcessingStep.ProcessingStepType.GENERATE,
+                                "tooltip": "Fills the fields 'title', 'created', 'description' and 'available', based "
+                                           "on information collected in the previous two steps.",
+                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                "modeDisabled": False},
+                               {"label": ProcessingStep.ProcessingStepType.FAC_MANUAL,
+                                "tooltip": "Any piece of data that can not be handled automatically at the moment.",
+                                "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": False,
+                                "modeDisabled": True},
+                               {"label": ProcessingStep.ProcessingStepType.NER,
+                                "tooltip": "Extracts named entities from the provided transcriptions.",
+                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                "modeDisabled": False},
+                               {"label": ProcessingStep.ProcessingStepType.MINT_ARKS,
+                                "tooltip": "Mints ARKs for IIIF and AtoM, to be included in the CSV for Omeka.",
+                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                "modeDisabled": False}
+                               ]
 
 
 def restart(request, job_id: int, step: str):
@@ -125,12 +154,13 @@ def verifyTransfer(request, transfer_id):
 
 def createTransfer(request):
     detailform = ExtractionTransferDetailForm()
-    extractionSettingsForm = ExtractionTransferSettingsForm()
+    StepFormSet = formset_factory(ProcessingStepForm, extra=0)
+
     if request.method == 'POST':
         detailform = ExtractionTransferDetailForm(request.POST, request.FILES)
-        extractionSettingsForm = ExtractionTransferSettingsForm(request.POST)
+        stepForm = StepFormSet(request.POST, initial=deepcopy(FAC_PROCESSING_STEP_INITIAL))
 
-        if detailform.is_valid() and extractionSettingsForm.is_valid():
+        if detailform.is_valid() and stepForm.is_valid():
             collectionName = detailform.cleaned_data['processName']
             transferInstance = ExtractionTransfer.objects.create(name=collectionName,
                                                                  status=Status.AWAITING_HUMAN_VALIDATION)
@@ -163,14 +193,19 @@ def createTransfer(request):
 
                 j = Job.objects.create(transfer=transferInstance, report=r)
 
-                buildProcessingSteps(extractionSettingsForm.cleaned_data, j)
+                config = []
+                for f in stepForm:
+                    config.append({"stepType": f.label, "mode": f.cleaned_data["mode"],
+                                   "humanValidation": f.cleaned_data["humanValidation"]})
+
+                buildProcessingSteps(config, j)
                 r.job = j
                 r.save()
 
             return redirect("metadata:verify_transfer", transfer_id=transferInstance.pk)
 
-    return render(request, 'partial/create_transfer.html',
-                  {"detailform": detailform, "settings": extractionSettingsForm})
+    stepForm = StepFormSet(initial=(deepcopy(FAC_PROCESSING_STEP_INITIAL)))
+    return render(request, 'partial/create_transfer.html', {"detailform": detailform, "steps": stepForm})
 
 
 def awaitingHumanInteraction(request):

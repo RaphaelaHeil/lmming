@@ -29,35 +29,18 @@ class ExtractionTransferDetailForm(Form):
     file_field = MultipleFileField(label="Select transcription files (*.xml):")
 
 
-class ExtractionTransferSettingsForm(Form):
-    filenameMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                               initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
-                               widget=Select(attrs={"class": "form-select"}))
-    filenameHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
-                                  required=False)
-    filemakerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                                initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
-                                widget=Select(attrs={"class": "form-select"}))
-    filemakerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
-                                   required=False)
-    generateMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                               initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
-                               widget=Select(attrs={"class": "form-select"}))
-    generateHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
-                                  required=False)
-    facManualMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                                initial=ProcessingStep.ProcessingStepMode.MANUAL, disabled=True)
-    facManualHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}),
-                                   required=False, disabled=True)
+class ProcessingStepForm(Form):
 
-    nerMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                          initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
-                          widget=Select(attrs={"class": "form-select"}))
-    nerHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
-    mintMode = ChoiceField(choices=ProcessingStep.ProcessingStepMode,
-                           initial=ProcessingStep.ProcessingStepMode.AUTOMATIC,
-                           widget=Select(attrs={"class": "form-select"}))
-    mintHumVal = BooleanField(initial=False, widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
+    def __init__(self, *args, **kwargs):
+        super(ProcessingStepForm, self).__init__(*args, **kwargs)
+        self.label = kwargs["initial"]["label"]
+        self.tooltip = kwargs["initial"]["tooltip"]
+        self.fields["mode"].initial = kwargs["initial"]["mode"]
+        self.fields["mode"].disabled = kwargs["initial"]["modeDisabled"]
+        self.fields["humanValidation"].initial = kwargs["initial"]["humanValidation"]
+
+    mode = ChoiceField(choices=ProcessingStep.ProcessingStepMode, widget=Select(attrs={"class": "form-select"}))
+    humanValidation = BooleanField(widget=CheckboxInput(attrs={'class': 'form-check-input'}), required=False)
 
 
 class ZipForm(Form):

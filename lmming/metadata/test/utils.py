@@ -5,7 +5,7 @@ from typing import Dict, List, Any
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from metadata.models import Report, Page, DefaultValueSettings, ExtractionTransfer, DefaultNumberSettings, Job, \
-    ExternalRecord
+    ExternalRecord, ProcessingStep
 from metadata.utils import buildProcessingSteps
 
 TEST_REPORT = {"identifier": "http://ark.example.com/ark:/12345/testbcd/manifest", "title": "title",
@@ -97,12 +97,19 @@ def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str
     report.job = job
     report.save()
 
-    data = {"filenameMode": "AUTOMATIC", "filenameHumVal": False,
-            "filemakerMode": "AUTOMATIC", "filemakerHumVal": False,
-            "generateMode": "AUTOMATIC", "generateHumVal": False,
-            "facManualMode": "MANUAL", "facManualHumVal": False,
-            "nerMode": "AUTOMATIC", "nerHumVal": False,
-            "mintMode": "AUTOMATIC", "mintHumVal": False, }
-    buildProcessingSteps(data, job)
+    config = [{"stepType": ProcessingStep.ProcessingStepType.FILENAME,
+               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+              {"stepType": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+              {"stepType": ProcessingStep.ProcessingStepType.GENERATE,
+               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+              {"stepType": ProcessingStep.ProcessingStepType.FAC_MANUAL,
+               "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": True},
+              {"stepType": ProcessingStep.ProcessingStepType.NER,
+               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+              {"stepType": ProcessingStep.ProcessingStepType.MINT_ARKS,
+               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False}
+              ]
+    buildProcessingSteps(config, job)
 
     return job.pk

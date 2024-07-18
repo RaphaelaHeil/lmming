@@ -362,14 +362,7 @@ def buildProcessingSteps(config, job):
     if not job:
         raise TypeError("no job was supplied")
 
-    stepKeys = [("filenameMode", "filenameHumVal", ProcessingStep.ProcessingStepType.FILENAME),
-                ("filemakerMode", "filemakerHumVal", ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP),
-                ("generateMode", "generateHumVal", ProcessingStep.ProcessingStepType.GENERATE),
-                # ("imageMode", "imageHumVal", PipelineStepName.IMAGE),
-                ("facManualMode", "facManualHumVal", ProcessingStep.ProcessingStepType.FAC_MANUAL),
-                ("nerMode", "nerHumVal", ProcessingStep.ProcessingStepType.NER),
-                ("mintMode", "mintHumVal", ProcessingStep.ProcessingStepType.MINT_ARKS)]
-
-    for mode, humVal, step in stepKeys:
-        ProcessingStep.objects.create(job=job, order=step.order, processingStepType=step.value,
-                                      humanValidation=config[humVal], mode=config[mode])
+    for entry in config:
+        ProcessingStep.objects.create(job=job, order=entry["stepType"].order,
+                                      processingStepType=entry["stepType"].value,
+                                      humanValidation=entry["humanValidation"], mode=entry["mode"])
