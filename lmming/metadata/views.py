@@ -7,7 +7,6 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
 
-from metadata.lookup import URL_STEP_INDEX
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
 from metadata.pipeline_views import filename, filemaker, compute, facManual, ner, mint
 from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure
@@ -25,7 +24,7 @@ def jobDetails(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     stepData = []
     for step in job.processingSteps.order_by("order"):
-        stepData.append({"step": step, "urlName": URL_STEP_INDEX[step.processingStepType]})
+        stepData.append({"step": step, "urlName": step.processingStepType.lower()})
 
     error = {}
     if job.status == Status.ERROR:
@@ -142,8 +141,8 @@ class JobEditView(View):
             return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
 
     def __handleView__(self, request, job, stepName) -> Tuple[str, Dict[str, Any]]:
-        stepIndex = {"filename": filename, "filemaker": filemaker, "generate": compute, "fac_manual": facManual,
-                     "ner": ner, "mint": mint}
+        stepIndex = {"filename": filename, "filemaker_lookup": filemaker, "generate": compute, "fac_manual": facManual,
+                     "ner": ner, "mint_arks": mint}
         context = stepIndex[stepName](request, job)
         context["stepParam"] = stepName
         return context

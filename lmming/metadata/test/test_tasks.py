@@ -33,7 +33,7 @@ class FilemakerLookup(TestCase):
         fileMakerLookup(jobId, False)
 
         step = ProcessingStep.objects.get(job_id=jobId,
-                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)
+                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("Organisation name", step.log)
 
@@ -54,7 +54,7 @@ class FilemakerLookup(TestCase):
         fileMakerLookup(jobId, False)
 
         step = ProcessingStep.objects.get(job_id=jobId,
-                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP)
+                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("union with ID 2", step.log)
 
@@ -122,7 +122,8 @@ class ComputeFromExistingFields(TestCase):
 
         computeFromExistingFields(jobId, False)
 
-        step = ProcessingStep.objects.get(job_id=jobId, processingStepType=ProcessingStep.ProcessingStepType.GENERATE)
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("language", step.log)
 
@@ -133,7 +134,8 @@ class ComputeFromExistingFields(TestCase):
 
         computeFromExistingFields(jobId, False)
 
-        step = ProcessingStep.objects.get(job_id=jobId, processingStepType=ProcessingStep.ProcessingStepType.GENERATE)
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("license", step.log)
 
@@ -144,7 +146,8 @@ class ComputeFromExistingFields(TestCase):
 
         computeFromExistingFields(jobId, False)
 
-        step = ProcessingStep.objects.get(job_id=jobId, processingStepType=ProcessingStep.ProcessingStepType.GENERATE)
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("license", step.log)
 
@@ -155,7 +158,8 @@ class ComputeFromExistingFields(TestCase):
 
         computeFromExistingFields(jobId, False)
 
-        step = ProcessingStep.objects.get(job_id=jobId, processingStepType=ProcessingStep.ProcessingStepType.GENERATE)
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("offset", step.log)
 
@@ -166,7 +170,8 @@ class ComputeFromExistingFields(TestCase):
 
         computeFromExistingFields(jobId, False)
 
-        step = ProcessingStep.objects.get(job_id=jobId, processingStepType=ProcessingStep.ProcessingStepType.GENERATE)
+        step = ProcessingStep.objects.get(job_id=jobId,
+                                          processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value)
         self.assertEqual(step.status, Status.ERROR)
         self.assertIn("offset is negative", step.log)
 
@@ -237,7 +242,7 @@ class MintArks(TestCase):
             mintArks(jobId, False)
 
             step = ProcessingStep.objects.get(job_id=jobId,
-                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)
+                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value)
             self.assertEqual(step.status, Status.ERROR)
             self.assertIn("ARK Shoulder is not set", step.log)
 
@@ -251,7 +256,7 @@ class MintArks(TestCase):
             mintArks(jobId, False)
 
             step = ProcessingStep.objects.get(job_id=jobId,
-                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)
+                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value)
             self.assertEqual(step.status, Status.ERROR)
             self.assertIn("ARK Shoulder is empty", step.log)
 
@@ -265,7 +270,7 @@ class MintArks(TestCase):
             mintArks(jobId, False)
 
             step = ProcessingStep.objects.get(job_id=jobId,
-                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)
+                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value)
             self.assertEqual(step.status, Status.ERROR)
             self.assertIn("should start with a slash", step.log)
 
@@ -283,7 +288,7 @@ class MintArks(TestCase):
             self.assertEqual("", r.noid)
 
             step = ProcessingStep.objects.get(job_id=jobId,
-                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)
+                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value)
             self.assertEqual(step.status, Status.ERROR)
             self.assertIn("error occurred while obtaining a new ARK", step.log)
 
@@ -308,7 +313,7 @@ class MintArks(TestCase):
                                     json={"naan": "12345", "shoulder": "/test"}), successfulPost.call_args_list)
 
             step = ProcessingStep.objects.get(job_id=jobId,
-                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS)
+                                              processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value)
             self.assertEqual(step.status, Status.ERROR)
             self.assertIn("error occurred while updating the ARK", step.log)
 

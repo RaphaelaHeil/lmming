@@ -1,11 +1,9 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
-    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField, Q
+    ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField, Q, Choices
 from django.db.models.signals import pre_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-
-from metadata.enum_utils import PipelineStepName
 
 
 class Status(TextChoices):
@@ -165,7 +163,7 @@ class Page(Model):
     ner_objects = ArrayField(CharField(), blank=True, null=True)  # optional
     measures = BooleanField(default=False)  # optional/default = False
 
-    iiifId = CharField(blank=True, default="") # iiif URL + structmap
+    iiifId = CharField(blank=True, default="")  # iiif URL + structmap
 
 
 @receiver(pre_delete, sender=Page, weak=False)
@@ -223,14 +221,22 @@ def statusUpdateTransfer(sender, instance, **kwargs):
 
 
 class ProcessingStep(Model):
-    class ProcessingStepType(TextChoices):
-        FILENAME = PipelineStepName.FILENAME.name, PipelineStepName.FILENAME.value[1]
-        FILEMAKER_LOOKUP = PipelineStepName.FILEMAKER_LOOKUP.name, PipelineStepName.FILEMAKER_LOOKUP.value[1]
-        GENERATE = PipelineStepName.GENERATE.name, PipelineStepName.GENERATE.value[1]
-        IMAGE = PipelineStepName.IMAGE.name, PipelineStepName.IMAGE.value[1]
-        NER = PipelineStepName.NER.name, PipelineStepName.NER.value[1]
-        MINT_ARKS = PipelineStepName.MINT_ARKS.name, PipelineStepName.MINT_ARKS.value[1]
-        FAC_MANUAL = PipelineStepName.FAC_MANUAL.name, PipelineStepName.FAC_MANUAL.value[1]
+    class ProcessingStepType(Choices):
+        FILENAME = "FILENAME", 10, "Filename-based extraction"
+        FILEMAKER_LOOKUP = "FILEMAKER_LOOKUP", 20, "Lookup in Filemaker export"
+        GENERATE = "GENERATE", 30, "Generate/Calculate"
+        FAC_MANUAL = "FAC_MANUAL", 35, "Manual"
+        IMAGE = "IMAGE", 40, "Image-based extraction"
+        NER = "NER", 50, "Named Entity Recognition"
+        MINT_ARKS = "MINT_ARKS", 60, "Mint ARKs"
+
+        @property
+        def order(self):
+            return self._value_[1]
+
+        @property
+        def value(self):
+            return self._value_[0]
 
     class ProcessingStepMode(TextChoices):
         MANUAL = "MANUAL", "Manual"
@@ -295,7 +301,7 @@ class DefaultNumberSettings(Model):
 
 
 class ExternalRecord(Model):
-    archiveId = CharField( primary_key=True)
+    archiveId = CharField(primary_key=True)
     organisationName = CharField()
     county = CharField(blank=True, default="")
     municipality = CharField(blank=True, default="")

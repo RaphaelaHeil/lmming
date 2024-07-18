@@ -5,10 +5,8 @@ from django.db.models import Q
 from django.http import QueryDict, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
-from metadata.enum_utils import PipelineStepName
 from metadata.forms import ExtractionTransferDetailForm, ExtractionTransferSettingsForm, SettingsForm, \
     ExternalRecordsSettingsForm
-from metadata.lookup import URL_STEP_INDEX
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
 from metadata.tasks import restartTask
@@ -18,9 +16,9 @@ from metadata.utils import parseFilename, buildReportIdentifier, updateExternalR
 
 def restart(request, job_id: int, step: str):
     stepLookup = {"filename": ProcessingStep.ProcessingStepType.FILENAME,
-                  "filemaker": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                  "filemaker_lookup": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
                   "generate": ProcessingStep.ProcessingStepType.GENERATE, "ner": ProcessingStep.ProcessingStepType.NER,
-                  "mint": ProcessingStep.ProcessingStepType.MINT_ARKS}
+                  "mint_arks": ProcessingStep.ProcessingStepType.MINT_ARKS}
 
     restartTask(job_id, stepLookup[step])
     return redirect("metadata:job", job_id=job_id)
@@ -28,7 +26,6 @@ def restart(request, job_id: int, step: str):
 
 def batchDeleteModal(request):
     ids = [int(id) for id in (QueryDict(request.body).getlist("ids"))]
-    print(ids)
     result = ""
     if ids:
         result = f"ids={ids[0]}"
@@ -128,17 +125,17 @@ def verifyTransfer(request, transfer_id):
 
 def __buildProcessingSteps__(data, job):
     steps = []
-    stepKeys = [("filenameMode", "filenameHumVal", PipelineStepName.FILENAME),
-                ("filemakerMode", "filemakerHumVal", PipelineStepName.FILEMAKER_LOOKUP),
-                ("generateMode", "generateHumVal", PipelineStepName.GENERATE),
+    stepKeys = [("filenameMode", "filenameHumVal", ProcessingStep.ProcessingStepType.FILENAME),
+                ("filemakerMode", "filemakerHumVal", ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP),
+                ("generateMode", "generateHumVal", ProcessingStep.ProcessingStepType.GENERATE),
                 # ("imageMode", "imageHumVal", PipelineStepName.IMAGE),
-                ("facManualMode", "facManualHumVal", PipelineStepName.FAC_MANUAL),
-                ("nerMode", "nerHumVal", PipelineStepName.NER),
-                ("mintMode", "mintHumVal", PipelineStepName.MINT_ARKS)]
+                ("facManualMode", "facManualHumVal", ProcessingStep.ProcessingStepType.FAC_MANUAL),
+                ("nerMode", "nerHumVal", ProcessingStep.ProcessingStepType.NER),
+                ("mintMode", "mintHumVal", ProcessingStep.ProcessingStepType.MINT_ARKS)]
 
-    for mode, humVal, stepName in stepKeys:
-        p = ProcessingStep.objects.create(job=job, order=stepName.value[0],
-                                          processingStepType=ProcessingStep.ProcessingStepType[stepName.name],
+    for mode, humVal, step in stepKeys:
+        p = ProcessingStep.objects.create(job=job, order=step.order,
+                                          processingStepType=step.value,
                                           humanValidation=data[humVal], mode=data[mode])
         steps.append(p)
     return steps
@@ -175,7 +172,7 @@ def createTransfer(request):
 
             for reportIdentifier in pagesToReports:
                 pages = pagesToReports[reportIdentifier]
-                unionId = {p["union_id"] for p in pages}.pop()
+                unionId = {p["union_id"] for p in pages}.pop()  # TODO: can there be multiple?
                 reportType = list({p["type"] for p in pages})
                 dateList = list({date(p["date"], 1, 1) for p in pages})
 
@@ -212,7 +209,7 @@ def awaitingHumanInteraction(request):
             continue
         jobPks.add(step.job.pk)
         stepData.append(
-            {"stepName": URL_STEP_INDEX[step.processingStepType], "processName": step.job.transfer.name,
+            {"stepName": step.processingStepType.lower(), "processName": step.job.transfer.name,
              "stepDisplay": ProcessingStep.ProcessingStepType[step.processingStepType].label,
              "status": Status[step.status].label, "job": step.job.pk, "startDate": step.job.startDate})
 

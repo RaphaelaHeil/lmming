@@ -1,5 +1,4 @@
 import datetime
-import json
 import logging
 from pathlib import Path
 from typing import List
@@ -11,7 +10,6 @@ from django.conf import settings
 from django.db import transaction
 from requests.compat import urljoin
 
-from metadata.enum_utils import PipelineStepName
 from metadata.models import ProcessingStep, Job, Status, Report, ExternalRecord, DefaultNumberSettings, \
     DefaultValueSettings
 from metadata.nlp.hf_utils import download
@@ -26,7 +24,7 @@ logger = logging.getLogger(settings.WORKER_LOG_NAME)
 def extractFromFileNames(jobPk: int, pipeline: bool = True):
     # nothing to do at the moment ...
     step = ProcessingStep.objects.filter(job_id=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.FILENAME).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.FILENAME.value).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -41,7 +39,7 @@ def extractFromFileNames(jobPk: int, pipeline: bool = True):
 def fileMakerLookup(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value).first()
     entries = ExternalRecord.objects.filter(archiveId=report.unionId)
     if entries.count() == 0:
         step.log = f"No Filemaker entry found for union with ID {report.unionId}."
@@ -97,7 +95,7 @@ def __splitIfNotNone__(value: str) -> List[str]:
 @shared_task()
 def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value).first()
     # fields: title*[1], created[1], description[1], available[1]
     report = Report.objects.get(job__pk=jobPk)
 
@@ -186,7 +184,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
 def extractFromImage(jobPk: int, pipeline: bool = True):
     # fields: isFormatOf*[N]
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.IMAGE).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.IMAGE.value).first()
     step.status = Status.AWAITING_HUMAN_INPUT
     step.save()
 
@@ -219,7 +217,7 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
         page.measures = result.measures
         page.save()
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.NER).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.NER.value).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
@@ -235,7 +233,7 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
 def mintArks(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
 
     shoulderSetting = DefaultValueSettings.objects.filter(
         pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
@@ -320,20 +318,20 @@ def mintArks(jobPk: int, pipeline: bool = True):
         scheduleTask(jobPk)
 
 
-TASK_INDEX = {PipelineStepName.FILENAME.name: extractFromFileNames,
-              PipelineStepName.FILEMAKER_LOOKUP.name: fileMakerLookup,
-              PipelineStepName.GENERATE.name: computeFromExistingFields,
-              PipelineStepName.IMAGE.name: extractFromImage,
-              PipelineStepName.NER.name: namedEntityRecognition,
-              PipelineStepName.MINT_ARKS.name: mintArks}
+TASK_INDEX = {ProcessingStep.ProcessingStepType.FILENAME.value: extractFromFileNames,
+              ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value: fileMakerLookup,
+              ProcessingStep.ProcessingStepType.GENERATE.value: computeFromExistingFields,
+              ProcessingStep.ProcessingStepType.IMAGE.value: extractFromImage,
+              ProcessingStep.ProcessingStepType.NER.value: namedEntityRecognition,
+              ProcessingStep.ProcessingStepType.MINT_ARKS.value: mintArks}
 
 
 def restartTask(jobId: int, stepType: ProcessingStep.ProcessingStepType):
     job = Job.objects.get(pk=jobId)
-    step = job.processingSteps.filter(processingStepType=stepType).first()
+    step = job.processingSteps.filter(processingStepType=stepType.value).first()
     step.status = Status.IN_PROGRESS
     step.save()
-    transaction.on_commit(lambda: TASK_INDEX[stepType].delay(jobId, False))
+    transaction.on_commit(lambda: TASK_INDEX[stepType.value].delay(jobId, False))
 
 
 def scheduleTask(jobId: int) -> bool:

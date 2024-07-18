@@ -41,7 +41,7 @@ def filename(request, job):
                     job.report.date = [datetime.date(year=y, month=1, day=1) for y in years]
                 job.report.save()
 
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILENAME).first()
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILENAME.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -72,7 +72,7 @@ def filemaker(request, job):
                     job.report.spatial = __fromDisplayList__(filemakerForm.cleaned_data["spatial"])
                 job.report.save()
             step = job.processingSteps.filter(
-                processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP).first()
+                processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -111,7 +111,7 @@ def compute(request, job):
                 if "accessRights" in computeForm.changed_data:
                     job.report.accessRights = computeForm.cleaned_data["accessRights"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.GENERATE).first()
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -135,7 +135,7 @@ def facManual(request, job):
                 if "isVersionOf" in imageForm.changed_data:
                     job.report.isVersionOf = imageForm.cleaned_data["isVersionOf"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL).first()
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -188,7 +188,7 @@ def ner(request, job):
                     if "ner_objects" in f.changed_data:
                         page.ner_objects = __fromDisplayList__(f.cleaned_data["ner_objects"])
                     page.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.NER).first()
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.NER.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -211,7 +211,7 @@ def mint(request, job):
                     job.report.identifier = mintForm.cleaned_data["identifier"]
                 # TDOD: fix this field! (noid vs identifier, etc)
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS).first()
+            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
