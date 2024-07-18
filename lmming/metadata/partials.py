@@ -11,7 +11,7 @@ from metadata.models import ExtractionTransfer, Report, Page, Status, Job, Proce
     DefaultNumberSettings
 from metadata.tasks import restartTask
 from metadata.tasks import scheduleTask
-from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords
+from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps
 
 
 def restart(request, job_id: int, step: str):
@@ -123,24 +123,6 @@ def verifyTransfer(request, transfer_id):
     return render(request, "partial/verify_transfer.html", {"transfer": transferInstance})
 
 
-def __buildProcessingSteps__(data, job):
-    steps = []
-    stepKeys = [("filenameMode", "filenameHumVal", ProcessingStep.ProcessingStepType.FILENAME),
-                ("filemakerMode", "filemakerHumVal", ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP),
-                ("generateMode", "generateHumVal", ProcessingStep.ProcessingStepType.GENERATE),
-                # ("imageMode", "imageHumVal", PipelineStepName.IMAGE),
-                ("facManualMode", "facManualHumVal", ProcessingStep.ProcessingStepType.FAC_MANUAL),
-                ("nerMode", "nerHumVal", ProcessingStep.ProcessingStepType.NER),
-                ("mintMode", "mintHumVal", ProcessingStep.ProcessingStepType.MINT_ARKS)]
-
-    for mode, humVal, step in stepKeys:
-        p = ProcessingStep.objects.create(job=job, order=step.order,
-                                          processingStepType=step.value,
-                                          humanValidation=data[humVal], mode=data[mode])
-        steps.append(p)
-    return steps
-
-
 def createTransfer(request):
     detailform = ExtractionTransferDetailForm()
     extractionSettingsForm = ExtractionTransferSettingsForm()
@@ -168,8 +150,6 @@ def createTransfer(request):
                     # TODO
                     pass
 
-            processingSteps = []
-
             for reportIdentifier in pagesToReports:
                 pages = pagesToReports[reportIdentifier]
                 unionId = {p["union_id"] for p in pages}.pop()  # TODO: can there be multiple?
@@ -182,14 +162,8 @@ def createTransfer(request):
                                                originalFileName=page["file"]) for page in pages])
 
                 j = Job.objects.create(transfer=transferInstance, report=r)
-                if not processingSteps:
-                    processingSteps = __buildProcessingSteps__(extractionSettingsForm.cleaned_data, j)
-                else:
-                    for step in processingSteps:
-                        step.pk = None
-                        step._state.adding = True
-                        step.job = j
-                        step.save()
+
+                buildProcessingSteps(extractionSettingsForm.cleaned_data, j)
                 r.job = j
                 r.save()
 

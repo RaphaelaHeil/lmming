@@ -1,7 +1,9 @@
-from django.test import TestCase
-from metadata.utils import parseFilename, buildReportIdentifier
-from metadata.models import Report, ExtractionTransfer
 from datetime import date
+
+from django.test import TestCase
+
+from metadata.models import Report, ExtractionTransfer, Job, ProcessingStep, Status
+from metadata.utils import parseFilename, buildReportIdentifier, buildProcessingSteps
 
 
 class ParseFilenameTests(TestCase):
@@ -145,3 +147,68 @@ class ReportCreationTests(TestCase):
         transferInstance = ExtractionTransfer.objects.create(name="lion")
 
         r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType, date=dateList)
+
+
+class BuildProcessingStepsTests(TestCase):
+
+    def test_buildFacSteps(self):
+        et = ExtractionTransfer.objects.create(name="TestTransfer")
+
+        report = Report.objects.create(transfer=et, unionId="2")
+        job = Job.objects.create(transfer=et, report=report)
+        report.job = job
+        report.save()
+
+        config = {"filenameMode": "AUTOMATIC", "filenameHumVal": False,
+                  "filemakerMode": "AUTOMATIC", "filemakerHumVal": False,
+                  "generateMode": "AUTOMATIC", "generateHumVal": False,
+                  "facManualMode": "MANUAL", "facManualHumVal": False,
+                  "nerMode": "AUTOMATIC", "nerHumVal": True,
+                  "mintMode": "AUTOMATIC", "mintHumVal": False, }
+
+        buildProcessingSteps(config, job)
+
+        steps = ProcessingStep.objects.filter(job=job).order_by("order")
+
+        expected = [
+            (ProcessingStep.ProcessingStepType.FILENAME, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, False),
+            (ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP, ProcessingStep.ProcessingStepMode.AUTOMATIC.value,
+             False),
+            (ProcessingStep.ProcessingStepType.GENERATE, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, False),
+            (ProcessingStep.ProcessingStepType.FAC_MANUAL, ProcessingStep.ProcessingStepMode.MANUAL.value, False),
+            (ProcessingStep.ProcessingStepType.NER, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, True),
+            (ProcessingStep.ProcessingStepType.MINT_ARKS, ProcessingStep.ProcessingStepMode.AUTOMATIC.value, False)
+        ]
+
+        self.assertEqual(len(expected), len(steps))
+
+        for step, exp in zip(steps, expected):
+            self.assertEqual(exp[0].order, step.order)
+            self.assertEqual(exp[0].value, step.processingStepType)
+            self.assertEqual(Status.PENDING, step.status)
+            self.assertEqual(exp[1], step.mode)
+            self.assertEqual(exp[2], step.humanValidation)
+
+    def test_noJob(self):
+        config = {"filenameMode": "AUTOMATIC", "filenameHumVal": False, }
+        self.assertRaises(TypeError, buildProcessingSteps, config, None)
+
+    def test_noConfig(self):
+        et = ExtractionTransfer.objects.create(name="TestTransfer")
+
+        report = Report.objects.create(transfer=et, unionId="2")
+        job = Job.objects.create(transfer=et, report=report)
+        report.job = job
+        report.save()
+
+        self.assertRaises(TypeError, buildProcessingSteps, None, job)
+
+    def test_emptyConfig(self):
+        et = ExtractionTransfer.objects.create(name="TestTransfer")
+
+        report = Report.objects.create(transfer=et, unionId="2")
+        job = Job.objects.create(transfer=et, report=report)
+        report.job = job
+        report.save()
+
+        self.assertRaises(TypeError, buildProcessingSteps,{}, job)

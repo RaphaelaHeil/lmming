@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 
 from metadata.models import Report, Page, DefaultValueSettings, ExtractionTransfer, DefaultNumberSettings, Job, \
     ExternalRecord
-from metadata.partials import __buildProcessingSteps__
+from metadata.utils import buildProcessingSteps
 
 TEST_REPORT = {"identifier": "http://ark.example.com/ark:/12345/testbcd/manifest", "title": "title",
                "creator": "creator", "date": [date(1991, 1, 1)], "coverage": "workplace", "language": ["sv"],
@@ -97,12 +97,12 @@ def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str
     report.job = job
     report.save()
 
-    data = {"filenameMode": "Automatic", "filenameHumVal": False,
-            "filemakerMode": "Automatic", "filemakerHumVal": False,
-            "generateMode": "Automatic", "generateHumVal": False,
-            "facManualMode": "Manual", "facManualHumVal": False,
-            "nerMode": "Automatic", "nerHumVal": False,
-            "mintMode": "Automatic", "mintHumVal": False, }
-    steps = __buildProcessingSteps__(data, job)
+    data = {"filenameMode": "AUTOMATIC", "filenameHumVal": False,
+            "filemakerMode": "AUTOMATIC", "filemakerHumVal": False,
+            "generateMode": "AUTOMATIC", "generateHumVal": False,
+            "facManualMode": "MANUAL", "facManualHumVal": False,
+            "nerMode": "AUTOMATIC", "nerHumVal": False,
+            "mintMode": "AUTOMATIC", "mintHumVal": False, }
+    buildProcessingSteps(data, job)
 
     return job.pk

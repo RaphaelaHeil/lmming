@@ -11,7 +11,7 @@ from metadata.tasks import computeFromExistingFields, fileMakerLookup, mintArks,
 from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
 
 
-class FilemakerLookup(TestCase):
+class FilemakerLookupTests(TestCase):
 
     def test_Task(self):
         initDefaultValues()
@@ -59,7 +59,7 @@ class FilemakerLookup(TestCase):
         self.assertIn("union with ID 2", step.log)
 
 
-class ComputeFromExistingFields(TestCase):
+class ComputeFromExistingFieldsTests(TestCase):
 
     def test_noPages(self):
         initDefaultValues()
@@ -202,7 +202,7 @@ def failedPut(*args, **kwargs):
     return MockResponse({}, 404, False)
 
 
-class MintArks(TestCase):
+class MintArkTests(TestCase):
 
     def setUp(self):
         logging.disable(logging.CRITICAL)
@@ -353,7 +353,7 @@ def failedNerMock(path: Path):
     raise ValueError("test")
 
 
-class NamedEntityRecognition(TestCase):
+class NamedEntityRecognitionTests(TestCase):
 
     def setUp(self):
         logging.disable(logging.CRITICAL)
