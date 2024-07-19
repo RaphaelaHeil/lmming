@@ -1,10 +1,19 @@
+from datetime import date
+
 from django.test import TestCase
+from unittest import expectedFailure
 
 from metadata.models import Report
-from metadata.task_utils import getArabCoverage, getFacCoverage, splitIfNotNone
+from metadata.task_utils import getArabCoverage, getFacCoverage, splitIfNotNone, createArabTitle
 
 
 class FacCoverageTests(TestCase):
+
+    @expectedFailure
+    def test_multipleIndicators(self):
+        level = getFacCoverage("this is sektion X, avdelning Y")
+        # TODO: discuss plausible naming schemes and which are the correct responses
+        self.assertEqual(Report.UnionLevel.DIVISION, level)
 
     def test_klubb(self):
         level = getFacCoverage("this is a klubb name")
@@ -91,3 +100,104 @@ class SplitIfNotNoneTests(TestCase):
     def test_Empty(self):
         split = splitIfNotNone("")
         self.assertListEqual([], split)
+
+
+class CreateArabTitleTests(TestCase):
+
+    def test_annualReport(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991", title)
+
+    def test_financialStatement(self):
+        reportTypes = [Report.DocumentType.FINANCIAL_STATEMENT]
+        dates = [date(1991, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Financial Statement 1991", title)
+
+    def test_multipleReportTypes(self):
+        reportTypes = [Report.DocumentType.FINANCIAL_STATEMENT, Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report, Financial Statement 1991", title)
+
+    def test_duplicateReportTypes(self):
+        reportTypes = [Report.DocumentType.FINANCIAL_STATEMENT, Report.DocumentType.FINANCIAL_STATEMENT]
+        dates = [date(1991, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Financial Statement 1991", title)
+
+    def test_duplicateYear(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1991, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991", title)
+
+    def test_consecutiveYears(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1992, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991 -- 1992", title)
+
+    def test_nonConsecutiveYears(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1993, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991, 1993", title)
+
+    def test_singleThenConsecutiveYears(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1993, 1, 1), date(1994, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991, 1993 -- 1994", title)
+
+    def test_consecutiveThenSingleYear(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1992, 1, 1), date(1995, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991 -- 1992, 1995", title)
+
+    def test_multipleSingleThenConsecutiveYear(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1989, 1, 1), date(1993, 1, 1), date(1994, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1989, 1991, 1993 -- 1994", title)
+        pass
+
+    def test_consecutiveThenMultipleSingle(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1992, 1, 1), date(1995, 1, 1), date(1997, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991 -- 1992, 1995, 1997", title)
+
+    def test_multipleConsecutiveYears(self):
+        reportTypes = [Report.DocumentType.ANNUAL_REPORT]
+        dates = [date(1991, 1, 1), date(1992, 1, 1), date(1994, 1, 1), date(1995, 1, 1)]
+        title = createArabTitle(reportTypes, dates)
+        self.assertEqual("Annual Report 1991 -- 1992, 1994 -- 1995", title)
+
+    def test_reportTypesEmpty(self):
+        with self.assertRaises(TypeError) as cm:
+            createArabTitle([], [date(1991, 1, 1)])
+        self.assertIn("no report types were supplied", str(cm.exception))
+
+    def test_reportTypesNone(self):
+        with self.assertRaises(TypeError) as cm:
+            createArabTitle(None, [date(1991, 1, 1)])
+        self.assertIn("no report types were supplied", str(cm.exception))
+
+    def test_yearsEmpty(self):
+        with self.assertRaises(TypeError) as cm:
+            createArabTitle([Report.DocumentType.ANNUAL_REPORT], [])
+        self.assertIn("no dates were supplied", str(cm.exception))
+
+    def test_yearsNone(self):
+        with self.assertRaises(TypeError) as cm:
+            createArabTitle([Report.DocumentType.ANNUAL_REPORT], None)
+        self.assertIn("no dates were supplied", str(cm.exception))
+
+    def test_unknownReportType(self):
+        with self.assertRaises(ValueError) as cm:
+            createArabTitle([Report.DocumentType.ANNUAL_REPORT, "dummy"], [date(1991, 1, 1)])
+        self.assertIn("unknown report type", str(cm.exception))
