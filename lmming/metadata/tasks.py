@@ -1,7 +1,6 @@
 import datetime
 import logging
 from pathlib import Path
-from typing import List
 
 import requests
 from celery import shared_task, signals
@@ -14,6 +13,7 @@ from metadata.models import ProcessingStep, Job, Status, Report, ExternalRecord,
     DefaultValueSettings
 from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
+from metadata.task_utils import getFacCoverage, getArabCoverage, splitIfNotNone
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -56,21 +56,15 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
             return
 
         report.creator = filemaker.organisationName
+
+        if settings.ARCHIVE_INST == "FAC":
+            report.coverage = getFacCoverage(filemaker.organisationName)
+        else:
+            report.coverage = getArabCoverage(filemaker.organisationName)
         report.relation = [filemaker.catalogueLink if filemaker.catalogueLink else ""]
         report.spatial = ["SE"] + [x for x in
                                    [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
                                    if x]
-
-        if "klubb" in filemaker.organisationName:
-            report.coverage = Report.UnionLevel.WORKPLACE
-        elif "sektion" in filemaker.organisationName:
-            report.coverage = Report.UnionLevel.SECTION
-        elif "avd" in filemaker.organisationName or "avdelning" in filemaker.organisationName:
-            report.coverage = Report.UnionLevel.DIVISION
-        elif "distrikt" in filemaker.organisationName:
-            report.coverage = Report.UnionLevel.DISTRICT
-        else:
-            report.coverage = Report.UnionLevel.OTHER
 
     report.save()
 
@@ -83,13 +77,6 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
 
     if pipeline:
         scheduleTask(jobPk)
-
-
-def __splitIfNotNone__(value: str) -> List[str]:
-    if value:
-        return [x.strip() for x in value.split(",")]
-    else:
-        return []
 
 
 @shared_task()
@@ -113,7 +100,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
     # available[1], language*[n], license*[n], accessRights*[1], source[n]
     language = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first()
     if language and language.value:
-        report.language = __splitIfNotNone__(language.value)
+        report.language = splitIfNotNone(language.value)
     else:
         step.log = "No language was specified. Please update the system settings."
         step.status = Status.ERROR
@@ -122,7 +109,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
 
     license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
     if license and license.value:
-        report.license = __splitIfNotNone__(license.value)
+        report.license = splitIfNotNone(license.value)
     else:
         step.log = "No license was specified. Please update the system settings."
         step.status = Status.ERROR
@@ -163,7 +150,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
 
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
     if source and source.value:
-        report.source = __splitIfNotNone__(source.value)
+        report.source = splitIfNotNone(source.value)
     else:
         report.source = ""
 
@@ -176,6 +163,34 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
         step.status = Status.COMPLETE
         step.save()
 
+    if pipeline:
+        scheduleTask(jobPk)
+
+
+def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
+    step = ProcessingStep.objects.filter(job_id=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_GENERATE.value).first()
+    # TODO: impl
+    if step.humanValidation:
+        step.status = Status.AWAITING_HUMAN_VALIDATION
+        step.save()
+    else:
+        step.status = Status.COMPLETE
+        step.save()
+    if pipeline:
+        scheduleTask(jobPk)
+
+
+def arabMintHandle(jobPk: int, pipeline: bool = True):
+    step = ProcessingStep.objects.filter(job_id=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value).first()
+    # TODO: impl
+    if step.humanValidation:
+        step.status = Status.AWAITING_HUMAN_VALIDATION
+        step.save()
+    else:
+        step.status = Status.COMPLETE
+        step.save()
     if pipeline:
         scheduleTask(jobPk)
 
