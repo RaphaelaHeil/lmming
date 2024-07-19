@@ -13,7 +13,7 @@ from metadata.models import ProcessingStep, Job, Status, Report, ExternalRecord,
     DefaultValueSettings
 from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
-from metadata.task_utils import getFacCoverage, getArabCoverage, splitIfNotNone
+from metadata.task_utils import getFacCoverage, getArabCoverage, splitIfNotNone, createArabTitle
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -132,21 +132,10 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
         step.save()
         return
 
-    if settings.ARCHIVE_INST == "FAC":
-        if report.available > datetime.date.today():
-            report.accessRights = Report.AccessRights.RESTRICTED
-        else:
-            report.accessRights = Report.AccessRights.NOT_RESTRICTED
+    if report.available > datetime.date.today():
+        report.accessRights = Report.AccessRights.RESTRICTED
     else:
-        accessRights = DefaultValueSettings.objects.filter(
-            pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
-        if accessRights and accessRights.value:
-            report.accessRights = accessRights.value
-        else:
-            step.log = "No value was specified for 'accessRights'. Please update the system settings."
-            step.status = Status.ERROR
-            step.save()
-            return
+        report.accessRights = Report.AccessRights.NOT_RESTRICTED
 
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
     if source and source.value:
@@ -170,7 +159,61 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
 def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job_id=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.ARAB_GENERATE.value).first()
-    # TODO: impl
+
+    # TODO language, title, license, isFormatOf, accessRights, created, available, source
+    report = Report.objects.get(job__pk=jobPk)
+
+    report.title = createArabTitle([Report.DocumentType[x] for x in report.type], report.date)
+    created = sorted(report.date)[-1] + relativedelta(years=1)
+    report.created = created
+    report.language = ["sv"]
+    report.description = ""  # TODO: to be discussed
+
+    report.isFormatOf = [Report.DocumentFormat.PRINTED]
+
+    license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
+    if license and license.value:
+        report.license = splitIfNotNone(license.value)
+    else:
+        step.log = "No license was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
+    yearOffset = DefaultNumberSettings.objects.filter(
+        pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
+    if yearOffset:
+        if yearOffset.value < 0:
+            step.log = "Specified year offset is negative. Please update the system settings."
+            step.status = Status.ERROR
+            step.save()
+            return
+        else:
+            report.available = created + relativedelta(years=yearOffset.value)
+    else:
+        step.log = "No year offset was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
+    accessRights = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
+    if accessRights and accessRights.value:
+        report.accessRights = accessRights.value
+    else:
+        step.log = "No value was specified for 'accessRights'. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
+    source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
+    if source and source.value:
+        report.source = splitIfNotNone(source.value)
+    else:
+        report.source = ""
+
+    report.save()
+
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()

@@ -76,7 +76,7 @@ def initDummyFilemaker(filemakerEntry: Dict[str, Any] = None):
         ExternalRecord.objects.create(**filemakerEntry)
 
 
-def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str, Any]] = None):
+def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str, Any]] = None, archive: str = "FAC"):
     et = ExtractionTransfer.objects.create(name="TestTransfer")
 
     # unionId="1", type=[Report.DocumentType.ANNUAL_REPORT], date=[date(1991, 1, 1)],
@@ -97,19 +97,35 @@ def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str
     report.job = job
     report.save()
 
-    config = [{"stepType": ProcessingStep.ProcessingStepType.FILENAME,
-               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
-              {"stepType": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
-               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
-              {"stepType": ProcessingStep.ProcessingStepType.GENERATE,
-               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
-              {"stepType": ProcessingStep.ProcessingStepType.FAC_MANUAL,
-               "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": True},
-              {"stepType": ProcessingStep.ProcessingStepType.NER,
-               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
-              {"stepType": ProcessingStep.ProcessingStepType.MINT_ARKS,
-               "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False}
-              ]
+    if archive == "FAC":
+        config = [{"stepType": ProcessingStep.ProcessingStepType.FILENAME,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.GENERATE,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.FAC_MANUAL,
+                   "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": True},
+                  {"stepType": ProcessingStep.ProcessingStepType.NER,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.MINT_ARKS,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False}
+                  ]
+    else:
+        config = [{"stepType": ProcessingStep.ProcessingStepType.FILENAME,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.ARAB_GENERATE,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.ARAB_MANUAL,
+                   "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": True},
+                  {"stepType": ProcessingStep.ProcessingStepType.NER,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False},
+                  {"stepType": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE,
+                   "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False}
+                  ]
+
     buildProcessingSteps(config, job)
 
     return job.pk
