@@ -1,6 +1,5 @@
-from django.forms import ClearableFileInput, Form, FileField, CharField, ChoiceField, BooleanField, CheckboxInput, \
-    MultipleChoiceField, CheckboxSelectMultiple, Textarea, DateField, DateInput, URLField, IntegerField, TextInput, \
-    Select
+from django.forms import ClearableFileInput, FileField, Form, CharField, TextInput, ChoiceField, Select, BooleanField, \
+    CheckboxInput, MultipleChoiceField, CheckboxSelectMultiple, Textarea, IntegerField
 
 from metadata.models import ProcessingStep, Report
 
@@ -64,60 +63,6 @@ class FilemakerForm(Form):
     coverage = ChoiceField(choices=Report.UnionLevel, required=True, widget=Select(attrs={"class": "form-select"}))
     spatial = CharField(label="Spatial (comma-separated)", required=True,
                         widget=TextInput(attrs={'class': 'form-control'}))
-
-
-class ComputeForm(Form):
-    title = CharField(label="Title", required=True, widget=TextInput(attrs={'class': 'form-control'}))
-    created = CharField(label="Year Created", required=False, widget=TextInput(attrs={'class': 'form-control'}))
-    available = DateField(label="Available from", required=False, input_formats=['%Y-%m-%d'],
-                          widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
-    accessRights = ChoiceField(choices=Report.AccessRights, required=True, label="Access Rights",
-                               widget=Select(attrs={"class": "form-select"}))
-    description = CharField(label="Report description", required=False,
-                            widget=Textarea(attrs={"class": "form-control"}))
-    language = CharField(label="Language (comma-separated)", required=True,
-                         widget=TextInput(attrs={'class': 'form-control'}))
-    license = CharField(label="License (comma-separated)", required=True,
-                        widget=Textarea(attrs={'class': 'form-control'}))
-    source = CharField(label="Source (comma-separated)", required=False,
-                       widget=TextInput(attrs={'class': 'form-control'}))
-
-
-class ArabGenerateForm(Form):
-    title = CharField(label="Title", required=True, widget=TextInput(attrs={'class': 'form-control'}))
-    created = CharField(label="Year Created", required=False, widget=TextInput(attrs={'class': 'form-control'}))
-    available = DateField(label="Available from", required=False, input_formats=['%Y-%m-%d'],
-                          widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
-    accessRights = ChoiceField(choices=Report.AccessRights, required=True, label="Access Rights",
-                               widget=Select(attrs={"class": "form-select"}))
-    language = CharField(label="Language (comma-separated)", required=True,
-                         widget=TextInput(attrs={'class': 'form-control'}))
-    license = CharField(label="License (comma-separated)", required=True,
-                        widget=Textarea(attrs={'class': 'form-control'}))
-    source = CharField(label="Source (comma-separated)", required=False,
-                       widget=TextInput(attrs={'class': 'form-control'}))
-    isFormatOf = MultipleChoiceField(label="Format", choices=Report.DocumentFormat, required=True,
-                                     widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
-
-
-class FacManualForm(Form):
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True, max_length=200,
-                           widget=TextInput(attrs={'class': 'form-control'}))
-    isFormatOf = MultipleChoiceField(label="Format", choices=Report.DocumentFormat, required=True,
-                                     widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
-
-
-class ArabManualForm(Form):
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True, max_length=200,
-                           widget=TextInput(attrs={'class': 'form-control'}))
-    description = CharField(label="Report description", required=False,
-                            widget=Textarea(attrs={"class": "form-control"}))
-
-
-class MintForm(Form):
-    # TODO: does this also update the pages? probably not ...
-    identifier = URLField(label="IIIF URL", required=True, max_length=200,
-                          widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class PageForm(Form):

@@ -5,8 +5,9 @@ from typing import List, Any
 from django.db import transaction
 from django.forms import formset_factory
 
-from metadata.forms import FileNameForm, FilemakerForm, ComputeForm, FacManualForm, MintForm, PageForm, \
-    ArabGenerateForm, ArabManualForm
+from metadata.forms.arab import ArabGenerateForm, ArabManualForm
+from metadata.forms.fac import ComputeForm, FacManualForm, MintForm
+from metadata.forms.shared import FileNameForm, FilemakerForm, PageForm
 from metadata.models import Page, Status, ProcessingStep
 from metadata.tasks.manage import scheduleTask
 
