@@ -31,6 +31,10 @@ class FacCoverageTests(TestCase):
         level = getFacCoverage("this is a avdelning name")
         self.assertEqual(Report.UnionLevel.DIVISION, level)
 
+    def test_distrikt(self):
+        level = getFacCoverage("this is a distrikt name")
+        self.assertEqual(Report.UnionLevel.DISTRICT, level)
+
     def test_noIndicator(self):
         level = getFacCoverage("asjdnkajsn")
         self.assertEqual(Report.UnionLevel.OTHER, level)
