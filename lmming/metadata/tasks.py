@@ -88,8 +88,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
 
     # TODO: expand abbreviations in creator name!
     report.title = f"{report.creator} - {', '.join([Report.DocumentType[x].label for x in report.type])} ({report.dateString()})"
-    created = sorted(report.date)[-1] + relativedelta(years=1)
-    report.created = created
+    report.created = sorted(report.date)[-1] + relativedelta(years=1)
 
     pageCount = report.page_set.count()
     if pageCount == 1:
@@ -125,7 +124,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
             step.save()
             return
         else:
-            report.available = created + relativedelta(years=yearOffset.value)
+            report.available = report.created + relativedelta(years=yearOffset.value)
     else:
         step.log = "No year offset was specified. Please update the system settings."
         step.status = Status.ERROR
@@ -156,6 +155,7 @@ def computeFromExistingFields(jobPk: int, pipeline: bool = True):
         scheduleTask(jobPk)
 
 
+@shared_task()
 def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job_id=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.ARAB_GENERATE.value).first()
@@ -164,10 +164,8 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
 
     report.title = createArabTitle([Report.DocumentType[x] for x in report.type], report.date)
-    created = sorted(report.date)[-1] + relativedelta(years=1)
-    report.created = created
+    report.created = sorted(report.date)[-1] + relativedelta(years=1)
     report.language = ["sv"]
-    report.description = ""  # TODO: to be discussed
 
     report.isFormatOf = [Report.DocumentFormat.PRINTED]
 
@@ -189,7 +187,7 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
             step.save()
             return
         else:
-            report.available = created + relativedelta(years=yearOffset.value)
+            report.available = report.created + relativedelta(years=yearOffset.value)
     else:
         step.log = "No year offset was specified. Please update the system settings."
         step.status = Status.ERROR
@@ -224,6 +222,7 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
         scheduleTask(jobPk)
 
 
+@shared_task()
 def arabMintHandle(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job_id=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value).first()
@@ -381,7 +380,9 @@ TASK_INDEX = {ProcessingStep.ProcessingStepType.FILENAME.value: extractFromFileN
               ProcessingStep.ProcessingStepType.GENERATE.value: computeFromExistingFields,
               ProcessingStep.ProcessingStepType.IMAGE.value: extractFromImage,
               ProcessingStep.ProcessingStepType.NER.value: namedEntityRecognition,
-              ProcessingStep.ProcessingStepType.MINT_ARKS.value: mintArks}
+              ProcessingStep.ProcessingStepType.MINT_ARKS.value: mintArks,
+              ProcessingStep.ProcessingStepType.ARAB_GENERATE.value: arabComputeFromExistingFields,
+              ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value: arabMintHandle}
 
 
 def restartTask(jobId: int, stepType: ProcessingStep.ProcessingStepType):

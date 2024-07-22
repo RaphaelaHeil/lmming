@@ -72,10 +72,13 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
 
 
 def restart(request, job_id: int, step: str):
+    # TODO: get rid of this lookup table!
     stepLookup = {"filename": ProcessingStep.ProcessingStepType.FILENAME,
                   "filemaker_lookup": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP,
                   "generate": ProcessingStep.ProcessingStepType.GENERATE, "ner": ProcessingStep.ProcessingStepType.NER,
-                  "mint_arks": ProcessingStep.ProcessingStepType.MINT_ARKS}
+                  "mint_arks": ProcessingStep.ProcessingStepType.MINT_ARKS,
+                  "arab_generate": ProcessingStep.ProcessingStepType.ARAB_GENERATE,
+                  "mint_handle": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE}
 
     restartTask(job_id, stepLookup[step])
     return redirect("metadata:job", job_id=job_id)

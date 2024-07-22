@@ -5,7 +5,8 @@ from typing import List, Any
 from django.db import transaction
 from django.forms import formset_factory
 
-from metadata.forms import FileNameForm, FilemakerForm, ComputeForm, ImageForm, MintForm, PageForm
+from metadata.forms import FileNameForm, FilemakerForm, ComputeForm, FacManualForm, MintForm, PageForm, \
+    ArabGenerateForm, ArabManualForm
 from metadata.models import Page, Status, ProcessingStep
 from metadata.tasks import scheduleTask
 
@@ -41,7 +42,8 @@ def filename(request, job):
                     job.report.date = [datetime.date(year=y, month=1, day=1) for y in years]
                 job.report.save()
 
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FILENAME.value).first()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.FILENAME.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -111,7 +113,8 @@ def compute(request, job):
                 if "accessRights" in computeForm.changed_data:
                     job.report.accessRights = computeForm.cleaned_data["accessRights"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value).first()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -124,10 +127,50 @@ def compute(request, job):
         return {"form": computeForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.GENERATE.label}
 
 
-def facManual(request, job):
-    initial = {"isFormatOf": job.report.isFormatOf, "isVersionOf":job.report.isVersionOf}
+def arabGenerate(request, job):
+    initial = {"title": job.report.title, "created": job.report.created.year if job.report.created else "",
+               "available": job.report.available, "language": job.report.get_language_display(),
+               "license": job.report.get_license_display(), "source": job.report.get_source_display(),
+               "accessRights": job.report.accessRights, "isFormatOf": job.report.isFormatOf}
     if request.method == "POST":
-        imageForm = ImageForm(request.POST, initial=initial)
+        computeForm = ArabGenerateForm(request.POST, initial=initial)
+        if computeForm.is_valid():
+            if computeForm.has_changed():
+                if "title" in computeForm.changed_data:
+                    job.report.title = computeForm.cleaned_data["title"]
+                if "created" in computeForm.changed_data:
+                    job.report.created = date(int(computeForm.cleaned_data["created"]), month=1, day=1)
+                if "available" in computeForm.changed_data:
+                    job.report.available = computeForm.cleaned_data["available"]
+                if "language" in computeForm.changed_data:
+                    job.report.language = __fromDisplayList__(computeForm.cleaned_data["language"])
+                if "license" in computeForm.changed_data:
+                    job.report.license = __fromDisplayList__(computeForm.cleaned_data["license"])
+                if "source" in computeForm.changed_data:
+                    job.report.source = __fromDisplayList__(computeForm.cleaned_data["source"])
+                if "accessRights" in computeForm.changed_data:
+                    job.report.accessRights = computeForm.cleaned_data["accessRights"]
+                if "isFormatOf" in computeForm.changed_data:
+                    job.report.isFormatOf = computeForm.cleaned_data["isFormatOf"]
+                job.report.save()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.GENERATE.value).first()
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return {"job": job}
+        else:
+            # TODO: return errors?!
+            return {"job": job}
+    else:
+        computeForm = ArabGenerateForm(initial=initial)
+        return {"form": computeForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_GENERATE.label}
+
+
+def facManual(request, job):
+    initial = {"isFormatOf": job.report.isFormatOf, "isVersionOf": job.report.isVersionOf}
+    if request.method == "POST":
+        imageForm = FacManualForm(request.POST, initial=initial)
         if imageForm.is_valid():
             if imageForm.has_changed():
                 if "isFormatOf" in imageForm.changed_data:
@@ -135,7 +178,8 @@ def facManual(request, job):
                 if "isVersionOf" in imageForm.changed_data:
                     job.report.isVersionOf = imageForm.cleaned_data["isVersionOf"]
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
@@ -144,8 +188,33 @@ def facManual(request, job):
             # TODO: return errors
             return {"job": job}
     else:
-        imageForm = ImageForm(initial=initial)
+        imageForm = FacManualForm(initial=initial)
         return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.label}
+
+
+def arabManual(request, job):
+    initial = {"description": job.report.description, "isVersionOf": job.report.isVersionOf}
+    if request.method == "POST":
+        imageForm = ArabManualForm(request.POST, initial=initial)
+        if imageForm.is_valid():
+            if imageForm.has_changed():
+                if "description" in imageForm.changed_data:
+                    job.report.description = imageForm.cleaned_data["description"]
+                if "isVersionOf" in imageForm.changed_data:
+                    job.report.isVersionOf = imageForm.cleaned_data["isVersionOf"]
+                job.report.save()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.ARAB_MANUAL.value).first()
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return {"job": job}
+        else:
+            # TODO: return errors
+            return {"job": job}
+    else:
+        imageForm = ArabManualForm(initial=initial)
+        return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MANUAL.label}
 
 
 def ner(request, job):
@@ -211,7 +280,8 @@ def mint(request, job):
                     job.report.identifier = mintForm.cleaned_data["identifier"]
                 # TDOD: fix this field! (noid vs identifier, etc)
                 job.report.save()
-            step = job.processingSteps.filter(processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
             step.status = Status.COMPLETE
             step.save()
             transaction.on_commit(lambda: scheduleTask(job.pk))
