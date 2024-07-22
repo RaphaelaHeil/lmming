@@ -21,7 +21,7 @@ EMPTY = ""
 
 
 @dataclass
-class NlpResult():
+class NlpResult:
     text: str = ""
     normalised: str = ""
     persons: Set[str] = field(default_factory=set)
@@ -34,7 +34,7 @@ class NlpResult():
     measures: bool = False
 
 
-class NerHelper():
+class NerHelper:
 
     def __init__(self):
         nltk.download('punkt')

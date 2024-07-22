@@ -58,7 +58,7 @@ class FilemakerLookupTests(TestCase):
         self.assertIn("union with ID 2", step.log)
 
 
-def successfulNerMock(path: Path):
+def successfulNer(path: Path):
     if "sid-01" in path.name:
         return NlpResult(text="new text", normalised="new normalised", persons={"A", "B"}, organisations={"o"},
                          locations={"l1"}, times={"1991"}, works={"lotr"}, events={"easter"}, objects={"statue"},
@@ -69,7 +69,7 @@ def successfulNerMock(path: Path):
                          measures=False)
 
 
-def failedNerMock(path: Path):
+def failedNer(_path: Path):
     raise ValueError("test")
 
 
@@ -78,8 +78,8 @@ class NamedEntityRecognitionTests(TestCase):
     def setUp(self):
         logging.disable(logging.CRITICAL)
 
-    @mock.patch("metadata.tasks.shared.processPage", side_effect=successfulNerMock)
-    def test_ner(self, successfulNerMock):
+    @mock.patch("metadata.tasks.shared.processPage", side_effect=successfulNer)
+    def test_ner(self, _successfulNerMock):
         initDefaultValues()
         initDummyFilemaker()
         jobId = initDummyTransfer({"unionId": "1", "title": "test title"})
@@ -96,8 +96,8 @@ class NamedEntityRecognitionTests(TestCase):
         self.assertEqual("second text", page2.transcription)
         self.assertFalse(page2.measures)
 
-    @mock.patch("metadata.tasks.shared.processPage", side_effect=failedNerMock)
-    def test_failedNer(self, failedNerMock):
+    @mock.patch("metadata.tasks.shared.processPage", side_effect=failedNer)
+    def test_failedNer(self, _failedNerMock):
         initDefaultValues()
         initDummyFilemaker()
         jobId = initDummyTransfer({"unionId": "1", "title": "test title"})

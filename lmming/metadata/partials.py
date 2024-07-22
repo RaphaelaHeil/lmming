@@ -8,7 +8,8 @@ from django.forms import formset_factory
 from django.http import QueryDict, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
-from metadata.forms import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, ProcessingStepForm
+from metadata.forms.shared import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, \
+    ProcessingStepForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
 from metadata.tasks.manage import restartTask, scheduleTask
@@ -70,7 +71,7 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                 ]
 
 
-def restart(request, job_id: int, step: str):
+def restart(_request, job_id: int, step: str):
     restartTask(job_id, ProcessingStep.ProcessingStepType[step.upper()])
     return redirect("metadata:job", job_id=job_id)
 
@@ -203,15 +204,15 @@ def createTransfer(request):
                         pagesToReports[reportIdentifier] = []
 
                     pagesToReports[reportIdentifier].append(data)
-                except SyntaxError as e:
+                except SyntaxError as _e:
                     # TODO
                     pass
 
             for reportIdentifier in pagesToReports:
                 pages = pagesToReports[reportIdentifier]
-                unionId = {p["union_id"] for p in pages}.pop()  # TODO: can there be multiple?
-                reportType = list({p["type"] for p in pages})
-                dateList = list({date(p["date"], 1, 1) for p in pages})
+                unionId = set(p["union_id"] for p in pages).pop()  # TODO: can there be multiple?
+                reportType = list(set(p["type"] for p in pages))
+                dateList = list(set(date(d, 1, 1) for p in pages for d in p["date"]))
 
                 r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType, date=dateList)
 
@@ -252,7 +253,7 @@ def awaitingHumanInteraction(request):
     return render(request, 'partial/waiting_jobs_table.html', {"steps": stepData})
 
 
-def waitingCount(request):
+def waitingCount(_request):
     value = Job.objects.filter(
         Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT)).count()
     if value == 0:

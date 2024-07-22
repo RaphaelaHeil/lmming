@@ -14,7 +14,8 @@ logger = logging.getLogger(settings.WORKER_LOG_NAME)
 @shared_task()
 def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job_id=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_GENERATE.value).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_GENERATE.value
+                                         ).first()
 
     # TODO language, title, license, isFormatOf, accessRights, created, available, source
     report = Report.objects.get(job__pk=jobPk)
@@ -81,7 +82,8 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
 @shared_task()
 def arabMintHandle(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job_id=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value
+                                         ).first()
     # TODO: impl
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION

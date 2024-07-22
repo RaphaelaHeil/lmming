@@ -79,8 +79,8 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
     if ma:
         for m in ma:
             dates.append(int(m))
-    if len(dates) == 1:
-        dates = int(dates[0])
+    # if len(dates) == 1:
+    #     dates = int(dates[0])
     if not dates:
         raise SyntaxError(
             "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
@@ -90,15 +90,17 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
 
 
 def buildReportIdentifier(data: Dict[str, Union[str, int, List[str]]]) -> str:
-    date = data["date"]
-    if isinstance(date, list):
-        date = "-".join([str(d) for d in sorted(date)])
+    reportDates = data["date"]
+    if isinstance(reportDates, list):
+        dateRepr = "-".join([str(d) for d in sorted(reportDates)])
+    else:
+        dateRepr = str(reportDates)
 
     reportType = data["type"]
     if isinstance(reportType, list):
         reportType = "-".join(sorted(reportType))
 
-    return f"{data['union_id']}-{reportType}-{date}"
+    return f"{data['union_id']}-{reportType}-{dateRepr}"
 
 
 def __toOmekaList__(ll: List[Any]) -> str:
@@ -227,9 +229,6 @@ def buildNormalizationCsv(srcNames) -> str:
 
 
 def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = False) -> str:
-    DC_FIELDS = ["dc.identifier", "dc.type", "dc.date", "dc.rights", "dc.description", "dc.language", "dc.coverage",
-                 "dc.title", "dc.subject", "dc.creator", "dc.contributor", "dc.publisher", "dc.source", "dc.format",
-                 "dc.relation"]  # extent and format
     records = []
 
     for report in transfer.report_set.all():
@@ -244,7 +243,8 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
                    "dc.source": __toCSList__(report.source),
 
                    "dc.relation": __toCSList__(report.relation),
-                   "dc.format": f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
+                   "dc.format": f"{report.description} - "
+                                f"{__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
                    # "dc.description": report.description, # TODO: ???
                    "dc.rights1": Report.AccessRights[report.accessRights].label,
                    "dc.rights2": __toOmekaList__(report.license),
@@ -270,7 +270,8 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
                    "dc.source": __toCSList__(report.source),
 
                    "dc.relation": __toCSList__(report.relation),
-                   "dc.format": f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
+                   "dc.format": f"{report.description} - "
+                                f"{__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
                    # "dc.description": report.description, # TODO: ???
                    "dc.rights1": Report.AccessRights[report.accessRights].label,
                    "dc.rights2": __toOmekaList__(report.license),

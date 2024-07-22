@@ -1,6 +1,6 @@
 from datetime import datetime
 from io import BytesIO
-from typing import Tuple, Dict, Any
+from typing import Dict, Any
 
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -34,7 +34,7 @@ def jobDetails(request, job_id):
     return render(request, "partial/job.html", {"job": job, "error": error, "steps": stepData})
 
 
-def downloadTransfer(request, transfer_id: int, filetype: str):
+def downloadTransfer(_request, transfer_id: int, filetype: str):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
     if filetype == "csv":
         outFile = buildTransferCsvs(transfer)
@@ -46,18 +46,17 @@ def downloadTransfer(request, transfer_id: int, filetype: str):
                             filename=f"restricted_Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     elif filetype == "struct_map":
         outFile = buildStructMap(transfer)
-        filename = "mets_structmap.xml"
-        return FileResponse(BytesIO(outFile.encode()), as_attachment=True, filename=filename)
+        return FileResponse(BytesIO(outFile.encode()), as_attachment=True, filename="mets_structmap.xml")
     elif filetype == "zip_restricted":
         outFile = buildFolderStructure(transfer, checkRestriction=True)
         folderName = transfer.name.replace(" ", "_")
-        filename = f"restricted_{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
-        return FileResponse(outFile, as_attachment=True, filename=filename)
+        return FileResponse(outFile, as_attachment=True,
+                            filename=f"restricted_{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     elif filetype == "zip":
         outFile = buildFolderStructure(transfer)
         folderName = transfer.name.replace(" ", "_")
-        filename = f"{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip"
-        return FileResponse(outFile, as_attachment=True, filename=filename)
+        return FileResponse(outFile, as_attachment=True,
+                            filename=f"{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     else:
         # TODO: raise error
         pass
@@ -65,7 +64,7 @@ def downloadTransfer(request, transfer_id: int, filetype: str):
 
 class Transfers(View):
 
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *_args, **_kwargs):
         INV = "lightgray"
         VIS = "black"
         sortInstruction = request.GET.get("sort", "created:asc").split(":")
@@ -97,7 +96,7 @@ class Transfers(View):
 
         return render(request, "partial/extraction_transfer_table.html", context)
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request, *_args, **_kwargs):
         transfers = ExtractionTransfer.objects.filter(id__in=[int(id) for id in request.GET.getlist("ids")])
         for transfer in transfers:
             transfer.delete()
@@ -105,7 +104,7 @@ class Transfers(View):
 
 
 class Transfer(View):
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *_args, **kwargs):
         if "transfer_id" in kwargs:
             transferId = kwargs["transfer_id"]
             transfer = get_object_or_404(ExtractionTransfer, pk=transferId)
@@ -116,31 +115,31 @@ class Transfer(View):
         else:
             return HttpResponseRedirect("/")
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, _request, *_args, **kwargs):
         transfer = get_object_or_404(ExtractionTransfer, pk=kwargs["transfer_id"])
         transfer.delete()
         return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
 
 
 class JobEditView(View):
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *_args, **kwargs):
         job = get_object_or_404(Job, pk=kwargs["job_id"])
         stepName = kwargs["step"]
-        context = self.__handleView__(request, job, stepName)
+        context = self.handleView(request, job, stepName)
         return render(request, "partial/edit_job.html", context)
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request, *_args, **kwargs):
         job = get_object_or_404(Job, pk=kwargs["job_id"])
 
         if request.POST['confirm'] == 'Confirm':  # TODO: add cancel button :D
             stepName = kwargs["step"]
-            context = self.__handleView__(request, job, stepName)  # TODO: do we need to return anything here?
+            context = self.handleView(request, job, stepName)  # TODO: do we need to return anything here?
             # TODO: only if there are errors, in which case it should be the same as GET + error context ...
             return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
         else:
             return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
 
-    def __handleView__(self, request, job, stepName) -> Tuple[str, Dict[str, Any]]:
+    def handleView(self, request, job, stepName) -> Dict[str, Any]:
         stepIndex = {"filename": filename, "filemaker_lookup": filemaker, "generate": compute, "fac_manual": facManual,
                      "ner": ner, "mint_arks": mint, "arab_generate": arabGenerate, "arab_manual": arabManual}
         context = stepIndex[stepName](request, job)

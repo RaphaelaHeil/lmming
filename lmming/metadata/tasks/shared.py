@@ -31,7 +31,8 @@ def extractFromFileNames(jobPk: int, pipeline: bool = True):
 def fileMakerLookup(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value).first()
+                                         processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value
+                                         ).first()
     entries = ExternalRecord.objects.filter(archiveId=report.unionId)
     if entries.count() == 0:
         step.log = f"No Filemaker entry found for union with ID {report.unionId}."
@@ -109,6 +110,6 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
 
 
 @signals.worker_ready.connect
-def prepareNLP(**kwargs):
+def prepareNLP(**_kwargs):
     download()
     logger.info("Model download complete")

@@ -83,7 +83,7 @@ def initDummyTransfer(reportData: Dict[str, Any] = None, pageData: List[Dict[str
 
     if reportData is None:
         reportData = deepcopy(TEST_REPORT)
-    if not "unionId" in reportData:
+    if "unionId" not in reportData:
         reportData["unionId"] = "1"
     if pageData is None:
         pageData = deepcopy(TEST_PAGES)

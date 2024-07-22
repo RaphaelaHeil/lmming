@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import ExtractionTransfer, Job, Report, Page, ProcessingStep, DefaultValueSettings, DefaultNumberSettings, \
-    ExternalRecord
+from .models import ExtractionTransfer, Job, Report, Page, ProcessingStep, DefaultValueSettings, \
+    DefaultNumberSettings, ExternalRecord
 
 admin.site.register(ExtractionTransfer)
 admin.site.register(Job)

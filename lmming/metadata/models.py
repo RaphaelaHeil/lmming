@@ -166,8 +166,9 @@ class Page(Model):
     iiifId = CharField(blank=True, default="")  # iiif URL + structmap
 
 
+# noinspection PyUnusedLocal
 @receiver(pre_delete, sender=Page, weak=False)
-def pageFileDeleteHandler(sender, instance, **kwargs):
+def pageFileDeleteHandler(sender, instance, **_kwargs):
     instance.transcriptionFile.delete(save=False)
 
 
@@ -215,8 +216,9 @@ class Job(Model):
                 status=Status.AWAITING_HUMAN_VALIDATION)).first().get_processingStepType_display()
 
 
+# noinspection PyUnusedLocal
 @receiver(post_save, sender=Job, weak=False)
-def statusUpdateTransfer(sender, instance, **kwargs):
+def statusUpdateTransfer(sender, instance, **_kwargs):  # pylint: disable=unused-argument
     instance.transfer.updateTransferStatus()
 
 
@@ -256,22 +258,25 @@ class ProcessingStep(Model):
     mode = CharField(choices=ProcessingStepMode.choices, default=ProcessingStepMode.AUTOMATIC)
 
     def __str__(self):
-        return f"{self.job.pk} - {self.processingStepType} ({self.mode}{', human validation' if self.humanValidation else ''})"
+        return (f"{self.job.pk} - {self.processingStepType} ({self.mode}"
+                f"{', human validation' if self.humanValidation else ''})")
 
 
+# noinspection PyUnusedLocal
 @receiver(pre_save, sender=ProcessingStep, weak=False)
-def processLog(sender, instance, **kwargs):
+def processLog(sender, instance, **_kwargs):  # pylint: disable=unused-argument
     if instance.status != Status.ERROR:
         instance.log = ""
 
 
+# noinspection PyUnusedLocal
 @receiver(post_save, sender=ProcessingStep, weak=False)
-def statusUpdate(sender, instance, **kwargs):
+def statusUpdate(sender, instance, **_kwargs):  # pylint: disable=unused-argument
     instance.job.updateStatus()
 
 
 class DefaultValueSettings(Model):
-    class Meta():
+    class Meta:
         verbose_name_plural = "default Value Settings"
 
     class DefaultValueSettingsType(TextChoices):
@@ -289,7 +294,7 @@ class DefaultValueSettings(Model):
 
 
 class DefaultNumberSettings(Model):
-    class Meta():
+    class Meta:
         verbose_name_plural = "default Number Settings"
 
     class DefaultNumberSettingsType(TextChoices):

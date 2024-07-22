@@ -3,6 +3,7 @@ from typing import List
 
 from metadata.models import Report
 
+
 def resumePipeline(jobPk):
     from metadata.tasks.manage import scheduleTask
     scheduleTask(jobPk)

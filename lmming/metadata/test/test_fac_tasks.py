@@ -136,19 +136,19 @@ class MockResponse:
         return self.json_data
 
 
-def successfulPost(*args, **kwargs):
+def successfulPost(*_args, **_kwargs):
     return MockResponse({"ark": "ark:/12345/testabc"}, 200, True)
 
 
-def successfulPut(*args, **kwargs):
+def successfulPut(*_args, **_kwargs):
     return MockResponse({"ark": "ark:/12345/testabc"}, 200, True)
 
 
-def failedPost(*args, **kwargs):
+def failedPost(*_args, **_kwargs):
     return MockResponse({}, 404, False)
 
 
-def failedPut(*args, **kwargs):
+def failedPut(*_args, **_kwargs):
     return MockResponse({}, 404, False)
 
 
@@ -225,7 +225,7 @@ class MintArkTests(TestCase):
             self.assertIn("should start with a slash", step.log)
 
     @mock.patch('requests.post', side_effect=failedPost)
-    def test_mintingFailur(self, failedPost):
+    def test_mintingFailur(self, _failedPostMock):
         with self.settings(MINTER_URL="http://example.com", MINTER_ORG_ID="12345",
                            IIIF_BASE_URL="http://iiif.example.com", MINTER_AUTH="auth"):
             initDefaultValues()
@@ -244,7 +244,7 @@ class MintArkTests(TestCase):
 
     @mock.patch('requests.put', side_effect=failedPut)
     @mock.patch('requests.post', side_effect=successfulPost)
-    def test_updateFailure(self, successfulPost, failedPut):
+    def test_updateFailure(self, successfulPostMock, _failedPutMock):
         with self.settings(MINTER_URL="http://example.com", MINTER_ORG_ID="12345",
                            IIIF_BASE_URL="http://iiif.example.com", MINTER_AUTH="auth"):
             initDefaultValues()
@@ -260,7 +260,7 @@ class MintArkTests(TestCase):
 
             self.assertEqual("https://ark.fauppsala.se/ark:/12345/testabc/manifest", r.identifier)
             self.assertIn(mock.call('http://example.com/mint', headers={"Authorization": "Bearer auth"},
-                                    json={"naan": "12345", "shoulder": "/test"}), successfulPost.call_args_list)
+                                    json={"naan": "12345", "shoulder": "/test"}), successfulPostMock.call_args_list)
 
             step = ProcessingStep.objects.get(job_id=jobId,
                                               processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value)
@@ -269,7 +269,7 @@ class MintArkTests(TestCase):
 
     @mock.patch('requests.put', side_effect=successfulPut)
     @mock.patch('requests.post', side_effect=successfulPost)
-    def test_existingNoid(self, successfulPost, successfulPut):
+    def test_existingNoid(self, successfulPostMock, successfulPutMock):
         with self.settings(MINTER_URL="http://example.com", MINTER_ORG_ID="12345",
                            IIIF_BASE_URL="http://iiif.example.com", MINTER_AUTH="auth"):
             initDefaultValues()
@@ -281,8 +281,8 @@ class MintArkTests(TestCase):
             r = Report.objects.get(job=jobId)
             self.assertEqual("testbcd", r.noid)
             self.assertEqual("http://ark.example.com/ark:/12345/testbcd/manifest", r.identifier)
-            self.assertFalse(successfulPost.called)
+            self.assertFalse(successfulPostMock.called)
             self.assertIn(mock.call(url='http://example.com/update', headers={"Authorization": "Bearer auth"},
                                     json={"ark": "ark:/12345/testbcd", "title": "title",
                                           "url": "http://iiif.example.com/iiif/presentation/testbcd"}),
-                          successfulPut.call_args_list)
+                          successfulPutMock.call_args_list)

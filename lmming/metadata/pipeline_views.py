@@ -12,16 +12,16 @@ from metadata.models import Page, Status, ProcessingStep
 from metadata.tasks.manage import scheduleTask
 
 
-def __toDisplayList__(input: List[Any]) -> str:
-    if input:
-        return ", ".join([str(i) for i in input])
+def __toDisplayList__(inputList: List[Any]) -> str:
+    if inputList:
+        return ", ".join([str(i) for i in inputList])
     else:
         return ""
 
 
-def __fromDisplayList__(input: str) -> List[Any]:
-    if input:
-        return [s.strip() for s in input.split(",")]
+def __fromDisplayList__(inputList: str) -> List[Any]:
+    if inputList:
+        return [s.strip() for s in inputList.split(",")]
     else:
         return []
 
