@@ -1,10 +1,10 @@
 from datetime import date
-
-from django.test import TestCase
 from unittest import expectedFailure
 
+from django.test import TestCase
+
 from metadata.models import Report
-from metadata.task_utils import getArabCoverage, getFacCoverage, splitIfNotNone, createArabTitle
+from metadata.tasks.utils import getArabCoverage, getFacCoverage, splitIfNotNone, createArabTitle
 
 
 class FacCoverageTests(TestCase):

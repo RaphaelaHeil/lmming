@@ -8,7 +8,7 @@ from django.forms import formset_factory
 from metadata.forms import FileNameForm, FilemakerForm, ComputeForm, FacManualForm, MintForm, PageForm, \
     ArabGenerateForm, ArabManualForm
 from metadata.models import Page, Status, ProcessingStep
-from metadata.tasks import scheduleTask
+from metadata.tasks.manage import scheduleTask
 
 
 def __toDisplayList__(input: List[Any]) -> str:

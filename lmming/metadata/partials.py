@@ -2,17 +2,16 @@ from copy import deepcopy
 from datetime import date
 
 import pandas as pd
+from django.conf import settings
 from django.db.models import Q
 from django.forms import formset_factory
 from django.http import QueryDict, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
-from django.conf import settings
 
 from metadata.forms import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, ProcessingStepForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
-from metadata.tasks import restartTask
-from metadata.tasks import scheduleTask
+from metadata.tasks.manage import restartTask, scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps
 
 FAC_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILENAME,
