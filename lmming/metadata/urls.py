@@ -13,6 +13,7 @@ urlpatterns = [
     path("transfer/<int:transfer_id>/download/<str:filetype>", views.downloadTransfer, name="download_transfer"),
     path("transfers/delete", partials.batchDeleteModal, name="transfer_batch_delete"),
     path("transfer/modal/delete/<int:transfer_id>", partials.deleteModal, name="transfer_delete_modal"),
+    path("transfer/modal/cancel/<int:transfer_id>", partials.cancelTransferModal, name="transfer_cancel_modal"),
     path("job/<int:job_id>", views.jobDetails, name="job"),
     path("job/<int:job_id>/edit/<str:step>", views.JobEditView.as_view(), name="edit_job"),
     path("job/<int:job_id>/restart/<str:step>", partials.restart, name="restart"),

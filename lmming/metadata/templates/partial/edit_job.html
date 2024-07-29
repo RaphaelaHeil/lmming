@@ -30,6 +30,7 @@
             </div>
             {%endfor%}
             <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 float-end" name="confirm">
+            <a href="{% url 'metadata:job' job.pk %}" class="btn btn-danger mb-3 mt-2 float-end">Cancel</a>
         </div>
         {%else%}
         <div class="container">
@@ -53,7 +54,8 @@
                         {%endif%}
                     </div>
                     {% endfor %}
-                    <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 float-end" name="confirm">
+                    <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 ms-2 float-end" name="confirm">
+                    <a href="{% url 'metadata:job' job.pk %}" class="btn btn-danger mb-3 mt-2 float-end">Cancel</a>
                 </div>
                 <div class="col">
                     {% include "components/report_details.html" with report=job.report show_pages=False%}

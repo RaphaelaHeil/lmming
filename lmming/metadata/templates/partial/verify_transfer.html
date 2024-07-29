@@ -7,6 +7,11 @@
     <form class="form" method="POST" action="{% url 'metadata:verify_transfer' transfer.id%}">
         {% csrf_token %}
         <input type="submit" value="Confirm" class="btn btn-success">
+
+        <button class="btn btn-danger" hx-get="{% url 'metadata:transfer_cancel_modal' transfer.id %}"
+                hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
+                data-bs-target="#modalContainer" class="px-1">Cancel
+        </button>
     </form>
 </div>
 <div class="p-1 mt-5">
@@ -17,7 +22,7 @@
             <h2 class="accordion-header" id="headingOne">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{{report.pk}}"
                         aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
-                    Organisation ID: {{report.unionId}} - Year(s) Covered: {%for date in report.date%}{{date.year}}{%endfor%}
+                    Organisation ID: {{report.unionId}} - Year(s) Covered: {{report.get_date_display}}
                 </button>
             </h2>
             <div id="{{report.pk}}" class="accordion-collapse collapse show" aria-labelledby="headingOne">

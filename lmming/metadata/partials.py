@@ -91,6 +91,10 @@ def deleteModal(request, transfer_id):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
     return render(request, "modal/delete_transfer.html", {"transfer": transfer})
 
+def cancelTransferModal(request, transfer_id):
+    transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
+    return render(request, "modal/cancel_transfer.html", {"transfer": transfer})
+
 
 def settingsModal(request):
     language = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first()

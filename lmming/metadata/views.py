@@ -115,10 +115,13 @@ class Transfer(View):
         else:
             return HttpResponseRedirect("/")
 
-    def delete(self, _request, *_args, **kwargs):
+    def delete(self, request, *_args, **kwargs):
         transfer = get_object_or_404(ExtractionTransfer, pk=kwargs["transfer_id"])
         transfer.delete()
-        return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
+        if request.GET.get("redirect", False) is not None:
+            return HttpResponse(status=204, headers={"HX-Redirect": "/"})
+        else:
+            return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
 
 
 class JobEditView(View):
