@@ -5,7 +5,7 @@ from typing import List, Any
 from django.db import transaction
 from django.forms import formset_factory
 
-from metadata.forms.arab import ArabGenerateForm, ArabManualForm
+from metadata.forms.arab import ArabGenerateForm, ArabManualForm, ArabMintForm
 from metadata.forms.fac import ComputeForm, FacManualForm, MintForm
 from metadata.forms.shared import FileNameForm, FilemakerForm, PageForm
 from metadata.models import Page, Status, ProcessingStep
@@ -293,3 +293,27 @@ def mint(request, job):
     else:
         mintForm = MintForm(initial=initial)
         return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.MINT_ARKS.label}
+
+
+def arabMint(request, job):
+    initial = {"identifier": job.report.identifier}
+    if request.method == "POST":
+        mintForm = ArabMintForm(request.POST, initial=initial)
+        if mintForm.is_valid():
+            if mintForm.has_changed():
+                if "identifier" in mintForm.changed_data:
+                    job.report.identifier = mintForm.cleaned_data["identifier"]
+                # TDOD: fix this field! (noid vs identifier, etc)
+                job.report.save()
+            step = job.processingSteps.filter(
+                processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value).first()
+            step.status = Status.COMPLETE
+            step.save()
+            transaction.on_commit(lambda: scheduleTask(job.pk))
+            return {"job": job}
+        else:
+            # TODO: return errors?!
+            return {"job": job}
+    else:
+        mintForm = MintForm(initial=initial)
+        return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label}

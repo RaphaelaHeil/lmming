@@ -8,7 +8,8 @@ from django.urls import reverse
 from django.views.generic import View
 
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
-from metadata.pipeline_views import filename, filemaker, compute, facManual, ner, mint, arabGenerate, arabManual
+from metadata.pipeline_views import filename, filemaker, compute, facManual, ner, mint, arabGenerate, arabManual, \
+    arabMint
 from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure
 
 
@@ -144,7 +145,8 @@ class JobEditView(View):
 
     def handleView(self, request, job, stepName) -> Dict[str, Any]:
         stepIndex = {"filename": filename, "filemaker_lookup": filemaker, "generate": compute, "fac_manual": facManual,
-                     "ner": ner, "mint_arks": mint, "arab_generate": arabGenerate, "arab_manual": arabManual}
+                     "ner": ner, "mint_arks": mint, "arab_generate": arabGenerate, "arab_manual": arabManual,
+                     "arab_mint_handle": arabMint}
         context = stepIndex[stepName](request, job)
         context["stepParam"] = stepName
         return context

@@ -26,3 +26,8 @@ class ArabManualForm(Form):
                            widget=TextInput(attrs={'class': 'form-control'}))
     description = CharField(label="Report description", required=False,
                             widget=Textarea(attrs={"class": "form-control"}))
+
+
+class ArabMintForm(Form):
+    identifier = URLField(label="IIIF URL", required=True, max_length=200,
+                          widget=TextInput(attrs={'class': 'form-control'}))

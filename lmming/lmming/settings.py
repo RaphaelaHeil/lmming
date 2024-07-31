@@ -25,23 +25,9 @@ env = environ.Env(
     POSTGRES_PASSWORD=(str, "12345LM"),
     POSTGRES_HOST=(str, "localhost"),
     POSTGRES_PORT=(str, "5432"),
-    ARCHIVE_INST=(str, "FAC"),
-    MINTER_URL=(str, ""),
-    MINTER_AUTH=(str, ""),
-    MINTER_ORG_ID=(str, "12345"),
-    IIIF_BASE_URL=(str, "https://iiif.example.com"),
-    ER_ARCHIVE_ID=(str, "PostID_Arkivbildare"),
-    ER_ORGANISATION_NAME=(str, "Organisation"),
-    ER_COUNTY=(str, "Distrikt län"),
-    ER_MUNICIPALITY=(str, "Kommun"),
-    ER_CITY=(str, "Ort"),
-    ER_PARISH=(str, "Socken"),
-    ER_CATALOGUE_LINK=(str, "NAD_LINK"),
     REDIS_HOST=(str, "redis://localhost"),
     REDIS_PORT=(str, "6379"),
-    HF_CRINA_HASH=(str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b"),
-    HF_KB_HASH=(str, "8e1e0bdcacc4dc230d2199de47b61ce9cac321c7"),
-    LMMING_HOST=(str, "localhost")
+    LMMING_HOST=(str, "localhost"),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -166,23 +152,31 @@ MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH"))  # BASE_DIR / "media"
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
 ARCHIVE_INST = env("ARCHIVE_INST")
-if ARCHIVE_INST not in ["FAC", "ARAB"]:
+if ARCHIVE_INST == "FAC":
+    MINTER_URL = env("MINTER_URL", str)
+    MINTER_AUTH = env("MINTER_AUTH", str)
+    MINTER_ORG_ID = env("MINTER_ORG_ID", str)
+elif ARCHIVE_INST == "ARAB":
+    ARAB_RETRIES = env("ARAB_RETRIES", int, 3)
+    ARAB_HANDLE_URL = env("ARAB_HANDLE_URL", str)
+    ARAB_HANDLE_OWNER = env("ARAB_HANDLE_OWNER", str)
+    ARAB_HANDLE_PREFIX = env("ARAB_HANDLE_PREFIX", str)
+    ARAB_PRIVATE_KEY_FILE = env("ARAB_PRIVATE_KEY_FILE", str)
+    ARAB_CERTIFICATE_FILE = env("ARAB_CERTIFICATE_FILE", str)
+else:
     raise ValueError("Unknown Archival Institution")
 
-MINTER_URL = env("MINTER_URL")
-MINTER_AUTH = env("MINTER_AUTH")
-MINTER_ORG_ID = env("MINTER_ORG_ID")
-IIIF_BASE_URL = env("IIIF_BASE_URL")
-ER_ARCHIVE_ID = env("ER_ARCHIVE_ID")
-ER_ORGANISATION_NAME = env("ER_ORGANISATION_NAME")
-ER_COUNTY = env("ER_COUNTY")
-ER_MUNICIPALITY = env("ER_MUNICIPALITY")
-ER_CITY = env("ER_CITY")
-ER_PARISH = env("ER_PARISH")
-ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK")
+IIIF_BASE_URL = env("IIIF_BASE_URL", str)
+ER_ARCHIVE_ID = env("ER_ARCHIVE_ID", str, "PostID_Arkivbildare")
+ER_ORGANISATION_NAME = env("ER_ORGANISATION_NAME", str, "Organisation")
+ER_COUNTY = env("ER_COUNTY", str, "Distrikt län")
+ER_MUNICIPALITY = env("ER_MUNICIPALITY", str, "Kommun")
+ER_CITY = env("ER_CITY", str, "Ort")
+ER_PARISH = env("ER_PARISH", str, "Socken")
+ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK", str, "NAD_LINK")
 
-HF_CRINA_HASH = env("HF_CRINA_HASH")
-HF_KB_HASH = env("HF_KB_HASH")
+HF_CRINA_HASH = env("HF_CRINA_HASH", str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b")
+HF_KB_HASH = env("HF_KB_HASH", str, "8e1e0bdcacc4dc230d2199de47b61ce9cac321c7")
 
 SERVER_LOG_NAME = "lmming"
 WORKER_LOG_NAME = "lmming_celery"
