@@ -4,12 +4,17 @@ from unittest import mock
 
 from django.test import TestCase
 
-from metadata.models import Report, ProcessingStep, Status
+from metadata.models import Report, ProcessingStep, Status, Page
 from metadata.tasks.fac import computeFromExistingFields, mintArks
 from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
 
 
 class ComputeFromExistingFieldsTests(TestCase):
+
+    def tearDown(self):
+        for page in Page.objects.all():
+            page.delete()
+
 
     def test_noPages(self):
         initDefaultValues()
@@ -156,6 +161,10 @@ class MintArkTests(TestCase):
 
     def setUp(self):
         logging.disable(logging.CRITICAL)
+
+    def tearDown(self):
+        for page in Page.objects.all():
+            page.delete()
 
     @mock.patch('requests.put', side_effect=successfulPut)
     @mock.patch('requests.post', side_effect=successfulPost)

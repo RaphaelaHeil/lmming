@@ -5,12 +5,16 @@ from unittest import mock
 from django.test import TestCase
 from pyhandle.handleexceptions import HandleAlreadyExistsException
 
-from metadata.models import Report, ProcessingStep, Status
+from metadata.models import Report, ProcessingStep, Status, Page
 from metadata.tasks.arab import arabComputeFromExistingFields, arabMintHandle
 from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
 
 
 class ArabComputeFromExistingFieldsTests(TestCase):
+
+    def tearDown(self):
+        for page in Page.objects.all():
+            page.delete()
 
     def test_noPages(self):
         initDefaultValues()
@@ -110,6 +114,10 @@ def mockPIDGen(*_args, **_kwargs):
 
 
 class ArabMintHandleTests(TestCase):
+
+    def tearDown(self):
+        for page in Page.objects.all():
+            page.delete()
 
     @mock.patch("pyhandle.client.resthandleclient.RESTHandleClient.generate_PID_name", side_effect=mockPIDGen)
     @mock.patch("pyhandle.client.resthandleclient.RESTHandleClient.register_handle_kv", side_effect=mintSuccess)

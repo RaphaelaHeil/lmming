@@ -12,6 +12,10 @@ from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyF
 
 class FilemakerLookupTests(TestCase):
 
+    def tearDown(self):
+        for page in Page.objects.all():
+            page.delete()
+
     def test_Task(self):
         initDefaultValues()
         initDummyFilemaker()
@@ -77,6 +81,10 @@ class NamedEntityRecognitionTests(TestCase):
 
     def setUp(self):
         logging.disable(logging.CRITICAL)
+
+    def tearDown(self):
+        for page in Page.objects.all():
+            page.delete()
 
     @mock.patch("metadata.tasks.shared.processPage", side_effect=successfulNer)
     def test_ner(self, _successfulNerMock):
