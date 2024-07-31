@@ -190,9 +190,27 @@ WORKER_LOG_NAME = "lmming_celery"
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            'format': '[%(asctime)s] %(levelname)s - {%(message)s}'
+        }
+    },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
+            "formatter": "verbose"
+        },
+        "worker": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": MEDIA_ROOT / "worker_log.txt",
+            'maxBytes': 10 * 1024 * 1024,
+            "formatter": "verbose"
+        },
+        "server": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "filename": MEDIA_ROOT / "server_log.txt",
+            'maxBytes': 10 * 1024 * 1024,
+            "formatter": "verbose"
         },
     },
     "root": {
@@ -201,12 +219,12 @@ LOGGING = {
     },
     "loggers": {
         SERVER_LOG_NAME: {
-            "handlers": ["console"],
+            "handlers": ["console", "server"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },
         WORKER_LOG_NAME: {
-            "handlers": ["console"],
+            "handlers": ["console", "worker"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
             "propagate": False,
         },
