@@ -105,7 +105,7 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
                                                                 private_key=privateKeyFile,
                                                                 certificate_only=certificateFile)
 
-        client = pyhandle.handleclient.RESTHandleClient.instantiate_with_credentials(creds)
+        client = pyhandle.handleclient.RESTHandleClient.instantiate_with_credentials(creds, HTTPS_verify=False)
     except Exception as e:
         step.log = "An exception occurred. Please try again or contact your administrator if the issue persists."
         logger.warning(f"{e.args}")
