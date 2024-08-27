@@ -1,4 +1,5 @@
 import logging
+import secrets
 from urllib.parse import urljoin
 
 import pyhandle
@@ -13,6 +14,8 @@ from metadata.tasks.utils import splitIfNotNone, createArabTitle
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
+
+BETANUMERIC = "0123456789bcdfghjkmnpqrstvwxz"
 
 @shared_task()
 def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
@@ -113,13 +116,14 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
     retries = 0
     while retries < settings.ARAB_RETRIES:
         try:
-            handle = client.generate_PID_name(prefix)  # TODO: this or a different format?
-            noid = handle.split("/")[-1]
+            noid = "".join(secrets.choice(BETANUMERIC) for _ in range(15))
+            handle = f"{prefix}/{noid}"
             resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}")
             extrainfo = {"URL": resolveTo}
             if report.title:
-                extrainfo["DESC"] = report.title
-            handleName = client.register_handle_kv(handle, overwrite=False, kv=extrainfo)
+                handleName = client.register_handle_kv(handle, overwrite=False, URL=resolveTo, DESC=report.title)
+            else:
+                handleName = client.register_handle_kv(handle, overwrite=False, URL=resolveTo)
 
             report.noid = noid
             report.identifier = urljoin("https://hdl.handle.net", handleName)
