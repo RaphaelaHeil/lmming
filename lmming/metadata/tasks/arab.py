@@ -9,13 +9,13 @@ from django.conf import settings
 from pyhandle.handleexceptions import HandleAlreadyExistsException, HandleAuthenticationError, HandleSyntaxError
 
 from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings
-from metadata.tasks.utils import resumePipeline
+from metadata.tasks.utils import resumePipeline, HandleAdapter, HandleError
 from metadata.tasks.utils import splitIfNotNone, createArabTitle
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
-
 BETANUMERIC = "0123456789bcdfghjkmnpqrstvwxz"
+
 
 @shared_task()
 def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
@@ -93,65 +93,46 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
 
     iiifBase = settings.IIIF_BASE_URL
-    handleServerUrl = settings.ARAB_HANDLE_URL
-    handleOwner = settings.ARAB_HANDLE_OWNER
+    handleServerIp = settings.ARAB_HANDLE_IP
+    handleServerPort = settings.ARAB_HANDLE_PORT
     privateKeyFile = settings.ARAB_PRIVATE_KEY_FILE
-    certificateFile = settings.ARAB_CERTIFICATE_FILE
+    handleAdmin = settings.ARAB_HANDLE_ADMIN
     prefix = settings.ARAB_HANDLE_PREFIX
 
-    try:
-        creds = pyhandle.clientcredentials.PIDClientCredentials(client="rest", handle_server_url=handleServerUrl,
-                                                                handleowner=handleOwner, prefix=prefix,
-                                                                private_key=privateKeyFile,
-                                                                certificate_only=certificateFile)
-
-        client = pyhandle.handleclient.RESTHandleClient.instantiate_with_credentials(creds)
-    except Exception as e:
-        step.log = "An exception occurred. Please try again or contact your administrator if the issue persists."
-        logger.warning(f"{e.args}")
-        step.status = Status.ERROR
-        step.save()
-        return
+    handleAdapter = HandleAdapter(ip=handleServerIp, port=handleServerPort, prefix=prefix, user=handleAdmin,
+                                  userKeyFile=privateKeyFile)
 
     retries = 0
     while retries < settings.ARAB_RETRIES:
         try:
             noid = "".join(secrets.choice(BETANUMERIC) for _ in range(15))
-            handle = f"{prefix}/{noid}"
-            resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}")
-            extrainfo = {"URL": resolveTo}
-            if report.title:
-                handleName = client.register_handle_kv(handle, overwrite=False, URL=resolveTo, DESC=report.title)
-            else:
-                handleName = client.register_handle_kv(handle, overwrite=False, URL=resolveTo)
+            if handleAdapter.doesHandleAlreadyExist(noid):
+                retries += 1
+                continue
 
-            report.noid = noid
-            report.identifier = urljoin("https://hdl.handle.net", handleName)
-            report.save()
-            for page in report.page_set.all():
-                page.iiifId = f"{report.noid}_{page.order}"
-                page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
-                page.save()
-            if step.humanValidation:
-                step.status = Status.AWAITING_HUMAN_VALIDATION
-                step.save()
-            else:
-                step.status = Status.COMPLETE
-                step.save()
-            if pipeline:
-                resumePipeline(jobPk)
-            return
-        except HandleAlreadyExistsException as e:
-            retries += 1
-        except HandleAuthenticationError as e:
-            step.log = "Could not authenticate with handle server. Please contact your administrator."
-            logger.warning(f"HandleAuthenticationError {e.msg}")
-            step.status = Status.ERROR
-            step.save()
-            return
-        except HandleSyntaxError as e:
-            step.log = "Handle does not have the expected syntax. Please contact your administrator."
-            logger.warning(f"HandleSyntaxError {e.msg}")
+            resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}")
+            handle = handleAdapter.createHandle(noid, resolveTo)
+
+            if handle:
+                report.noid = noid
+                report.identifier = urljoin("https://hdl.handle.net", handle)
+                report.save()
+                for page in report.page_set.all():
+                    page.iiifId = f"{report.noid}_{page.order}"
+                    page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
+                    page.save()
+                if step.humanValidation:
+                    step.status = Status.AWAITING_HUMAN_VALIDATION
+                    step.save()
+                else:
+                    step.status = Status.COMPLETE
+                    step.save()
+                if pipeline:
+                    resumePipeline(jobPk)
+                return
+        except HandleError as handleError:
+            step.log = handleError.userMessage
+            logger.warning(handleError.adminMessage)
             step.status = Status.ERROR
             step.save()
             return
