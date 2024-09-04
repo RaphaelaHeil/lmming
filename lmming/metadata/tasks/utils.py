@@ -136,8 +136,7 @@ class HandleError(Exception):
 
 class HandleAdapter(metaclass=Singleton):
 
-    def __init__(self, ip: str, port: int, prefix: str, user: str, userIndex:int, userKeyFile: Path):
-        # TODO: check for null and formatting issues!
+    def __init__(self, ip: str, port: int, prefix: str, user: str, userIndex: int, userKeyFile: Path):
         self.prefix = prefix
         self.user = user
         self.userIndex = userIndex
@@ -147,7 +146,6 @@ class HandleAdapter(metaclass=Singleton):
         self.serverNonceBytes = b""
 
         if ip.startswith("https://"):
-            # TODO: check format more extensively ...
             self.baseUrl = f"{ip}:{port}"
         else:
             self.baseUrl = f"https://{ip}:{port}"
@@ -235,6 +233,8 @@ class HandleAdapter(metaclass=Singleton):
                 raise HandleError(f"Handle '{self.prefix}/{noid}' already exists",
                                   f"Handle '{self.prefix}/{noid}' already exists")
 
+            authorizationHeaderString = createAuthenticationString(self.user, self.userKeyFile, self.sessionId,
+                                                                   self.serverNonceBytes)
             headers = {"Content-Type": "application/json", "Authorization": authorizationHeaderString}
 
             handleRecord = {"values": [{"index": 1, "type": "URL", "data": {"format": "string", "value": resolveTo}},
@@ -248,7 +248,9 @@ class HandleAdapter(metaclass=Singleton):
             if response.ok:
                 return f"{self.prefix}/{noid}"
             else:
-                raise HandleError("", "")
+                raise HandleError(
+                    f"Could not create handle {self.prefix}/{noid} - please try again, and contact your admin if the issue persists.",
+                    f"Could not create handle {self.prefix}/{noid} - response: {response.status_code} - {response.content}")
 
         except HandleError as exception:
             raise exception

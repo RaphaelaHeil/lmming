@@ -2,11 +2,9 @@ import logging
 import secrets
 from urllib.parse import urljoin
 
-import pyhandle
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from pyhandle.handleexceptions import HandleAlreadyExistsException, HandleAuthenticationError, HandleSyntaxError
 
 from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings
 from metadata.tasks.utils import resumePipeline, HandleAdapter, HandleError
