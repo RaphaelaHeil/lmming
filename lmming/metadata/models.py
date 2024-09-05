@@ -316,3 +316,4 @@ class ExternalRecord(Model):
     city = CharField(blank=True, default="")
     parish = CharField(blank=True, default="")
     catalogueLink = URLField(blank=True, default="")
+    coverage = CharField(blank=True, default="")

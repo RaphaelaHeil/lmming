@@ -167,13 +167,19 @@ else:
     raise ValueError("Unknown Archival Institution")
 
 IIIF_BASE_URL = env("IIIF_BASE_URL", str)
-ER_ARCHIVE_ID = env("ER_ARCHIVE_ID", str, "PostID_Arkivbildare")
-ER_ORGANISATION_NAME = env("ER_ORGANISATION_NAME", str, "Organisation")
+
+ER_ARCHIVE_ID = env("ER_ARCHIVE_ID", str)
+ER_ORGANISATION_NAME = env("ER_ORGANISATION_NAME", str)
 ER_COUNTY = env("ER_COUNTY", str, "Distrikt län")
 ER_MUNICIPALITY = env("ER_MUNICIPALITY", str, "Kommun")
 ER_CITY = env("ER_CITY", str, "Ort")
 ER_PARISH = env("ER_PARISH", str, "Socken")
 ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK", str, "NAD_LINK")
+
+if ARCHIVE_INST == "ARAB":
+    ER_COVERAGE = env("ER_COVERAGE", str)
+else:
+    ER_COVERAGE = env("ER_COVERAGE", str, "level")
 
 HF_CRINA_HASH = env("HF_CRINA_HASH", str, "88870df625e5abfb36c2ecfe2273b6f1a328f43b")
 HF_KB_HASH = env("HF_KB_HASH", str, "8e1e0bdcacc4dc230d2199de47b61ce9cac321c7")

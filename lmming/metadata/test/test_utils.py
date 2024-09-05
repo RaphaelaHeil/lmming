@@ -1,7 +1,9 @@
+import pandas as pd
+from django.conf import settings
 from django.test import TestCase
 
-from metadata.models import Report, ExtractionTransfer, Job, ProcessingStep, Status
-from metadata.utils import parseFilename, buildReportIdentifier, buildProcessingSteps
+from metadata.models import Report, ExtractionTransfer, Job, ProcessingStep, Status, ExternalRecord
+from metadata.utils import parseFilename, buildReportIdentifier, buildProcessingSteps, updateExternalRecords
 
 
 class ParseFilenameTests(TestCase):
@@ -205,3 +207,134 @@ class BuildProcessingStepsTests(TestCase):
         report.save()
 
         self.assertRaises(TypeError, buildProcessingSteps, [], job)
+
+
+class UpdateExternalRecordsTests(TestCase):
+
+    def test_update(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(2, len(externalRecords))
+            self.assertEqual(externalRecords[0].archiveId, "1A")
+            self.assertEqual(externalRecords[1].archiveId, "2A")
+
+    def test_ArchiveIdColumnMissing(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            with self.assertRaises(ValueError) as cm:
+                updateExternalRecords(df)
+            self.assertIn("archive", cm.exception.args[0])
+
+    def test_OrganisationNameColumnMissing(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "2A", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            with self.assertRaises(ValueError) as cm:
+                updateExternalRecords(df)
+            self.assertIn("org", cm.exception.args[0])
+
+    def test_ArabCoverageColumnMissing(self):
+        with self.settings(ARCHIVE_INST="ARAB", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "org":"1O", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L"},
+                                            {"archive": "2A", "org":"2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L"}])
+            with self.assertRaises(ValueError) as cm:
+                updateExternalRecords(df)
+            self.assertIn("cov", cm.exception.args[0])
+
+    def test_FacCoverageColumnMissing(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L"},
+                                            {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(2, len(externalRecords))
+            self.assertEqual(externalRecords[0].archiveId, "1A")
+            self.assertEqual(externalRecords[1].archiveId, "2A")
+
+    def test_OptionalColumnMissing(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "2A", "org": "2O", "county": "2C", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(2, len(externalRecords))
+            self.assertEqual(externalRecords[0].archiveId, "1A")
+            self.assertEqual(externalRecords[1].archiveId, "2A")
+
+    def test_ArchiveIdColumnEmpty(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(0, len(externalRecords))
+
+    def test_OrganisationNameColumnEmpty(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "org": "", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "2A", "org": "", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(0, len(externalRecords))
+
+    def test_ArchiveIdColumnPartiallyEmpty(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(1, len(externalRecords))
+            self.assertEqual("2A", externalRecords[0].archiveId)
+
+    def test_OrganisationNameColumnPartiallyEmpty(self):
+        with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_COVERAGE="cov"):
+            df = pd.DataFrame.from_records([{"archive": "1A", "org": "", "county": "1C", "muni": "1M", "city": "1CI",
+                                             "parish": "1P", "link": "1L", "cov": "1CO"},
+                                            {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
+                                             "parish": "2P", "link": "2L", "cov": "2CO"}])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(1, len(externalRecords))
+            self.assertEqual("2A", externalRecords[0].archiveId)

@@ -10,7 +10,7 @@ import pandas as pd
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring
 from requests.compat import urljoin
 
-from lmming import settings
+from django.conf import settings
 from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep
 
 __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
@@ -343,13 +343,30 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
 def updateExternalRecords(df: pd.DataFrame):
     df = df.fillna("")
 
+    cols = df.columns
+    if settings.ER_ARCHIVE_ID not in cols:
+        raise ValueError(f"No column with name '{settings.ER_ARCHIVE_ID}' found in CSV.")
+    if settings.ER_ORGANISATION_NAME not in cols:
+        raise ValueError(f"No column with name '{settings.ER_ORGANISATION_NAME}' found in CSV.")
+
+    for key in [settings.ER_COUNTY, settings.ER_MUNICIPALITY, settings.ER_CITY, settings.ER_PARISH,
+                settings.ER_CATALOGUE_LINK]:
+        if key not in cols:
+            df[key] = ""
+    if settings.ARCHIVE_INST == "ARAB":
+        if settings.ER_COVERAGE not in cols:
+            raise ValueError(f"No column with name '{settings.ER_COVERAGE}' found in CSV.")
+    else:
+        if settings.ER_COVERAGE not in cols:
+            df[settings.ER_COVERAGE] = ""
+
     ExternalRecord.objects.bulk_create([ExternalRecord(archiveId=row[settings.ER_ARCHIVE_ID],
                                                        organisationName=row[settings.ER_ORGANISATION_NAME],
                                                        county=row[settings.ER_COUNTY],
                                                        municipality=row[settings.ER_MUNICIPALITY],
                                                        city=row[settings.ER_CITY], parish=row[settings.ER_PARISH],
-                                                       catalogueLink=row[settings.ER_CATALOGUE_LINK]) for _, row in
-                                        df.iterrows()
+                                                       catalogueLink=row[settings.ER_CATALOGUE_LINK],
+                                                       coverage=row[settings.ER_COVERAGE]) for _, row in df.iterrows()
                                         if row[settings.ER_ARCHIVE_ID] and row[settings.ER_ORGANISATION_NAME]],
                                        update_conflicts=True, unique_fields=["archiveId"],
                                        update_fields=["organisationName", "county", "municipality", "city",

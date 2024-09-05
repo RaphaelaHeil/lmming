@@ -71,7 +71,7 @@ def initDummyFilemaker(filemakerEntry: Dict[str, Any] = None):
     if filemakerEntry is None:
         ExternalRecord.objects.create(archiveId="1", organisationName="Test Orga", county="county",
                                       municipality="municipality", city="city", parish="parish",
-                                      catalogueLink="http://nadLink.example.com")
+                                      catalogueLink="http://nadLink.example.com", coverage="coverage")
     else:
         ExternalRecord.objects.create(**filemakerEntry)
 

@@ -53,7 +53,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
         if settings.ARCHIVE_INST == "FAC":
             report.coverage = getFacCoverage(filemaker.organisationName)
         else:
-            report.coverage = getArabCoverage(filemaker.organisationName)
+            report.coverage = getArabCoverage(filemaker.coverage)
         report.relation = [filemaker.catalogueLink if filemaker.catalogueLink else ""]
         report.spatial = ["SE"] + [x for x in
                                    [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
