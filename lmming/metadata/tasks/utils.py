@@ -136,7 +136,7 @@ class HandleError(Exception):
 
 class HandleAdapter(metaclass=Singleton):
 
-    def __init__(self, ip: str, port: int, prefix: str, user: str, userIndex: int, userKeyFile: Path):
+    def __init__(self, ip: str, port: int, prefix: str, user: str, userKeyFile: Path, userIndex: int = 300):
         self.prefix = prefix
         self.user = user
         self.userIndex = userIndex
@@ -178,9 +178,9 @@ class HandleAdapter(metaclass=Singleton):
         url = f"{self.baseUrl}/api/sessions"
 
         try:
-            initialResponse = requests.post(url, headers={"Authorization": "Handle version=0"}, verify=False)
+            initialResponse = requests.post(url=url, headers={"Authorization": "Handle version=0"}, verify=False)
 
-            content = json.loads(initialResponse.content)
+            content = initialResponse.json()
             sessionId = content["sessionId"]
             serverNonce = content["nonce"]
             serverNonceBytes = b64decode(serverNonce)
@@ -193,7 +193,7 @@ class HandleAdapter(metaclass=Singleton):
                 "Authorization": authorizationHeaderString
             }
 
-            response = requests.post(url + "/this", headers=headers, verify=False)
+            response = requests.post(url=url + "/this", headers=headers, verify=False)
             if response.ok:
                 self.sessionId = sessionId
                 self.serverNonce = serverNonce

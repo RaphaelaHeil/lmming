@@ -3,7 +3,6 @@ from pathlib import Path
 from unittest import mock
 
 from django.test import TestCase
-from pyhandle.handleexceptions import HandleAlreadyExistsException
 
 from metadata.models import Report, ProcessingStep, Status, Page
 from metadata.tasks.arab import arabComputeFromExistingFields, arabMintHandle
@@ -101,16 +100,50 @@ class ArabComputeFromExistingFieldsTests(TestCase):
         self.assertIn("offset is negative", step.log)
 
 
-def handleAlreadyExists(*_args, **_kwards):
-    raise HandleAlreadyExistsException(msg="already exists")
+class MockResponse:
+    def __init__(self, json_data, status_code, ok):
+        self.json_data = json_data
+        self.status_code = status_code
+        self.ok = ok
+
+    def json(self):
+        return self.json_data
 
 
-def mintSuccess(*_args, **_kwargs):
-    return "12345/PID"
+def mockGet(*_args, **kwargs):
+    url = kwargs["url"]
+    if "handles" in url:
+        return MockResponse("", 200, False)
+    if "sessions/this" in url:
+        return MockResponse({"sesionId": "abc", "nonce": "c2VydmVybm9uY2U="})
+
+
+def mockGetHandleExists(*_args, **kwargs):
+    url = kwargs["url"]
+    if "handles" in url:
+        return MockResponse({}, 200, True)
+    if "sessions/this" in url:
+        return MockResponse({"sesionId": "abc", "nonce": "c2VydmVybm9uY2U="})
+
+
+def mockPost(*_args, **kwargs):
+    url = kwargs["url"]
+    if "this" in url:
+        return MockResponse({}, 200, True)
+    if "sessions" in url:
+        return MockResponse({"sessionId": "abc", "nonce": "c2VydmVybm9uY2U="}, 200, True)
+
+
+def mockPut(*_args, **_kwargs):
+    return MockResponse({}, 200, True)
 
 
 def mockPIDGen(*_args, **_kwargs):
-    return "PID"
+    return "x"
+
+
+def mockSign(*_args, **_kwargs):
+    return b"sign"
 
 
 class ArabMintHandleTests(TestCase):
@@ -119,33 +152,38 @@ class ArabMintHandleTests(TestCase):
         for page in Page.objects.all():
             page.delete()
 
-    @mock.patch("pyhandle.client.resthandleclient.RESTHandleClient.generate_PID_name", side_effect=mockPIDGen)
-    @mock.patch("pyhandle.client.resthandleclient.RESTHandleClient.register_handle_kv", side_effect=mintSuccess)
-    def test_mintSuccess(self, mockSuccess, mockPidGen):
-        a = Path("./metadata/test/cert_test.pem").resolve()
-        with self.settings(ARAB_HANDLE_OWNER="100:12345/12354", ARAB_HANDLE_PREFIX="12345",
-                           IIIF_BASE_URL="http://iiif.example.com", ARAB_PRIVATE_KEY_FILE=str(a),
-                           ARAB_CERTIFICATE_FILE=str(a)):
+    @mock.patch("metadata.tasks.utils.signBytesSHA256", side_effect=mockSign)
+    @mock.patch("requests.get", side_effect=mockGet)
+    @mock.patch("requests.post", side_effect=mockPost)
+    @mock.patch("requests.put", side_effect=mockPut)
+    @mock.patch("secrets.choice", side_effect=mockPIDGen)
+    def test_mintSuccess(self, _mockPidGen, _mockPut, _mockPost, _mockGet, _mockSign):
+        with self.settings(ARAB_HANDLE_PREFIX="12345", IIIF_BASE_URL="http://iiif.example.com",
+                           ARAB_PRIVATE_KEY_FILE=str(Path("./metadata/test/cert_test.pem").resolve()),
+                           ARAB_HANDLE_IP="127.0.0.1", ARAB_HANDLE_PORT=8000, ARAB_HANDLE_ADMIN="0.NA/6789"
+                           ):
             initDefaultValues({"yearOffset": -1, "language": "test", "license": "license"})
             initDummyFilemaker()
-            jobId = initDummyTransfer(archive="ARAB")
+            jobId = initDummyTransfer(archive="ARAB", reportData={})
 
             arabMintHandle(jobId, False)
 
             r = Report.objects.get(job=jobId)
 
-            self.assertEqual("PID", r.noid)
-            self.assertEqual("https://hdl.handle.net/12345/PID", r.identifier)
+            self.assertEqual("xxxxxxxxxxxxxxx", r.noid)
+            self.assertEqual("https://hdl.handle.net/12345/xxxxxxxxxxxxxxx", r.identifier)
             for page in r.page_set.all():
-                self.assertEqual(f"PID_{page.order}", page.iiifId)
-                self.assertEqual(f"http://iiif.example.com/iiif/image/PID_{page.order}/info.json", page.identifier)
+                self.assertEqual(f"xxxxxxxxxxxxxxx_{page.order}", page.iiifId)
+                self.assertEqual(f"http://iiif.example.com/iiif/image/xxxxxxxxxxxxxxx_{page.order}/info.json",
+                                 page.identifier)
 
-    @mock.patch("pyhandle.client.resthandleclient.RESTHandleClient.register_handle_kv", side_effect=handleAlreadyExists)
-    def test_exceedRetries(self, mockException):
-        a = Path("./metadata/test/cert_test.pem").resolve()
-        with self.settings(ARAB_HANDLE_OWNER="100:12345/12354", ARAB_HANDLE_PREFIX="12345",
-                           IIIF_BASE_URL="http://iiif.example.com", ARAB_PRIVATE_KEY_FILE=str(a),
-                           ARAB_CERTIFICATE_FILE=str(a)):
+    @mock.patch("requests.post", side_effect=mockPost)
+    @mock.patch("requests.get", side_effect=mockGetHandleExists)
+    def test_exceedRetries(self, _mockGet, _mockPost):
+        with self.settings(ARAB_HANDLE_PREFIX="12345", IIIF_BASE_URL="http://iiif.example.com",
+                           ARAB_PRIVATE_KEY_FILE=str(Path("./metadata/test/cert_test.pem").resolve()),
+                           ARAB_HANDLE_IP="127.0.0.1", ARAB_HANDLE_PORT=8000, ARAB_HANDLE_ADMIN="0.NA/6789"
+                           ):
             initDefaultValues({"yearOffset": -1, "language": "test", "license": "license"})
             initDummyFilemaker()
             jobId = initDummyTransfer(archive="ARAB", reportData={})
