@@ -25,7 +25,7 @@ class ArabComputeFromExistingFieldsTests(TestCase):
         arabComputeFromExistingFields(jobId, False)
         r = Report.objects.get(job=jobId)
 
-        self.assertEqual("Annual Report 1991", r.title)
+        self.assertEqual("Test Union 1991", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)
         self.assertEqual(["sv"], r.language)
         self.assertEqual("", r.description)
@@ -43,7 +43,7 @@ class ArabComputeFromExistingFieldsTests(TestCase):
         arabComputeFromExistingFields(jobId, False)
         r = Report.objects.get(job=jobId)
 
-        self.assertEqual("Annual Report 1991", r.title)
+        self.assertEqual("Test Union 1991", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)
         self.assertEqual(["sv"], r.language)
         self.assertEqual("", r.description)

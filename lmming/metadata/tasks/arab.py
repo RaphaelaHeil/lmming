@@ -24,7 +24,7 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
     # TODO language, title, license, isFormatOf, accessRights, created, available, source
     report = Report.objects.get(job__pk=jobPk)
 
-    report.title = createArabTitle([Report.DocumentType[x] for x in report.type], report.date)
+    report.title = createArabTitle(report.creator, report.date)
     report.created = sorted(report.date)[-1] + relativedelta(years=1)
     report.language = ["sv"]
 

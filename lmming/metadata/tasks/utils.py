@@ -56,19 +56,12 @@ REPORT_SPELLINGS = {Report.DocumentType.ANNUAL_REPORT: "Annual Report",
                     Report.DocumentType.FINANCIAL_STATEMENT: "Financial Statement"}
 
 
-def createArabTitle(reportTypes: List[Report.DocumentType], dates: List[date]) -> str:
-    if not reportTypes:
-        raise TypeError("no report types were supplied")
+def createArabTitle(unionName:str, dates: List[date]) -> str:
+    if not unionName:
+        raise TypeError("no union name was supplied")
+
     if not dates:
         raise TypeError("no dates were supplied")
-
-    for r in reportTypes:
-        if r not in REPORT_SPELLINGS:
-            raise ValueError(f"unknown report type {str(r)}")
-
-    sortedReportTypes = sorted(set(reportTypes), key=lambda x: Report.DocumentType[x].label[0])
-
-    typeString = ", ".join(REPORT_SPELLINGS[r] for r in sortedReportTypes)
 
     groupedDates = []
     sortedDates = sorted(set(dates))
@@ -88,7 +81,7 @@ def createArabTitle(reportTypes: List[Report.DocumentType], dates: List[date]) -
         else:
             dateString += f"{str(g[0])}"
 
-    return f"{typeString} {dateString}"
+    return f"{unionName} {dateString}"
 
 
 class Singleton(type):
