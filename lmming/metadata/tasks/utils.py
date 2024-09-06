@@ -33,28 +33,19 @@ def getFacCoverage(unionName: str) -> Report.UnionLevel:
         return Report.UnionLevel.OTHER
 
 
-def getArabCoverage(unionName: str) -> Report.UnionLevel:
-    unionName = unionName.lower()
-    if "riks" in unionName:
-        return Report.UnionLevel.NATIONAL_BRANCH
-    elif "regional" in unionName:
-        return Report.UnionLevel.DISTRICT
-    elif "lokal" in unionName:
-        return Report.UnionLevel.SECTION
+def getArabCoverage(coverage: str) -> Report.UnionLevel:
+    coverage = coverage.lower()
+    for value, label in Report.UnionLevel.choices:
+        if value.lower() == coverage or label.lower() == coverage:
+            return Report.UnionLevel[value]
     else:
         return Report.UnionLevel.OTHER
-
 
 def splitIfNotNone(value: str) -> List[str]:
     if value:
         return [x.strip() for x in value.split(",")]
     else:
         return []
-
-
-REPORT_SPELLINGS = {Report.DocumentType.ANNUAL_REPORT: "Annual Report",
-                    Report.DocumentType.FINANCIAL_STATEMENT: "Financial Statement"}
-
 
 def createArabTitle(unionName:str, dates: List[date]) -> str:
     if not unionName:

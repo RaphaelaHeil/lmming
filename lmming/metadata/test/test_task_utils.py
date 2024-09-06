@@ -58,33 +58,49 @@ class FacCoverageTests(TestCase):
 
 class ArabCoverageTests(TestCase):
 
-    def test_riks(self):
-        level = getArabCoverage("this is a riks name")
-        self.assertEqual(Report.UnionLevel.NATIONAL_BRANCH, level)
+    def test_emptyCoverage(self):
+        level = getArabCoverage("")
+        self.assertEqual(Report.UnionLevel.OTHER, level)
 
-    def test_regional(self):
-        level = getArabCoverage("this is a regional name")
-        self.assertEqual(Report.UnionLevel.DISTRICT, level)
-
-    def test_lokal(self):
-        level = getArabCoverage("this is a lokal name")
-        self.assertEqual(Report.UnionLevel.SECTION, level)
-
-    def test_noIndicator(self):
+    def test_unknownCoverage(self):
         level = getArabCoverage("asjdnkajsn")
         self.assertEqual(Report.UnionLevel.OTHER, level)
 
-    def test_capitalRiks(self):
-        level = getArabCoverage("THIS IS A RIKS NAME")
-        self.assertEqual(Report.UnionLevel.NATIONAL_BRANCH, level)
+    def test_workplace(self):
+        level = getArabCoverage("workplace")
+        self.assertEqual(Report.UnionLevel.WORKPLACE, level)
 
-    def test_capitalRegional(self):
-        level = getArabCoverage("THIS IS A REGIONAL NAME")
+    def test_section(self):
+        level = getArabCoverage("section")
+        self.assertEqual(Report.UnionLevel.SECTION, level)
+
+    def test_division(self):
+        level = getArabCoverage("division")
+        self.assertEqual(Report.UnionLevel.DIVISION, level)
+
+    def test_district(self):
+        level = getArabCoverage("district")
         self.assertEqual(Report.UnionLevel.DISTRICT, level)
 
-    def test_capitalLokal(self):
-        level = getArabCoverage("THIS IS A LOKAL NAME")
-        self.assertEqual(Report.UnionLevel.SECTION, level)
+    def test_nationalBranch(self):
+        level = getArabCoverage("national branch")
+        self.assertEqual(Report.UnionLevel.NATIONAL_BRANCH, level)
+
+    def test_nationalFederation(self):
+        level = getArabCoverage("national federation")
+        self.assertEqual(Report.UnionLevel.NATIONAL_FEDERATION, level)
+
+    def test_internationalBranch(self):
+        level = getArabCoverage("international branch")
+        self.assertEqual(Report.UnionLevel.INTERNATIONAL_BRANCH, level)
+
+    def test_internationalFederation(self):
+        level = getArabCoverage("international federation")
+        self.assertEqual(Report.UnionLevel.INTERNATIONAL_FEDERATION, level)
+
+    def test_other(self):
+        level = getArabCoverage("other")
+        self.assertEqual(Report.UnionLevel.OTHER, level)
 
 
 class SplitIfNotNoneTests(TestCase):
