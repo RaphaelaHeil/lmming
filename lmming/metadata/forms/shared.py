@@ -1,5 +1,5 @@
 from django.forms import ClearableFileInput, FileField, Form, CharField, TextInput, ChoiceField, Select, BooleanField, \
-    CheckboxInput, MultipleChoiceField, CheckboxSelectMultiple, Textarea, IntegerField
+    CheckboxInput, Textarea, IntegerField
 
 from metadata.models import ProcessingStep, Report
 
@@ -45,15 +45,6 @@ class ProcessingStepForm(Form):
 class ZipForm(Form):
     zipFile = FileField(label="Select a compressed file, containing one or more collections (*.zip):",
                         widget=ClearableFileInput(attrs={"accept": ".zip", "class": "form-control"}))
-
-
-class FileNameForm(Form):
-    organisationID = CharField(label="Organisation ID", required=True,
-                               widget=TextInput(attrs={'class': 'form-control'}))
-    type = MultipleChoiceField(label="Report Type", choices=Report.DocumentType, required=True,
-                               widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
-    date = CharField(label="Report date by year (comma-separted for multiple years)", required=True,
-                     widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class FilemakerForm(Form):

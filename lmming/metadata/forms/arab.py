@@ -24,6 +24,8 @@ class ArabGenerateForm(Form):
 class ArabManualForm(Form):
     isVersionOf = URLField(label="Link to archival record (e.g. AtoM)", required=True, max_length=200,
                            widget=TextInput(attrs={'class': 'form-control'}))
+    reportType = MultipleChoiceField(label="Report Type", choices=Report.DocumentType, required=True,
+                                     widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
     description = CharField(label="Report description", required=False,
                             widget=Textarea(attrs={"class": "form-control"}))
 
@@ -31,3 +33,10 @@ class ArabManualForm(Form):
 class ArabMintForm(Form):
     identifier = URLField(label="IIIF URL", required=True, max_length=200,
                           widget=TextInput(attrs={'class': 'form-control'}))
+
+
+class ArabFileNameForm(Form):
+    organisationID = CharField(label="Organisation ID", required=True,
+                               widget=TextInput(attrs={'class': 'form-control'}))
+    date = CharField(label="Report date by year (comma-separted for multiple years)", required=True,
+                     widget=TextInput(attrs={'class': 'form-control'}))

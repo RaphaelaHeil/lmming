@@ -32,3 +32,12 @@ class MintForm(Form):
     # TODO: does this also update the pages? probably not ...
     identifier = URLField(label="IIIF URL", required=True, max_length=200,
                           widget=TextInput(attrs={'class': 'form-control'}))
+
+
+class FacFileNameForm(Form):
+    organisationID = CharField(label="Organisation ID", required=True,
+                               widget=TextInput(attrs={'class': 'form-control'}))
+    type = MultipleChoiceField(label="Report Type", choices=Report.DocumentType, required=True,
+                               widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    date = CharField(label="Report date by year (comma-separted for multiple years)", required=True,
+                     widget=TextInput(attrs={'class': 'form-control'}))

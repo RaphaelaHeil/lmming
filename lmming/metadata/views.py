@@ -2,14 +2,16 @@ from datetime import datetime
 from io import BytesIO
 from typing import Dict, Any
 
+from django.conf import settings
 from django.http import HttpResponseRedirect, FileResponse, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
 
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
-from metadata.pipeline_views import filename, filemaker, compute, facManual, ner, mint, arabGenerate, arabManual, \
-    arabMint
+from metadata.pipeline_views.arab import arabGenerate, arabManual, arabMint, arabFilename
+from metadata.pipeline_views.fac import mint, facManual, facFilename
+from metadata.pipeline_views.shared import ner, compute, filemaker
 from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure
 
 
@@ -25,7 +27,11 @@ def jobDetails(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
     stepData = []
     for step in job.processingSteps.order_by("order"):
-        stepData.append({"step": step, "urlName": step.processingStepType.lower()})
+        urlName = step.processingStepType.lower()
+
+        if urlName == "filename":
+            urlName = f"{settings.ARCHIVE_INST.lower()}_{urlName}"
+        stepData.append({"step": step, "urlName": urlName})
 
     error = {}
     if job.status == Status.ERROR:
@@ -139,14 +145,17 @@ class JobEditView(View):
             stepName = kwargs["step"]
             context = self.handleView(request, job, stepName)  # TODO: do we need to return anything here?
             # TODO: only if there are errors, in which case it should be the same as GET + error context ...
-            return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
+            if "form" in context:
+                return render(request, "partial/edit_job.html", context)
+            else:
+                return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
         else:
             return HttpResponseRedirect(reverse('metadata:job', kwargs={'job_id': kwargs["job_id"]}))
 
     def handleView(self, request, job, stepName) -> Dict[str, Any]:
-        stepIndex = {"filename": filename, "filemaker_lookup": filemaker, "generate": compute, "fac_manual": facManual,
-                     "ner": ner, "mint_arks": mint, "arab_generate": arabGenerate, "arab_manual": arabManual,
-                     "arab_mint_handle": arabMint}
+        stepIndex = {"fac_filename": facFilename, "arab_filename": arabFilename, "filemaker_lookup": filemaker,
+                     "generate": compute, "fac_manual": facManual, "ner": ner, "mint_arks": mint,
+                     "arab_generate": arabGenerate, "arab_manual": arabManual, "arab_mint_handle": arabMint}
         context = stepIndex[stepName](request, job)
         context["stepParam"] = stepName
         return context
