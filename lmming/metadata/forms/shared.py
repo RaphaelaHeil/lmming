@@ -81,18 +81,18 @@ class PageForm(Form):
 
 
 class SettingsForm(Form):
-    language = CharField(label="Default Language(s) (comma-separated)", required=True,
+    language = CharField(label="Default Language(s) (comma-separated) [required]", required=True,
                          widget=TextInput(attrs={'class': 'form-control'}))
-    license = CharField(label="Default License(s) (comma-separated)", required=True,
+    license = CharField(label="Default License(s) (comma-separated) [required]", required=True,
                         widget=TextInput(attrs={'class': 'form-control'}))
-    source = CharField(label="Default Source(s) (comma-separated)", required=True,
+    source = CharField(label="Default Source(s) (comma-separated) [required]", required=True,
                        widget=TextInput(attrs={'class': 'form-control'}))
 
-    accessRights = ChoiceField(label="Default accessRights Value", choices=Report.AccessRights, required=True,
-                               widget=Select(attrs={"class": "form-select"}))
+    accessRights = ChoiceField(label="Default accessRights value [required]", choices=Report.AccessRights,
+                               required=True, widget=Select(attrs={"class": "form-select"}))
 
-    avilableYearOffset = IntegerField(label="Default number of years after publication", required=True, min_value=0,
-                                      step_size=1)
+    avilableYearOffset = IntegerField(label="Default number of years after publication [required]", required=True,
+                                      min_value=0, step_size=1)
 
 
 class ExternalRecordsSettingsForm(Form):
