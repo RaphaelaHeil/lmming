@@ -301,9 +301,11 @@ class UpdateExternalRecordsTests(TestCase):
                                              "parish": "1P", "link": "1L"},
                                             {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
                                              "parish": "2P", "link": "2L"}])
-            with self.assertRaises(ValueError) as cm:
-                updateExternalRecords(df)
-            self.assertIn("cov", cm.exception.args[0])
+            updateExternalRecords(df)
+            externalRecords = ExternalRecord.objects.all()
+            self.assertEqual(2, len(externalRecords))
+            self.assertEqual(externalRecords[0].archiveId, "1A")
+            self.assertEqual(externalRecords[1].archiveId, "2A")
 
     def test_FacCoverageColumnMissing(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",

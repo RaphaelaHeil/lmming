@@ -364,12 +364,9 @@ def updateExternalRecords(df: pd.DataFrame):
                 settings.ER_CATALOGUE_LINK]:
         if key not in cols:
             df[key] = ""
-    if settings.ARCHIVE_INST == "ARAB":
-        if settings.ER_COVERAGE not in cols:
-            raise ValueError(f"No column with name '{settings.ER_COVERAGE}' found in CSV.")
-    else:
-        if settings.ER_COVERAGE not in cols:
-            df[settings.ER_COVERAGE] = ""
+
+    if settings.ER_COVERAGE not in cols:
+        df[settings.ER_COVERAGE] = ""
 
     ExternalRecord.objects.bulk_create([ExternalRecord(archiveId=row[settings.ER_ARCHIVE_ID],
                                                        organisationName=row[settings.ER_ORGANISATION_NAME],

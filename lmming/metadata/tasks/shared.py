@@ -7,7 +7,7 @@ from django.conf import settings
 from metadata.models import ProcessingStep, Status, ExternalRecord, Report
 from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
-from metadata.tasks.utils import resumePipeline, getFacCoverage, getArabCoverage
+from metadata.tasks.utils import resumePipeline, getFacCoverage
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -53,7 +53,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
         if settings.ARCHIVE_INST == "FAC":
             report.coverage = getFacCoverage(filemaker.organisationName)
         else:
-            report.coverage = getArabCoverage(filemaker.coverage)
+            report.coverage = Report.UnionLevel.NATIONAL_BRANCH  # getArabCoverage(filemaker.coverage)
         report.relation = [filemaker.catalogueLink if filemaker.catalogueLink else ""]
         report.spatial = ["SE"] + [x for x in
                                    [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
