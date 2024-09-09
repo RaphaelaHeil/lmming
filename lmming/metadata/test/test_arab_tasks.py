@@ -4,6 +4,7 @@ from unittest import mock
 
 from django.test import TestCase
 
+from lmming.settings import ARCHIVE_INST
 from metadata.models import Report, ProcessingStep, Status, Page
 from metadata.tasks.arab import arabComputeFromExistingFields, arabMintHandle
 from metadata.test.utils import initDefaultValues, initDummyTransfer, initDummyFilemaker, TEST_PAGES
@@ -160,8 +161,8 @@ class ArabMintHandleTests(TestCase):
     def test_mintSuccess(self, _mockPidGen, _mockPut, _mockPost, _mockGet, _mockSign):
         with self.settings(ARAB_HANDLE_PREFIX="12345", IIIF_BASE_URL="http://iiif.example.com",
                            ARAB_PRIVATE_KEY_FILE=str(Path("./metadata/test/cert_test.pem").resolve()),
-                           ARAB_HANDLE_IP="127.0.0.1", ARAB_HANDLE_PORT=8000, ARAB_HANDLE_ADMIN="0.NA/6789"
-                           ):
+                           ARAB_HANDLE_IP="127.0.0.1", ARAB_HANDLE_PORT=8000, ARAB_HANDLE_ADMIN="0.NA/6789",
+                           ARCHIVE_INST="ARAB", ARAB_RETRIES=3):
             initDefaultValues({"yearOffset": -1, "language": "test", "license": "license"})
             initDummyFilemaker()
             jobId = initDummyTransfer(archive="ARAB", reportData={})
@@ -180,10 +181,10 @@ class ArabMintHandleTests(TestCase):
     @mock.patch("requests.post", side_effect=mockPost)
     @mock.patch("requests.get", side_effect=mockGetHandleExists)
     def test_exceedRetries(self, _mockGet, _mockPost):
-        with self.settings(ARAB_HANDLE_PREFIX="12345", IIIF_BASE_URL="http://iiif.example.com",
+        with self.settings(ARCHIVE_INST="ARAB", ARAB_HANDLE_PREFIX="12345", IIIF_BASE_URL="http://iiif.example.com",
                            ARAB_PRIVATE_KEY_FILE=str(Path("./metadata/test/cert_test.pem").resolve()),
-                           ARAB_HANDLE_IP="127.0.0.1", ARAB_HANDLE_PORT=8000, ARAB_HANDLE_ADMIN="0.NA/6789"
-                           ):
+                           ARAB_HANDLE_IP="127.0.0.1", ARAB_HANDLE_PORT=8000, ARAB_HANDLE_ADMIN="0.NA/6789",
+                           ARAB_RETRIES=3):
             initDefaultValues({"yearOffset": -1, "language": "test", "license": "license"})
             initDummyFilemaker()
             jobId = initDummyTransfer(archive="ARAB", reportData={})
