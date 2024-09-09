@@ -106,7 +106,7 @@ def createAuthenticationString(user, userKeyFile, sessionId, serverNonceBytes):
     signatureBytes = signBytesSHA256(combinedNonceBytes, userKeyFile)
     signatureString = b64encode(signatureBytes).decode("utf-8")
 
-    return (f'Handle sessionId="{sessionId}", cnonce="{clientNonceString}" id="{user}", type="HS_PUBKEY", '
+    return (f'Handle sessionId="{sessionId}", cnonce="{clientNonceString}", id="{user}", type="HS_PUBKEY", '
             f'alg="SHA256", signature="{signatureString}"')
 
 
