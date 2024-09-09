@@ -1,6 +1,6 @@
 import re
 import zipfile
-from datetime import date
+from datetime import datetime, date
 from functools import partial
 from io import BytesIO
 from pathlib import Path
@@ -20,7 +20,17 @@ __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
 __DUMMY_DIR__ = Path(__file__).parent.resolve() / "dummy_content"
 
 
-def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
+def __parseDateString(dateString:str)-> datetime:
+    if len(dateString) == 4:
+        return datetime(int(dateString), 1, 1)
+    else:
+        s = dateString.split("-")
+        year = s[0]
+        month = int(s[1]) if s[1].isnumeric() else 1
+        day = int(s[2]) if s[2].isnumeric() else 1
+        return datetime(int(year), month, day)
+
+def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[datetime]]]:
     """
     Retrieves the union's ID, a type hint for the report type, the report's year(s) and the page number from the given
     filename.
@@ -38,28 +48,11 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
     if "arab" in filename:
         filename = filename[filename.index("arab") + 5:]
 
-    if "sid" in filename:
-        matches = re.findall(r"(?<=sid-)\d*", filename)
-        page = int(matches[0])
-        filename = filename.split("sid")[0][:-1]
-    else:
-        m = re.findall(r"(?<=1[89]\d{2}[_-])\d*", filename)
-        if m:
-            val = m[-1]
-            if not re.match(r"1[89]\d{2}", val):
-                page = int(val)
-                idx = filename.rfind(val)
-                filename = filename[:idx]
-            else:
-                page = 1
-        else:
-            page = 1
-
     s = filename.split("_")
     if len(s) < 3:
         raise SyntaxError(
             "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
-            "following: union identifier, report type, report year(s)")
+            "following: union identifier, report type, report date(s)")
 
     unionId = s[0].lstrip("0") or "0"
 
@@ -73,26 +66,44 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str]]]:
     else:
         reportType = Report.DocumentType.ANNUAL_REPORT
 
-    dates = []
-    d = " ".join(s[2:])  # in case two years were separated by underscores
-    ma = re.findall(r"1[89]\d{2}", d)
-    if ma:
-        for m in ma:
-            dates.append(int(m))
-    # if len(dates) == 1:
-    #     dates = int(dates[0])
+    dates = set()
+    page = 1
+    for remainder in s[2:]:
+        if "sid" in remainder:
+            matches = re.findall(r"(?<=sid-)\d*", filename)
+            page = int(matches[0])
+        elif remainder.isalpha():
+            continue
+        else:
+            if "och" in remainder:
+                d = remainder.split("och")
+                dates.add(__parseDateString(d[0].strip()))
+                dates.add(__parseDateString(d[1].strip()))
+            elif "--" in remainder:
+                d = remainder.split("--")
+                dates.add(__parseDateString(d[0].strip()))
+                dates.add(__parseDateString(d[1].strip()))
+            elif re.match("\d{4}-\d{4}", remainder):
+                d = remainder.split("-")
+                dates.add(__parseDateString(d[0]))
+                dates.add(__parseDateString(d[1]))
+            elif len(remainder) >= 4:
+                dates.add(__parseDateString(remainder))
+            else:
+                continue
+
     if not dates:
         raise SyntaxError(
             "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
             "following: union identifier, report type, report year(s)")
 
-    return {"date": dates, "union_id": unionId, "type": reportType, "page": page}
+    return {"date": sorted(list(dates)), "union_id": unionId, "type": reportType, "page": page}
 
 
-def buildReportIdentifier(data: Dict[str, Union[str, int, List[str]]]) -> str:
+def buildReportIdentifier(data: Dict[str, Union[str, int, List[datetime]]]) -> str:
     reportDates = data["date"]
     if isinstance(reportDates, list):
-        dateRepr = "-".join([str(d) for d in sorted(reportDates)])
+        dateRepr = "--".join([str(d) for d in sorted(reportDates)])
     else:
         dateRepr = str(reportDates)
 
@@ -370,7 +381,7 @@ def updateExternalRecords(df: pd.DataFrame):
                                         if row[settings.ER_ARCHIVE_ID] and row[settings.ER_ORGANISATION_NAME]],
                                        update_conflicts=True, unique_fields=["archiveId"],
                                        update_fields=["organisationName", "county", "municipality", "city",
-                                                      "catalogueLink"],
+                                                      "catalogueLink", "coverage"],
                                        )
 
 

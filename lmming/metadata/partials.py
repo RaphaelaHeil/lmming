@@ -91,6 +91,7 @@ def deleteModal(request, transfer_id):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
     return render(request, "modal/delete_transfer.html", {"transfer": transfer})
 
+
 def cancelTransferModal(request, transfer_id):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
     return render(request, "modal/cancel_transfer.html", {"transfer": transfer})
@@ -216,10 +217,17 @@ def createTransfer(request):
                 pages = pagesToReports[reportIdentifier]
                 unionId = set(p["union_id"] for p in pages).pop()  # TODO: can there be multiple?
                 reportType = list(set(p["type"] for p in pages))
-                dateList = list(set(date(d, 1, 1) for p in pages for d in p["date"]))
 
-                r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType, date=dateList)
+                dates = set()
+                for p in pages:
+                    dates.update(p["date"])
+                dateList = sorted(list(dates))
 
+                if settings.ARCHIVE_INST == "FAC":
+                    r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType,
+                                              date=dateList)
+                else:
+                    r = Report.objects.create(transfer=transferInstance, unionId=unionId, date=dateList)
                 Page.objects.bulk_create([Page(report=r, order=int(page["page"]), transcriptionFile=page["file"],
                                                originalFileName=page["file"]) for page in pages])
 

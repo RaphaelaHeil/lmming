@@ -151,7 +151,7 @@ MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH"))  # BASE_DIR / "media"
 
 NER_BASE_DIR = BASE_DIR.parent / "ner_data"
 
-ARCHIVE_INST = env("ARCHIVE_INST")
+ARCHIVE_INST = env("ARCHIVE_INST", str).upper()
 if ARCHIVE_INST == "FAC":
     MINTER_URL = env("MINTER_URL", str)
     MINTER_AUTH = env("MINTER_AUTH", str)
