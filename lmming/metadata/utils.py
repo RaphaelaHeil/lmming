@@ -81,8 +81,14 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
                 dates.add(__parseDateString(d[1].strip()))
             elif "--" in remainder:
                 d = remainder.split("--")
-                dates.add(__parseDateString(d[0].strip()))
-                dates.add(__parseDateString(d[1].strip()))
+                start = __parseDateString(d[0].strip())
+                end = __parseDateString(d[1].strip())
+                dates.add(start)
+                y = start.year + 1
+                while y < end.year:
+                    dates.add(datetime(y, 1, 1))
+                    y += 1
+                dates.add(end)
             elif re.match("\d{4}-\d{4}", remainder):
                 d = remainder.split("-")
                 dates.add(__parseDateString(d[0]))

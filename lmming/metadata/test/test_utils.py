@@ -125,22 +125,25 @@ class ParseFilenameTests(TestCase):
                               "union_id": "1234", "page": 1})
 
     def test_fullStartDate(self):
-        results = parseFilename("arab_01281_revisionsberattelse_1902-03-31--1903_sid-0001.xml")
+        results = parseFilename("arab_01281_revisionsberattelse_1902-03-31--1904_sid-0001.xml")
         self.assertDictEqual(results,
                              {"type": Report.DocumentType.FINANCIAL_STATEMENT,
-                              "date": [datetime(1902, 3, 31), datetime(1903, 1, 1)], "union_id": "1281", "page": 1})
+                              "date": [datetime(1902, 3, 31), datetime(1903, 1, 1), datetime(1904, 1, 1)],
+                              "union_id": "1281", "page": 1})
 
     def test_fullEndDate(self):
-        results = parseFilename("arab_01281_revisionsberattelse_1901--1902-03-31_sid-0001.xml")
+        results = parseFilename("arab_01281_revisionsberattelse_1901--1903-03-31_sid-0001.xml")
         self.assertDictEqual(results,
                              {"type": Report.DocumentType.FINANCIAL_STATEMENT,
-                              "date": [datetime(1901, 1, 1), datetime(1902, 3, 31)], "union_id": "1281", "page": 1})
+                              "date": [datetime(1901, 1, 1), datetime(1902, 1, 1), datetime(1903, 3, 31)],
+                              "union_id": "1281", "page": 1})
 
     def test_fullDates(self):
-        results = parseFilename("arab_01281_revisionsberattelse_1902-02-02--1902-03-31_sid-0001.xml")
+        results = parseFilename("arab_01281_revisionsberattelse_1902-02-02--1905-03-31_sid-0001.xml")
         self.assertDictEqual(results,
                              {"type": Report.DocumentType.FINANCIAL_STATEMENT,
-                              "date": [datetime(1902, 2, 2), datetime(1902, 3, 31)], "union_id": "1281", "page": 1})
+                              "date": [datetime(1902, 2, 2), datetime(1903, 1, 1), datetime(1904, 1, 1),
+                                       datetime(1905, 3, 31)], "union_id": "1281", "page": 1})
 
     def test_bilaga(self):
         results = parseFilename("arab_00550_verksamhetsberattelse_1980_bilaga_sid-0001.xml")
