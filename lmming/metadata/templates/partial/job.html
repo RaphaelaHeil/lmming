@@ -26,7 +26,7 @@
             <strong>Created on:</strong>
         </div>
         <div class="col">
-            <p>{{job.dateCreated}}</p>
+            <p>{{job.dateCreated|date:"d M Y, H:i"}}</p>
         </div>
     </div>
     <div class="row">
@@ -34,7 +34,7 @@
             <strong>Start Date:</strong>
         </div>
         <div class="col">
-            <p>{{job.startDate}}</p>
+            <p>{{job.startDate|date:"d M Y, H:i"}}</p>
         </div>
     </div>
 
@@ -43,7 +43,7 @@
             <strong>End Date:</strong>
         </div>
         <div class="col">
-            <p>{{job.endDate}}</p>
+            <p>{{job.endDate|date:"d M Y, H:i"}}</p>
         </div>
     </div>
 
