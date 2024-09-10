@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Set
 
 import nltk
-
+nltk.download('punkt_tab')
 from .aux import loadAbbreviations, loadSynonyms, get_key
 from .hf_utils import getKBPipeline, getHistbertPipeline
 from .utils import correction, handleLinebreakChars, extractTranscriptionsFromXml
@@ -37,7 +37,6 @@ class NlpResult:
 class NerHelper:
 
     def __init__(self):
-        nltk.download('punkt')
         self.ABBREVIATIONS = loadAbbreviations()
         self.DALIN, self.DALIN_VALUES_FLAT = loadSynonyms()
 

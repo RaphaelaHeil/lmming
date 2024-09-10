@@ -11,14 +11,15 @@ def download():
     for modelName, revision in [("crina-t/histbert-finetuned-ner", settings.HF_CRINA_HASH),
                                 ("KBLab/bert-base-swedish-cased-ner", settings.HF_KB_HASH)]:
         modelDir = Path(settings.NER_BASE_DIR) / "checkpoints" / modelName.replace("/", "_")
-        if (modelDir / "version.txt").exists():
-            with (modelDir / "version.txt").open("r") as inFile:
+        versionFile = modelDir / "version.txt"
+        if versionFile.exists():
+            with versionFile.open("r") as inFile:
                 existingRevision = inFile.read()
                 if existingRevision == revision:
                     continue
 
         snapshot_download(repo_id=modelName, revision=revision, local_dir=modelDir)
-        with (settings.NER_BASE_DIR / "version.txt").open("w") as outFile:
+        with versionFile.open("w") as outFile:
             outFile.write(revision)
 
 

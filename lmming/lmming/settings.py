@@ -149,7 +149,7 @@ CELERY_RESULT_BACKEND = f"{REDIS_HOST}:{REDIS_PORT}"  # os.environ.get("REDIS", 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH"))  # BASE_DIR / "media"
 
-NER_BASE_DIR = BASE_DIR.parent / "ner_data"
+NER_BASE_DIR = MEDIA_ROOT / "ner_data"
 
 ARCHIVE_INST = env("ARCHIVE_INST", str).upper()
 if ARCHIVE_INST == "FAC":
