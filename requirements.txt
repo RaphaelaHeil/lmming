@@ -1,15 +1,15 @@
 amqp==5.2.0
 celery[redis]==5.4.0
-Django==5.0.4
+Django==5.1.1
 django-bootstrap5==24.2
 django-environ==0.11.2
-fontawesomefree==6.5.1
-huggingface-hub==0.23.0
-nltk==3.8.1
-numpy==1.26.4
-pandas==2.2.1
-pillow==10.3.0
-redis==5.0.4
+fontawesomefree==6.6.0
+huggingface-hub==0.24.6
+nltk==3.9.1
+numpy==2.1.1
+pandas==2.2.2
+pillow==10.4.0
+redis==5.0.8
 requests
 torch @ https://download.pytorch.org/whl/cpu/torch-2.3.1%2Bcpu-cp310-cp310-linux_x86_64.whl
 torchvision @ https://download.pytorch.org/whl/cpu/torchvision-0.18.1%2Bcpu-cp310-cp310-linux_x86_64.whl
