@@ -158,11 +158,12 @@ if ARCHIVE_INST == "FAC":
     MINTER_ORG_ID = env("MINTER_ORG_ID", str)
 elif ARCHIVE_INST == "ARAB":
     ARAB_RETRIES = env("ARAB_RETRIES", int, 3)
-    ARAB_HANDLE_IP = env("ARAB_HANDLE_IP", str)
+    ARAB_HANDLE_ADDRESS = env("ARAB_HANDLE_ADDRESS", str)
     ARAB_HANDLE_PORT = env("ARAB_HANDLE_PORT", int)
     ARAB_HANDLE_ADMIN = env("ARAB_HANDLE_ADMIN", str)
     ARAB_HANDLE_PREFIX = env("ARAB_HANDLE_PREFIX", str)
     ARAB_PRIVATE_KEY_FILE = env("ARAB_PRIVATE_KEY_FILE", str)
+    ARAB_CERT_FILE = env("ARAB_CERT_FILE", str)
 else:
     raise ValueError("Unknown Archival Institution")
 

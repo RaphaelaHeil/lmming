@@ -21,7 +21,6 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
                                          processingStepType=ProcessingStep.ProcessingStepType.ARAB_GENERATE.value
                                          ).first()
 
-    # TODO language, title, license, isFormatOf, accessRights, created, available, source
     report = Report.objects.get(job__pk=jobPk)
 
     report.title = createArabTitle(report.creator, report.date)
@@ -91,15 +90,15 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
 
     iiifBase = settings.IIIF_BASE_URL
-    handleServerIp = settings.ARAB_HANDLE_IP
+    handleServerIp = settings.ARAB_HANDLE_ADDRESS
     handleServerPort = settings.ARAB_HANDLE_PORT
     privateKeyFile = settings.ARAB_PRIVATE_KEY_FILE
     handleAdmin = settings.ARAB_HANDLE_ADMIN
     prefix = settings.ARAB_HANDLE_PREFIX
+    certFile = settings.ARAB_CERT_FILE
 
-    handleAdapter = HandleAdapter(ip=handleServerIp, port=handleServerPort, prefix=prefix, user=handleAdmin,
-                                  userKeyFile=privateKeyFile)
-
+    handleAdapter = HandleAdapter(address=handleServerIp, port=handleServerPort, prefix=prefix, user=handleAdmin,
+                                  userKeyFile=privateKeyFile, certificateFile=certFile)
     retries = 0
     while retries < settings.ARAB_RETRIES:
         try:

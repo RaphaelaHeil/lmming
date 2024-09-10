@@ -16,18 +16,33 @@ class FilemakerLookupTests(TestCase):
         for page in Page.objects.all():
             page.delete()
 
-    def test_Task(self):
-        initDefaultValues()
-        initDummyFilemaker()
-        jobId = initDummyTransfer(reportData={"unionId": "1"})
-        fileMakerLookup(jobId, False)
+    def test_TaskFac(self):
+        with self.settings(ARCHIVE_INST="FAC"):
+            initDefaultValues()
+            initDummyFilemaker()
+            jobId = initDummyTransfer(reportData={"unionId": "1"})
+            fileMakerLookup(jobId, False)
 
-        r = Report.objects.get(job=jobId)
+            r = Report.objects.get(job=jobId)
 
-        self.assertEqual("Test Orga", r.creator)
-        self.assertEqual(["http://nadLink.example.com"], r.relation)
-        self.assertEqual(["SE", "county", "municipality", "city", "parish"], r.spatial)
-        self.assertEqual("OTHER", r.coverage)
+            self.assertEqual("Test Orga", r.creator)
+            self.assertEqual(["http://nadLink.example.com"], r.relation)
+            self.assertEqual(["SE", "county", "municipality", "city", "parish"], r.spatial)
+            self.assertEqual("OTHER", r.coverage)
+
+    def test_TaskArab(self):
+        with self.settings(ARCHIVE_INST="ARAB"):
+            initDefaultValues()
+            initDummyFilemaker()
+            jobId = initDummyTransfer(reportData={"unionId": "1"})
+            fileMakerLookup(jobId, False)
+
+            r = Report.objects.get(job=jobId)
+
+            self.assertEqual("Test Orga", r.creator)
+            self.assertEqual(["http://nadLink.example.com"], r.relation)
+            self.assertEqual(["SE", "county", "municipality", "city", "parish"], r.spatial)
+            self.assertEqual("NATIONAL_BRANCH", r.coverage)
 
     def test_missingOrganisationName(self):
         initDefaultValues()

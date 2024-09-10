@@ -41,13 +41,15 @@ def getArabCoverage(coverage: str) -> Report.UnionLevel:
     else:
         return Report.UnionLevel.OTHER
 
+
 def splitIfNotNone(value: str) -> List[str]:
     if value:
         return [x.strip() for x in value.split(",")]
     else:
         return []
 
-def createArabTitle(unionName:str, dates: List[date]) -> str:
+
+def createArabTitle(unionName: str, dates: List[date]) -> str:
     if not unionName:
         raise TypeError("no union name was supplied")
 
@@ -120,26 +122,28 @@ class HandleError(Exception):
 
 class HandleAdapter(metaclass=Singleton):
 
-    def __init__(self, ip: str, port: int, prefix: str, user: str, userKeyFile: Path, userIndex: int = 300):
+    def __init__(self, address: str, port: int, prefix: str, user: str, userKeyFile: Path, certificateFile: Path,
+                 userIndex: int = 300):
         self.prefix = prefix
         self.user = user
         self.userIndex = userIndex
         self.userKeyFile = userKeyFile
+        self.certificateFile = certificateFile
         self.sessionId = ""
         self.serverNonce = ""
         self.serverNonceBytes = b""
 
-        if ip.startswith("https://"):
-            self.baseUrl = f"{ip}:{port}"
+        if address.startswith("https://"):
+            self.baseUrl = f"{address}:{port}"
         else:
-            self.baseUrl = f"https://{ip}:{port}"
+            self.baseUrl = f"https://{address}:{port}"
 
     def __isHandleSessionActive(self):
         if not self.sessionId or not self.serverNonce:
             return False
 
         try:
-            response = requests.get(url=f"{self.baseUrl}/api/sessions/this", verify=False,
+            response = requests.get(url=f"{self.baseUrl}/api/sessions/this", verify=self.certificateFile,
                                     headers={"Authorization": f'Handle sessionId="{self.sessionId}"'})
 
             if response.ok:
@@ -162,7 +166,8 @@ class HandleAdapter(metaclass=Singleton):
         url = f"{self.baseUrl}/api/sessions"
 
         try:
-            initialResponse = requests.post(url=url, headers={"Authorization": "Handle version=0"}, verify=False)
+            initialResponse = requests.post(url=url, headers={"Authorization": "Handle version=0"},
+                                            verify=self.certificateFile)
 
             content = initialResponse.json()
             sessionId = content["sessionId"]
@@ -177,7 +182,7 @@ class HandleAdapter(metaclass=Singleton):
                 "Authorization": authorizationHeaderString
             }
 
-            response = requests.post(url=url + "/this", headers=headers, verify=False)
+            response = requests.post(url=url + "/this", headers=headers, verify=self.certificateFile)
             if response.ok:
                 self.sessionId = sessionId
                 self.serverNonce = serverNonce
@@ -196,7 +201,7 @@ class HandleAdapter(metaclass=Singleton):
 
     def doesHandleAlreadyExist(self, noid) -> bool:
         try:
-            response = requests.get(url=f"{self.baseUrl}/api/handles/{self.prefix}/{noid}", verify=False, )
+            response = requests.get(url=f"{self.baseUrl}/api/handles/{self.prefix}/{noid}", verify=self.certificateFile)
             if response.ok:
                 return True
             else:
@@ -227,21 +232,20 @@ class HandleAdapter(metaclass=Singleton):
                                                                                              "index": 200,
                                                                                              "permissions": "011111110011"}}}]}
             response = requests.put(url=f"{self.baseUrl}/api/handles/{self.prefix}/{noid}", headers=headers,
-                                    verify=False,
-                                    data=json.dumps(handleRecord))
+                                    verify=self.certificateFile, data=json.dumps(handleRecord))
             if response.ok:
                 return f"{self.prefix}/{noid}"
             else:
-                raise HandleError(
-                    f"Could not create handle {self.prefix}/{noid} - please try again, and contact your admin if the issue persists.",
-                    f"Could not create handle {self.prefix}/{noid} - response: {response.status_code} - {response.content}")
+                raise HandleError(f"Could not create handle {self.prefix}/{noid} - please try again, and contact your "
+                                  f"admin if the issue persists.",
+                                  f"Could not create handle {self.prefix}/{noid} - response: {response.status_code} - "
+                                  f"{response.content}")
 
         except HandleError as exception:
             raise exception
         except (ConnectionError, Timeout, TooManyRedirects) as exception:
-            raise HandleError(
-                "Connectivitiy issues occurred. Please try again later, and contact your admin if the issue persists.",
-                f"{type(exception).__name__} - {exception}")
+            raise HandleError("Connectivitiy issues occurred. Please try again later, and contact your admin if the "
+                              "issue persists.", f"{type(exception).__name__} - {exception}")
         except Exception as exception:
             raise HandleError("An issue occcurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
