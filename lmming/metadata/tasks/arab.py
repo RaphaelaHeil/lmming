@@ -99,47 +99,59 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
 
     handleAdapter = HandleAdapter(address=handleServerIp, port=handleServerPort, prefix=prefix, user=handleAdmin,
                                   userKeyFile=privateKeyFile, certificateFile=certFile)
-    retries = 0
-    while retries < settings.ARAB_RETRIES:
-        try:
-            noid = "".join(secrets.choice(BETANUMERIC) for _ in range(15))
-            if handleAdapter.doesHandleAlreadyExist(noid):
-                retries += 1
-                continue
 
-            resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}")
-            handle = handleAdapter.createHandle(noid, resolveTo)
+    if not report.noid:
+        retries = 0
+        while retries < settings.ARAB_RETRIES:
+            try:
+                noid = "".join(secrets.choice(BETANUMERIC) for _ in range(15))
+                if handleAdapter.doesHandleAlreadyExist(noid):
+                    retries += 1
+                    continue
 
-            if handle:
-                report.noid = noid
-                report.identifier = urljoin("https://hdl.handle.net", handle)
-                report.save()
-                for page in report.page_set.all():
-                    page.iiifId = f"{report.noid}_{page.order}"
-                    page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
-                    page.save()
-                if step.humanValidation:
-                    step.status = Status.AWAITING_HUMAN_VALIDATION
-                    step.save()
-                else:
-                    step.status = Status.COMPLETE
-                    step.save()
-                if pipeline:
-                    resumePipeline(jobPk)
+                resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}")
+                handle = handleAdapter.createHandle(noid, resolveTo)
+
+                if handle:
+                    report.noid = noid
+                    report.identifier = urljoin("https://hdl.handle.net", handle)
+                    report.save()
+                    for page in report.page_set.all():
+                        page.iiifId = f"{report.noid}_{page.order}"
+                        page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
+                        page.save()
+                    if step.humanValidation:
+                        step.status = Status.AWAITING_HUMAN_VALIDATION
+                        step.save()
+                    else:
+                        step.status = Status.COMPLETE
+                        step.save()
+                    if pipeline:
+                        resumePipeline(jobPk)
+                    return
+            except HandleError as handleError:
+                step.log = handleError.userMessage
+                logger.warning(handleError.adminMessage)
+                step.status = Status.ERROR
+                step.save()
                 return
-        except HandleError as handleError:
-            step.log = handleError.userMessage
-            logger.warning(handleError.adminMessage)
-            step.status = Status.ERROR
-            step.save()
-            return
-        except Exception as e:
-            step.log = "An exception occurred. Please try again or contact your administrator if the issue persists."
-            logger.warning(f"{e.args}")
-            step.status = Status.ERROR
-            step.save()
-            return
+            except Exception as e:
+                step.log = "An exception occurred. Please try again or contact your administrator if the issue persists."
+                logger.warning(f"{e.args}")
+                step.status = Status.ERROR
+                step.save()
+                return
 
-    step.log = f"Could not generate unique handle. Made {retries} attempt(s)."
-    step.status = Status.ERROR
-    step.save()
+        step.log = f"Could not generate unique handle. Made {retries} attempt(s)."
+        step.status = Status.ERROR
+        step.save()
+    else:
+        if step.humanValidation:
+            step.status = Status.AWAITING_HUMAN_VALIDATION
+            step.save()
+        else:
+            step.status = Status.COMPLETE
+            step.save()
+        if pipeline:
+            resumePipeline(jobPk)
+        return
