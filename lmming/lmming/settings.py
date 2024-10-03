@@ -175,7 +175,8 @@ ER_COUNTY = env("ER_COUNTY", str, "Distrikt län")
 ER_MUNICIPALITY = env("ER_MUNICIPALITY", str, "Kommun")
 ER_CITY = env("ER_CITY", str, "Ort")
 ER_PARISH = env("ER_PARISH", str, "Socken")
-ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK", str, "NAD_LINK")
+ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK", str, "NAD_LINK") # legacy name, corresponds to "relation" metadata field
+ER_IS_VERSION_OF_LINK = env("ER_IS_VERSION_OF_LINK", str, "ATOM_LINK")
 
 if ARCHIVE_INST == "ARAB":
     ER_COVERAGE = env("ER_COVERAGE", str)

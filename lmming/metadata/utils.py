@@ -20,7 +20,7 @@ __REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
 __DUMMY_DIR__ = Path(__file__).parent.resolve() / "dummy_content"
 
 
-def __parseDateString(dateString:str)-> datetime:
+def __parseDateString(dateString: str) -> datetime:
     if len(dateString) == 4:
         return datetime(int(dateString), 1, 1)
     else:
@@ -29,6 +29,7 @@ def __parseDateString(dateString:str)-> datetime:
         month = int(s[1]) if s[1].isnumeric() else 1
         day = int(s[2]) if s[2].isnumeric() else 1
         return datetime(int(year), month, day)
+
 
 def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[datetime]]]:
     """
@@ -367,7 +368,7 @@ def updateExternalRecords(df: pd.DataFrame):
         raise ValueError(f"No column with name '{settings.ER_ORGANISATION_NAME}' found in CSV.")
 
     for key in [settings.ER_COUNTY, settings.ER_MUNICIPALITY, settings.ER_CITY, settings.ER_PARISH,
-                settings.ER_CATALOGUE_LINK]:
+                settings.ER_CATALOGUE_LINK, settings.ER_IS_VERSION_OF_LINK]:
         if key not in cols:
             df[key] = ""
 
@@ -380,11 +381,12 @@ def updateExternalRecords(df: pd.DataFrame):
                                                        municipality=row[settings.ER_MUNICIPALITY],
                                                        city=row[settings.ER_CITY], parish=row[settings.ER_PARISH],
                                                        catalogueLink=row[settings.ER_CATALOGUE_LINK],
+                                                       isVersionOfLink=row[settings.ER_IS_VERSION_OF_LINK],
                                                        coverage=row[settings.ER_COVERAGE]) for _, row in df.iterrows()
                                         if row[settings.ER_ARCHIVE_ID] and row[settings.ER_ORGANISATION_NAME]],
                                        update_conflicts=True, unique_fields=["archiveId"],
                                        update_fields=["organisationName", "county", "municipality", "city",
-                                                      "catalogueLink", "coverage"],
+                                                      "catalogueLink", "isVersionOfLink", "coverage"],
                                        )
 
 

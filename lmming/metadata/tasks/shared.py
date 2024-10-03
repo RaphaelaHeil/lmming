@@ -52,6 +52,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
 
         if settings.ARCHIVE_INST == "FAC":
             report.coverage = getFacCoverage(filemaker.organisationName)
+            report.isVersionOf = filemaker.isVersionOfLink
         else:
             report.coverage = Report.UnionLevel.NATIONAL_BRANCH  # getArabCoverage(filemaker.coverage)
         report.relation = [filemaker.catalogueLink if filemaker.catalogueLink else ""]
