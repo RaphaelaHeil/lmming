@@ -1,3 +1,4 @@
+import datetime
 import logging
 import secrets
 from urllib.parse import urljoin
@@ -54,15 +55,10 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
         step.save()
         return
 
-    accessRights = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
-    if accessRights and accessRights.value:
-        report.accessRights = accessRights.value
+    if report.available > datetime.date.today():
+        report.accessRights = Report.AccessRights.RESTRICTED
     else:
-        step.log = "No value was specified for 'accessRights'. Please update the system settings."
-        step.status = Status.ERROR
-        step.save()
-        return
+        report.accessRights = Report.AccessRights.NOT_RESTRICTED
 
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
     if source and source.value:

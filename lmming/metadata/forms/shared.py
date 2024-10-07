@@ -88,9 +88,6 @@ class SettingsForm(Form):
     source = CharField(label="Default Source(s) (comma-separated) [required]", required=True,
                        widget=TextInput(attrs={'class': 'form-control'}))
 
-    accessRights = ChoiceField(label="Default accessRights value [required]", choices=Report.AccessRights,
-                               required=True, widget=Select(attrs={"class": "form-select"}))
-
     avilableYearOffset = IntegerField(label="Default number of years after publication [required]", required=True,
                                       min_value=0, step_size=1)
 

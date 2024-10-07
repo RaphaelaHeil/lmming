@@ -1,5 +1,4 @@
 from copy import deepcopy
-from datetime import date
 
 import pandas as pd
 from django.conf import settings
@@ -103,14 +102,11 @@ def settingsModal(request):
     language = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LANGUAGE).first()
     license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
-    accessRights = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS).first()
     avilableYearOffset = DefaultNumberSettings.objects.filter(
         pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
     initial = {"language": language.value if language else "",
                "license": license.value if license else "",
                "source": source.value if source else "",
-               "accessRights": accessRights.value if accessRights else "",
                "avilableYearOffset": avilableYearOffset.value if avilableYearOffset else 0
                }
     if request.method == 'POST':
@@ -142,14 +138,6 @@ def settingsModal(request):
                         DefaultValueSettings.objects.create(
                             pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE,
                             value=settingsForm.cleaned_data["source"])
-                if "accessRights" in settingsForm.changed_data:
-                    if accessRights:
-                        accessRights.value = settingsForm.cleaned_data["accessRights"]
-                        accessRights.save()
-                    else:
-                        DefaultValueSettings.objects.create(
-                            pk=DefaultValueSettings.DefaultValueSettingsType.DC_ACCESS_RIGHTS,
-                            value=settingsForm.cleaned_data["accessRights"])
                 if "avilableYearOffset" in settingsForm.changed_data:
                     if avilableYearOffset:
                         avilableYearOffset.value = settingsForm.cleaned_data["avilableYearOffset"]
