@@ -53,7 +53,9 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False},
                                 {"label": ProcessingStep.ProcessingStepType.ARAB_GENERATE,
-                                 "tooltip": "",  # TODO: add tooltip!
+                                 "tooltip": "Fills in the fields 'title', 'created', 'available', 'accessRights', "
+                                            "'language', 'license', 'source', and 'isFormatOf' based on information, "
+                                            "collected in the previous steps.",
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False},
                                 {"label": ProcessingStep.ProcessingStepType.ARAB_MANUAL,
@@ -65,7 +67,7 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False},
                                 {"label": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE,
-                                 "tooltip": "",  # TODO: add tooltip!
+                                 "tooltip": "Creates and registers a new handle for each report.",
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False}
                                 ]
