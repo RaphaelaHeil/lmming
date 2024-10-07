@@ -43,24 +43,26 @@ def jobDetails(request, job_id):
 
 def downloadTransfer(_request, transfer_id: int, filetype: str):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
+    forArab = settings.ARCHIVE_INST == "ARAB"
+
     if filetype == "csv":
-        outFile = buildTransferCsvs(transfer)
+        outFile = buildTransferCsvs(transfer, forArab=forArab)
         return FileResponse(outFile, as_attachment=True,
                             filename=f"Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     elif filetype == "csv_restricted":
-        outFile = buildTransferCsvs(transfer, checkRestriction=True)
+        outFile = buildTransferCsvs(transfer, checkRestriction=True, forArab=forArab)
         return FileResponse(outFile, as_attachment=True,
                             filename=f"restricted_Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     elif filetype == "struct_map":
         outFile = buildStructMap(transfer)
         return FileResponse(BytesIO(outFile.encode()), as_attachment=True, filename="mets_structmap.xml")
     elif filetype == "zip_restricted":
-        outFile = buildFolderStructure(transfer, checkRestriction=True)
+        outFile = buildFolderStructure(transfer, checkRestriction=True, forArab=forArab)
         folderName = transfer.name.replace(" ", "_")
         return FileResponse(outFile, as_attachment=True,
                             filename=f"restricted_{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
     elif filetype == "zip":
-        outFile = buildFolderStructure(transfer)
+        outFile = buildFolderStructure(transfer, forArab=forArab)
         folderName = transfer.name.replace(" ", "_")
         return FileResponse(outFile, as_attachment=True,
                             filename=f"{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")

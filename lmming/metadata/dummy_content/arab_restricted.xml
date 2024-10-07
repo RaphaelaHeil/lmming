@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<alto xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.loc.gov/standards/alto/ns-v4#"
+      xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v4# http://www.loc.gov/standards/alto/v4/alto-4-2.xsd">
+  <Description>
+    <MeasurementUnit>pixel</MeasurementUnit>
+    <sourceImageInformation>
+      <fileName>arab_restricted.jpg</fileName>
+    </sourceImageInformation>
+  </Description>
+  <Tags>
+    <OtherTag ID="BT1" LABEL="Title" DESCRIPTION="block type Title"/><OtherTag ID="BT2" LABEL="Main" DESCRIPTION="block type Main"/><OtherTag ID="BT3" LABEL="Commentary" DESCRIPTION="block type Commentary"/><OtherTag ID="BT4" LABEL="Illustration" DESCRIPTION="block type Illustration"/><OtherTag ID="BT11" LABEL="text" DESCRIPTION="block type text"/>
+    <OtherTag ID="LT12" LABEL="default" DESCRIPTION="line type default"/>
+  </Tags>
+  <Layout>
+    <Page WIDTH="794"
+          HEIGHT="1123"
+          PHYSICAL_IMG_NR="0"
+          ID="eSc_dummypage_">
+      <PrintSpace HPOS="0"
+                  VPOS="0"
+                  WIDTH="794"
+                  HEIGHT="1123">
+        <TextBlock ID="eSc_dummyblock_">
+          <TextLine ID="eSc_line_2f5587db"
+                    BASELINE="130 333 674 333" 
+                    HPOS="129"
+                    VPOS="271"
+                    WIDTH="544"
+                    HEIGHT="67">
+            <Shape><Polygon POINTS="129 332 129 335 672 338 673 332 672 278 584 280 574 278 553 272 552 272 551 272 550 272 549 272 540 278 537 280 525 278 486 271 485 271 485 271 470 278 469 279 466 278 455 273 455 273 454 273 453 273 452 273 445 278 443 280 385 280 377 278 347 271 346 271 240 271 239 271 238 271 237 271 237 272 230 278 228 280 129 279 129 332"/></Shape>
+	    <String CONTENT="THE CONTENTS OF THIS REPORT"
+                    HPOS="129"
+                    VPOS="271"
+                    WIDTH="544"
+                    HEIGHT="67"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_dfdd4828"
+                    BASELINE="127 381 655 381" 
+                    HPOS="126"
+                    VPOS="333"
+                    WIDTH="528"
+                    HEIGHT="72">
+            <Shape><Polygon POINTS="524 333 485 333 471 339 465 334 460 334 448 341 439 333 347 338 327 333 296 344 220 344 202 335 176 343 164 335 126 335 126 398 186 404 249 397 326 397 339 404 444 397 455 405 485 405 499 397 653 398 654 344 579 335 569 340 560 335 532 340 524 333"/></Shape>
+	    <String CONTENT="ARE NOT PUBLICLY AVAILABLE."
+                    HPOS="126"
+                    VPOS="333"
+                    WIDTH="528"
+                    HEIGHT="72"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_7c0da87e"
+                    BASELINE="126 511 343 510" 
+                    HPOS="124"
+                    VPOS="468"
+                    WIDTH="218"
+                    HEIGHT="46">
+            <Shape><Polygon POINTS="125 510 125 514 341 513 342 509 340 469 124 468 125 510"/></Shape>
+	    <String CONTENT="PLEASE CONTACT"
+                    HPOS="124"
+                    VPOS="468"
+                    WIDTH="218"
+                    HEIGHT="46"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_1bc9755e"
+                    BASELINE="125 558 672 559" 
+                    HPOS="123"
+                    VPOS="511"
+                    WIDTH="547"
+                    HEIGHT="59">
+            <Shape><Polygon POINTS="124 557 123 568 175 569 194 563 204 570 231 570 240 562 258 569 282 562 303 569 334 564 347 570 439 570 449 563 468 569 496 562 669 563 670 520 618 520 609 511 547 511 536 520 509 520 500 511 479 520 435 520 407 511 367 520 295 520 279 511 223 511 197 519 172 511 155 519 131 511 124 514 124 557"/></Shape>
+	    <String CONTENT="ARBETARRÖRELSENS ARKIV OCH BIBLIOTEK"
+                    HPOS="123"
+                    VPOS="511"
+                    WIDTH="547"
+                    HEIGHT="59"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_ec69d79c"
+                    BASELINE="125 605 445 608" 
+                    HPOS="123"
+                    VPOS="560"
+                    WIDTH="321"
+                    HEIGHT="60">
+            <Shape><Polygon POINTS="124 604 123 610 142 611 149 618 149 619 150 619 151 619 152 619 204 613 233 620 234 620 334 614 359 613 395 613 398 616 404 620 405 620 406 620 407 620 443 616 444 607 443 569 405 562 373 562 372 562 371 562 370 562 364 568 363 568 358 567 323 561 322 561 277 565 247 568 208 567 205 564 202 560 201 560 200 560 199 560 198 560 190 563 178 567 124 562 124 604"/></Shape>
+	    <String CONTENT="FOR MORE INFORMATION."
+                    HPOS="123"
+                    VPOS="560"
+                    WIDTH="321"
+                    HEIGHT="60"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_f1c1bc18"
+                    BASELINE="128 720 358 721" 
+                    HPOS="126"
+                    VPOS="673"
+                    WIDTH="231"
+                    HEIGHT="49">
+            <Shape><Polygon POINTS="126 722 356 722 357 720 356 682 254 682 250 679 242 673 241 673 240 673 188 673 187 673 186 673 174 678 164 682 132 682 130 677 127 719 126 722"/></Shape>
+	    <String CONTENT="INFO@ARBARK.SE"
+                    HPOS="126"
+                    VPOS="673"
+                    WIDTH="231"
+                    HEIGHT="49"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_0b405dd3"
+                    BASELINE="130 769 479 771" 
+                    HPOS="128"
+                    VPOS="721"
+                    WIDTH="349"
+                    HEIGHT="60">
+            <Shape><Polygon POINTS="129 768 128 777 167 772 202 772 209 779 214 779 229 772 308 772 353 780 361 772 419 772 429 781 477 781 477 722 444 729 415 724 377 729 363 722 347 729 314 729 306 721 272 728 259 721 235 729 206 729 195 721 129 727 129 768"/></Shape>
+	    <String CONTENT="WWW.ARBARK.SE/KONTAKT"
+                    HPOS="128"
+                    VPOS="721"
+                    WIDTH="349"
+                    HEIGHT="60"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_47d357e8"
+                    BASELINE="304 929 322 894 449 880 489 930 489 931" 
+                    HPOS="289"
+                    VPOS="842"
+                    WIDTH="199"
+                    HEIGHT="89">
+            <Shape><Polygon POINTS="468 867 461 864 412 842 411 842 368 842 367 842 366 842 343 859 303 866 289 930 302 931 325 931 325 930 326 930 327 930 371 891 426 891 466 929 466 930 467 930 468 930 469 931 487 931 488 930 488 929 488 864"/></Shape>
+	    <String CONTENT="ARBETARRÖRELSENS"
+                    HPOS="289"
+                    VPOS="842"
+                    WIDTH="199"
+                    HEIGHT="89"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_4618bf13"
+                    BASELINE="290 971 297 999 321 1044 368 1056 493 994 505 963" 
+                    HPOS="289"
+                    VPOS="950"
+                    WIDTH="225"
+                    HEIGHT="118">
+            <Shape><Polygon POINTS="471 957 470 957 470 958 438 1007 387 1022 333 995 332 995 331 995 330 995 307 961 289 970 311 1054 333 1049 384 1068 385 1068 386 1068 414 1062 415 1062 465 1037 466 1037 466 1036 467 1036 492 1005 493 1004 514 998 504 962 493 950"/></Shape>
+	    <String CONTENT="ARKIV OCH BIBLIOTEK"
+                    HPOS="289"
+                    VPOS="950"
+                    WIDTH="225"
+                    HEIGHT="118"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_9c7a230a"
+                    BASELINE="293 1082 502 1082" 
+                    HPOS="292"
+                    VPOS="1056"
+                    WIDTH="209"
+                    HEIGHT="30">
+            <Shape><Polygon POINTS="292 1081 292 1086 501 1084 501 1081 501 1062 292 1056 292 1081"/></Shape>
+	    <String CONTENT="Swedish Labour Movement&#x27;s"
+                    HPOS="292"
+                    VPOS="1056"
+                    WIDTH="209"
+                    HEIGHT="30"></String>
+          </TextLine>
+          <TextLine ID="eSc_line_136e60d6"
+                    BASELINE="321 1103 471 1103" 
+                    HPOS="320"
+                    VPOS="1082"
+                    WIDTH="150"
+                    HEIGHT="30">
+            <Shape><Polygon POINTS="470 1082 460 1082 451 1082 441 1082 432 1082 423 1082 413 1082 404 1082 395 1082 385 1082 376 1082 367 1082 357 1082 348 1082 338 1082 329 1082 320 1082 320 1102 320 1112 367 1106 470 1109 470 1102 470 1082 470 1082"/></Shape>
+	    <String CONTENT="Archives and Library"
+                    HPOS="320"
+                    VPOS="1082"
+                    WIDTH="150"
+                    HEIGHT="30"></String>
+          </TextLine>
+        </TextBlock>
+      </PrintSpace>
+    </Page>
+  </Layout>
+</alto>
