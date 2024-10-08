@@ -22,8 +22,6 @@ class ArabGenerateForm(Form):
 
 
 class ArabManualForm(Form):
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM) [required]", required=True, max_length=200,
-                           widget=TextInput(attrs={'class': 'form-control'}))
     reportType = MultipleChoiceField(label="Report Type [required]", choices=Report.DocumentType, required=True,
                                      widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
     description = CharField(label="Report description [optional]", required=False,

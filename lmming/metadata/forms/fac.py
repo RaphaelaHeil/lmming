@@ -22,8 +22,6 @@ class ComputeForm(Form):
 
 
 class FacManualForm(Form):
-    isVersionOf = URLField(label="Link to archival record (e.g. AtoM) [required]", required=True, max_length=200,
-                           widget=TextInput(attrs={'class': 'form-control'}))
     isFormatOf = MultipleChoiceField(label="Format [required]", choices=Report.DocumentFormat, required=True,
                                      widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
 

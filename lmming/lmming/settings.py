@@ -9,6 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
+import logging
 import os
 from pathlib import Path
 
@@ -175,7 +176,19 @@ ER_COUNTY = env("ER_COUNTY", str, "Distrikt län")
 ER_MUNICIPALITY = env("ER_MUNICIPALITY", str, "Kommun")
 ER_CITY = env("ER_CITY", str, "Ort")
 ER_PARISH = env("ER_PARISH", str, "Socken")
-ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK", str, "NAD_LINK")
+
+ER_RELATION_LINK = env("ER_RELATION_LINK", str, "UNSET")
+ER_CATALOGUE_LINK = env("ER_CATALOGUE_LINK", str, "UNSET")  # legacy name, corresponds to "relation" metadata field
+if ER_CATALOGUE_LINK != "UNSET":
+    logging.getLogger("django.server").warning(
+        "Environment variable 'ER_CATALOGUE_LINK' has been deprecated, please use 'ER_RELATION_LINK' instead")
+    if ER_RELATION_LINK == "UNSET":
+        ER_RELATION_LINK = ER_CATALOGUE_LINK
+
+if ER_RELATION_LINK == "UNSET":
+    ER_RELATION_LINK = "NAD_LINK"
+
+ER_IS_VERSION_OF_LINK = env("ER_IS_VERSION_OF_LINK", str, "ATOM_LINK")
 
 if ARCHIVE_INST == "ARAB":
     ER_COVERAGE = env("ER_COVERAGE", str)

@@ -315,5 +315,6 @@ class ExternalRecord(Model):
     municipality = CharField(blank=True, default="")
     city = CharField(blank=True, default="")
     parish = CharField(blank=True, default="")
-    catalogueLink = URLField(blank=True, default="")
+    relationLink = URLField(blank=True, default="")
     coverage = CharField(blank=True, default="")
+    isVersionOfLink = URLField(blank=True, default="")

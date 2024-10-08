@@ -386,7 +386,7 @@ def updateExternalRecords(df: pd.DataFrame):
         raise ValueError(f"No column with name '{settings.ER_ORGANISATION_NAME}' found in CSV.")
 
     for key in [settings.ER_COUNTY, settings.ER_MUNICIPALITY, settings.ER_CITY, settings.ER_PARISH,
-                settings.ER_CATALOGUE_LINK]:
+                settings.ER_CATALOGUE_LINK, settings.ER_IS_VERSION_OF_LINK]:
         if key not in cols:
             df[key] = ""
 
@@ -398,12 +398,14 @@ def updateExternalRecords(df: pd.DataFrame):
                                                        county=row[settings.ER_COUNTY],
                                                        municipality=row[settings.ER_MUNICIPALITY],
                                                        city=row[settings.ER_CITY], parish=row[settings.ER_PARISH],
-                                                       catalogueLink=row[settings.ER_CATALOGUE_LINK],
-                                                       coverage=row[settings.ER_COVERAGE]) for _, row in df.iterrows()
+                                                       relationLink=row[settings.ER_CATALOGUE_LINK],
+                                                       coverage=row[settings.ER_COVERAGE],
+                                                       isVersionOfLink=row[settings.ER_IS_VERSION_OF_LINK]) for _, row
+                                        in df.iterrows()
                                         if row[settings.ER_ARCHIVE_ID] and row[settings.ER_ORGANISATION_NAME]],
                                        update_conflicts=True, unique_fields=["archiveId"],
                                        update_fields=["organisationName", "county", "municipality", "city",
-                                                      "catalogueLink", "coverage"],
+                                                      "relationLink", "coverage", "isVersionOfLink"],
                                        )
 
 

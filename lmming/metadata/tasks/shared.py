@@ -49,15 +49,17 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
             return
 
         report.creator = filemaker.organisationName
-
-        if settings.ARCHIVE_INST == "FAC":
-            report.coverage = getFacCoverage(filemaker.organisationName)
-        else:
-            report.coverage = Report.UnionLevel.NATIONAL_BRANCH  # getArabCoverage(filemaker.coverage)
-        report.relation = [filemaker.catalogueLink if filemaker.catalogueLink else ""]
+        report.relation = [filemaker.relationLink if filemaker.relationLink else ""]
         report.spatial = ["SE"] + [x for x in
                                    [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
                                    if x]
+
+        if settings.ARCHIVE_INST == "FAC":
+            report.coverage = getFacCoverage(filemaker.organisationName)
+            report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://forskarsal.e-arkivportalen.se/"
+        else:
+            report.coverage = Report.UnionLevel.NATIONAL_BRANCH
+            report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://www.arbark.se/"
 
     report.save()
 

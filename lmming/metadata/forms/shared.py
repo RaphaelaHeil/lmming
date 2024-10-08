@@ -1,5 +1,5 @@
 from django.forms import ClearableFileInput, FileField, Form, CharField, TextInput, ChoiceField, Select, BooleanField, \
-    CheckboxInput, Textarea, IntegerField
+    CheckboxInput, Textarea, IntegerField, URLField
 
 from metadata.models import ProcessingStep, Report
 
@@ -48,12 +48,16 @@ class ZipForm(Form):
 
 
 class FilemakerForm(Form):
-    creator = CharField(label="Creator Name", required=True, widget=TextInput(attrs={'class': 'form-control'}))
+    creator = CharField(label="Creator Name [required]", required=True,
+                        widget=TextInput(attrs={'class': 'form-control'}))
     relation = CharField(label="Relation (comma-separated)", required=False,
                          widget=TextInput(attrs={'class': 'form-control'}))
-    coverage = ChoiceField(choices=Report.UnionLevel, required=True, widget=Select(attrs={"class": "form-select"}))
-    spatial = CharField(label="Spatial (comma-separated)", required=True,
+    coverage = ChoiceField(label="Coverage [required]", choices=Report.UnionLevel, required=True,
+                           widget=Select(attrs={"class": "form-select"}))
+    spatial = CharField(label="Spatial (comma-separated) [required]", required=True,
                         widget=TextInput(attrs={'class': 'form-control'}))
+    isVersionOf = URLField(label="Link to archival record (e.g. AtoM) [required]", required=True, max_length=200,
+                           widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class PageForm(Form):

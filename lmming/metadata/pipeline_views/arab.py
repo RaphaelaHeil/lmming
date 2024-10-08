@@ -14,8 +14,8 @@ def arabFilename(request, job):
     # add a check that the user is allowed to see/modify this view? otherwise return general job view?
     if request.method == "POST":
         filenameForm = ArabFileNameForm(request.POST, initial={"organisationID": job.report.unionId,
-                                                           "type": job.report.type,
-                                                           "date": job.report.get_date_display()})
+                                                               "type": job.report.type,
+                                                               "date": job.report.get_date_display()})
         if filenameForm.is_valid():
             if filenameForm.has_changed():
                 if "organisationID" in filenameForm.changed_data:
@@ -37,10 +37,8 @@ def arabFilename(request, job):
             return {"form": filenameForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FILENAME.label}
     else:
         filenameForm = ArabFileNameForm(initial={"organisationID": job.report.unionId, "type": job.report.type,
-                                             "date": job.report.get_date_display()})
+                                                 "date": job.report.get_date_display()})
         return {"form": filenameForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FILENAME.label}
-
-
 
 
 def arabGenerate(request, job):
@@ -82,17 +80,14 @@ def arabGenerate(request, job):
         return {"form": computeForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_GENERATE.label}
 
 
-
 def arabManual(request, job):
-    initial = {"description": job.report.description, "isVersionOf": job.report.isVersionOf, "reportType":job.report.type}
+    initial = {"description": job.report.description, "reportType": job.report.type}
     if request.method == "POST":
         imageForm = ArabManualForm(request.POST, initial=initial)
         if imageForm.is_valid():
             if imageForm.has_changed():
                 if "description" in imageForm.changed_data:
                     job.report.description = imageForm.cleaned_data["description"]
-                if "isVersionOf" in imageForm.changed_data:
-                    job.report.isVersionOf = imageForm.cleaned_data["isVersionOf"]
                 if "reportType" in imageForm.changed_data:
                     job.report.type = imageForm.cleaned_data["reportType"]
                 job.report.save()

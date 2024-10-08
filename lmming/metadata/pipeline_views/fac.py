@@ -40,15 +40,13 @@ def facFilename(request, job):
 
 
 def facManual(request, job):
-    initial = {"isFormatOf": job.report.isFormatOf, "isVersionOf": job.report.isVersionOf}
+    initial = {"isFormatOf": job.report.isFormatOf}
     if request.method == "POST":
         imageForm = FacManualForm(request.POST, initial=initial)
         if imageForm.is_valid():
             if imageForm.has_changed():
                 if "isFormatOf" in imageForm.changed_data:
                     job.report.isFormatOf = imageForm.cleaned_data["isFormatOf"]
-                if "isVersionOf" in imageForm.changed_data:
-                    job.report.isVersionOf = imageForm.cleaned_data["isVersionOf"]
                 job.report.save()
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()

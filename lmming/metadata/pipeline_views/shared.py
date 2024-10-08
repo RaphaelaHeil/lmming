@@ -12,7 +12,8 @@ from metadata.tasks.manage import scheduleTask
 
 def filemaker(request, job):
     initial = {"creator": job.report.creator, "relation": job.report.get_relation_display(),
-               "coverage": job.report.coverage, "spatial": job.report.get_spatial_display()}
+               "coverage": job.report.coverage, "spatial": job.report.get_spatial_display(),
+               "isVersionOf": job.report.isVersionOf}
     if request.method == "POST":
         filemakerForm = FilemakerForm(request.POST, initial=initial)
         if filemakerForm.is_valid():
@@ -21,6 +22,8 @@ def filemaker(request, job):
                     job.report.creator = filemakerForm.cleaned_data["creator"]
                 if "relation" in filemakerForm.changed_data:
                     job.report.relation = __fromDisplayList__(filemakerForm.cleaned_data["relation"])
+                if "isVersionOf" in filemakerForm.changed_data:
+                    job.report.relation = __fromDisplayList__(filemakerForm.cleaned_data["isVersionOf"])
                 if "coverage" in filemakerForm.changed_data:
                     job.report.coverage = filemakerForm.cleaned_data["coverage"]
                 if "spatial" in filemakerForm.changed_data:
