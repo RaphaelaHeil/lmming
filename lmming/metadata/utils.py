@@ -1,6 +1,6 @@
 import re
 import zipfile
-from datetime import datetime, date
+from datetime import datetime
 from functools import partial
 from io import BytesIO
 from pathlib import Path
@@ -135,8 +135,8 @@ def __toCSList__(ll: List[Any]) -> str:
         return ""
 
 
-def __isRestricted__(availableDate) -> bool:
-    return availableDate > date.today()
+def __isRestricted__(report: Report) -> bool:
+    return report.accessRights == Report.AccessRights.RESTRICTED
 
 
 def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False) -> \
@@ -164,7 +164,7 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
                               "dcterms:source": __toOmekaList__(report.source),
                               "dcterms:description": report.description})
 
-        if checkRestriction and __isRestricted__(report.available):
+        if checkRestriction and __isRestricted__(report):
             transcription = ("FOLKRÖRELSEARKVET FÖR UPPSALA LÄN The contents of this report are "
                              "not publicly available. Please contact Folkrörelsearkivet för "
                              "Uppsala Län for more information. Email: info@fauppsala.se "
@@ -224,7 +224,7 @@ def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False)
     for report in transfer.report_set.all():
         reportNode = SubElement(outerDiv, f("div"), TYPE="report", LABEL=report.title, ID=str(report.noid))
 
-        if checkRestriction and __isRestricted__(report.available):
+        if checkRestriction and __isRestricted__(report):
             filename = f"page_not_available_{report.noid}"
             pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER="1", LABEL=filename, ID=f"{report.noid}_1")
             SubElement(pageNode, f("fptr"), FILEID=f"{filename}.jpg", CONTENTIDS=f"objects/{filename}.jpg")
@@ -260,7 +260,7 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
     records = []
 
     for report in transfer.report_set.all():
-        if checkRestriction and __isRestricted__(report.available):
+        if checkRestriction and __isRestricted__(report):
             row = {"dc.identifier": report.noid,
                    "dc.type": __toCSList__([Report.DocumentType[x].label for x in report.type]),
                    "dc.date": "/".join([str(d.year) for d in report.date]),
@@ -339,7 +339,7 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
             zf.writestr(zif, "")
 
         for report in transfer.report_set.all():
-            if checkRestriction and __isRestricted__(report.available):
+            if checkRestriction and __isRestricted__(report):
                 page_name = f"page_not_available_{report.noid}"
                 zf.write(__DUMMY_DIR__ / f"{dummyFileName}.jpg", f"manualNormalization/access/{page_name}.jpg")
                 zf.write(__DUMMY_DIR__ / f"{dummyFileName}.jpg", f"{page_name}.jpg")
@@ -361,7 +361,7 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
 
         filenames.sort(key=lambda x: (x[-3:], x[:-4]))
 
-        zf.writestr("normalization.csv", buildNormalizationCsv(filenames, withPreservation=(not forArab)))
+        # zf.writestr("normalization.csv", buildNormalizationCsv(filenames, withPreservation=(not forArab)))
 
         zf.writestr("metadata/metadata.csv", buildMetadataCsv(transfer, checkRestriction))
         zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer, checkRestriction))
