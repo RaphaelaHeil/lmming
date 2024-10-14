@@ -28,7 +28,7 @@ class FacManualForm(Form):
 
 class MintForm(Form):
     # TODO: does this also update the pages? probably not ...
-    identifier = URLField(label="IIIF URL [required]", required=True, max_length=200,
+    identifier = URLField(label="ARK identifier URL [required]", required=True, max_length=200,
                           widget=TextInput(attrs={'class': 'form-control'}))
 
 

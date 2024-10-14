@@ -1,5 +1,7 @@
 import datetime
+from urllib.parse import urljoin
 
+from django.conf import settings
 from django.db import transaction
 
 from metadata.forms.fac import FacManualForm, MintForm, FacFileNameForm
@@ -68,8 +70,19 @@ def mint(request, job):
         if mintForm.is_valid():
             if mintForm.has_changed():
                 if "identifier" in mintForm.changed_data:
-                    job.report.identifier = mintForm.cleaned_data["identifier"]
-                # TDOD: fix this field! (noid vs identifier, etc)
+                    identifier = mintForm.cleaned_data["identifier"]
+                    identifier = identifier.replace("/manifest", "")
+                    identifier = identifier.strip("/")
+
+                    job.report.identifier = identifier
+                    job.report.noid = identifier.split("/")[-1]
+                    job.report.save()
+
+                    for page in job.report.page_set.all():
+                        page.iiifId = f"{job.report.noid}_{page.order}"
+                        page.identifier = urljoin(settings.IIIF_BASE_URL, f"iiif/image/{page.iiifId}/info.json")
+                        page.save()
+
                 job.report.save()
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
