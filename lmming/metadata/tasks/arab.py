@@ -110,7 +110,7 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
 
                 if handle:
                     report.noid = noid
-                    report.identifier = urljoin("https://hdl.handle.net", handle)
+                    report.identifier = f"https://hdl.handle.net/{handle}?urlappend=/manifest"
                     report.save()
                     for page in report.page_set.all():
                         page.iiifId = f"{report.noid}_{page.order}"
