@@ -1,6 +1,8 @@
 import datetime
 from datetime import date
+from urllib.parse import urljoin
 
+from django.conf import settings
 from django.db import transaction
 
 from metadata.forms.arab import ArabGenerateForm, ArabManualForm, ArabMintForm, ArabFileNameForm
@@ -112,8 +114,14 @@ def arabMint(request, job):
             if mintForm.has_changed():
                 if "identifier" in mintForm.changed_data:
                     job.report.identifier = mintForm.cleaned_data["identifier"]
-                # TDOD: fix this field! (noid vs identifier, etc)
-                job.report.save()
+                    job.report.noid = None
+                    job.report.save()
+
+                    for page in job.report.page_set.all():
+                        page.iiifId = f"{job.report.noid}_{page.order}"
+                        page.identifier = urljoin(settings.IIIF_BASE_URL, f"iiif/image/{page.iiifId}/info.json")
+                        page.save()
+
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value).first()
             step.status = Status.COMPLETE
