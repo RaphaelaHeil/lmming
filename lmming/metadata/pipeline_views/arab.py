@@ -114,7 +114,7 @@ def arabMint(request, job):
             if mintForm.has_changed():
                 if "identifier" in mintForm.changed_data:
                     job.report.identifier = mintForm.cleaned_data["identifier"]
-                    job.report.noid = None
+                    job.report.noid = job.report.identifier.split("/")[-1]
                     job.report.save()
 
                     for page in job.report.page_set.all():
