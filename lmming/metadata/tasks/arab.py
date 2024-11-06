@@ -7,7 +7,9 @@ from celery import shared_task
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 
-from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings
+from metadata.i18n import SWEDISH
+from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings, \
+    ReportTranslation
 from metadata.tasks.utils import resumePipeline, HandleAdapter, HandleError
 from metadata.tasks.utils import splitIfNotNone, createArabTitle
 
@@ -151,3 +153,33 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
         if pipeline:
             resumePipeline(jobPk)
         return
+
+
+@shared_task()
+def translateToSwedish(jobPk: int, pipeline: bool = True):
+    report = Report.objects.get(job__pk=jobPk)
+
+    translation = ReportTranslation.objects.filter(report=report, language="sv")
+    if not translation:
+        translation = ReportTranslation(report=report, language="sv")
+    else:
+        translation = translation.first()
+
+    translation.coverage = SWEDISH.coverage[Report.UnionLevel[report.coverage].label]
+    translation.type = [SWEDISH.type[Report.DocumentType[x].label] for x in report.type]
+    translation.isFormatOf = [SWEDISH.isFormatOf[Report.DocumentFormat[x].label] for x in report.isFormatOf]
+    translation.accessRights = SWEDISH.accessRights[Report.AccessRights[report.accessRights].label]
+
+    translation.save()
+
+    step = ProcessingStep.objects.filter(job__pk=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.ARAB_TRANSLATE_TO_SWEDISH.value).first()
+    if step.humanValidation:
+        step.status = Status.AWAITING_HUMAN_VALIDATION
+        step.save()
+    else:
+        step.status = Status.COMPLETE
+        step.save()
+
+    if pipeline:
+        resumePipeline(jobPk)

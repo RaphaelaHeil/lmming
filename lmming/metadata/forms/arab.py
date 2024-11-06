@@ -1,6 +1,7 @@
 from django.forms import Form, CharField, TextInput, DateField, DateInput, ChoiceField, Select, Textarea, \
     MultipleChoiceField, CheckboxSelectMultiple, URLField
 
+from metadata.i18n import SWEDISH
 from metadata.models import Report
 
 
@@ -43,5 +44,21 @@ class ArabFileNameForm(Form):
     date = CharField(label="Report date by year (comma-separted for multiple years) [required]", required=True,
                      widget=TextInput(attrs={'class': 'form-control'}))
 
+
 class ArabTranslateForm(Form):
-    pass
+    coverageEN = CharField(label="English Coverage", disabled=True)
+    coverage = ChoiceField(label="Coverage [required]", choices=((a, a) for a in SWEDISH.coverage.values()),
+                           required=True, widget=Select(attrs={"class": "form-select"}))
+    typeEN = CharField(label="English Report Type", disabled=True)
+    type = MultipleChoiceField(label="Report Type [required]", choices=((a, a) for a in SWEDISH.type.values()),
+                               required=True, widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    isFormatOfEN = CharField(label="English Format", disabled=True)
+    isFormatOf = MultipleChoiceField(label="Format [required]", choices=((a, a) for a in SWEDISH.isFormatOf.values()),
+                                     required=True, widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    accessRightsEN = CharField(label="English Access Rights", disabled=True)
+    accessRights = ChoiceField(label="Access Rights [required]",
+                               choices=((a, a) for a in SWEDISH.accessRights.values()), required=True,
+                               widget=Select(attrs={"class": "form-select"}))
+    descriptionEN = CharField(label="English Report Description", disabled=True)
+    description = CharField(label="Report Description [optional]", required=False,
+                            widget=Textarea(attrs={"class": "form-control"}))

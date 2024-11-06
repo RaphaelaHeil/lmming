@@ -3,7 +3,6 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.db import transaction
-from triton.language.semantic import trans
 
 from metadata.forms.fac import FacManualForm, MintForm, FacFileNameForm, TranslateForm
 from metadata.models import Status, ProcessingStep, ReportTranslation, Report
