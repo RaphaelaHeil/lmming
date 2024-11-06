@@ -137,3 +137,7 @@ def arabMint(request, job):
     else:
         mintForm = MintForm(initial=initial)
         return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label}
+
+
+def arabTranslate(request, job):
+    pass

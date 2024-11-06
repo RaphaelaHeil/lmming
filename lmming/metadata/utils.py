@@ -13,11 +13,11 @@ from requests.compat import urljoin
 
 from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep
 
-__REPORT_TYPE_INDEX__ = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
-                         "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
-                         "revisionsberattelse": Report.DocumentType.FINANCIAL_STATEMENT}
+__REPORT_TYPE_INDEX = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
+                       "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
+                       "revisionsberattelse": Report.DocumentType.FINANCIAL_STATEMENT}
 
-__DUMMY_DIR__ = Path(__file__).parent.resolve() / "dummy_content"
+__DUMMY_DIR = Path(__file__).parent.resolve() / "dummy_content"
 
 
 def __parseDateString(dateString: str) -> datetime:
@@ -62,8 +62,8 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
     typeName = typeName.replace("ä", "a")
     typeName = typeName.replace("å", "a")
     typeName = typeName.replace("ö", "o")
-    if typeName in __REPORT_TYPE_INDEX__:
-        reportType = __REPORT_TYPE_INDEX__[typeName]
+    if typeName in __REPORT_TYPE_INDEX:
+        reportType = __REPORT_TYPE_INDEX[typeName]
     else:
         reportType = Report.DocumentType.ANNUAL_REPORT
 
@@ -145,24 +145,33 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
     pageSummary = []
     for report in transfer.report_set.all():
         # TODO: add null/none checks!!
-        reportSummary.append({"dcterms:identifier": report.identifier,
-                              "dcterms:title": report.title,
-                              "dcterms:creator": report.creator,
-                              "dcterms:date": "/".join([str(d.year) for d in report.date]),
-                              "dcterms:coverage": Report.UnionLevel[report.coverage].label,
-                              "dcterms:language": __toOmekaList__(report.language),
-                              "dcterms:spatial": __toOmekaList__(report.spatial),
-                              "dcterms:type": __toOmekaList__([Report.DocumentType[x].label for x in report.type]),
-                              "dcterms:license": __toOmekaList__(report.license),
-                              "dcterms:isVersionOf": report.isVersionOf,
-                              "dcterms:isFormatOf": __toOmekaList__(
-                                  [Report.DocumentFormat[x].label for x in report.isFormatOf]),
-                              "dcterms:accessRights": Report.AccessRights[report.accessRights].label,
-                              "dcterms:relation": __toOmekaList__(report.relation),
-                              "dcterms:created": report.created.year,
-                              "dcterms:available": report.available,
-                              "dcterms:source": __toOmekaList__(report.source),
-                              "dcterms:description": report.description})
+        reportEntry = {"dcterms:identifier": report.identifier,
+                       "dcterms:title": report.title,
+                       "dcterms:creator": report.creator,
+                       "dcterms:date": "/".join([str(d.year) for d in report.date]),
+                       "dcterms:coverage": Report.UnionLevel[report.coverage].label,
+                       "dcterms:language": __toOmekaList__(report.language),
+                       "dcterms:spatial": __toOmekaList__(report.spatial),
+                       "dcterms:type": __toOmekaList__([Report.DocumentType[x].label for x in report.type]),
+                       "dcterms:license": __toOmekaList__(report.license),
+                       "dcterms:isVersionOf": report.isVersionOf,
+                       "dcterms:isFormatOf": __toOmekaList__(
+                           [Report.DocumentFormat[x].label for x in report.isFormatOf]),
+                       "dcterms:accessRights": Report.AccessRights[report.accessRights].label,
+                       "dcterms:relation": __toOmekaList__(report.relation),
+                       "dcterms:created": report.created.year,
+                       "dcterms:available": report.available,
+                       "dcterms:source": __toOmekaList__(report.source),
+                       "dcterms:description": report.description}
+        for translation in report.reporttranslation_set.all():
+            language = translation.language
+            reportEntry.update({f"dcterms:coverage.{language}": translation.coverage,
+                                f"dcterms:type.{language}": __toOmekaList__(translation.type),
+                                f"dcterms:isFormatOf.{language}": __toOmekaList__(translation.isFormatOf),
+                                f"dcterms:accessRights.{language}": translation.accessRights,
+                                f"dcterms:description.{language}": translation.description})
+
+        reportSummary.append(reportEntry)
 
         if checkRestriction and __isRestricted__(report):
             transcription = ("FOLKRÖRELSEARKVET FÖR UPPSALA LÄN The contents of this report are "
@@ -341,17 +350,17 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
         for report in transfer.report_set.all():
             if checkRestriction and __isRestricted__(report):
                 page_name = f"page_not_available_{report.noid}"
-                zf.write(__DUMMY_DIR__ / f"{dummyFileName}.jpg", f"manualNormalization/access/{page_name}.jpg")
-                zf.write(__DUMMY_DIR__ / f"{dummyFileName}.jpg", f"{page_name}.jpg")
+                zf.write(__DUMMY_DIR / f"{dummyFileName}.jpg", f"manualNormalization/access/{page_name}.jpg")
+                zf.write(__DUMMY_DIR / f"{dummyFileName}.jpg", f"{page_name}.jpg")
 
                 if not forArab:
-                    zf.write(__DUMMY_DIR__ / f"{dummyFileName}.tif",
+                    zf.write(__DUMMY_DIR / f"{dummyFileName}.tif",
                              f"manualNormalization/preservation/{page_name}.tif")
 
                 filenames.append(f"{page_name}.xml")
                 filenames.append(f"{page_name}.jpg")
 
-                zf.write(__DUMMY_DIR__ / f"{dummyFileName}.xml", f"transcription/{page_name}.xml")
+                zf.write(__DUMMY_DIR / f"{dummyFileName}.xml", f"transcription/{page_name}.xml")
             else:
                 for page in report.page_set.all():
                     pageFileName = page.originalFileName

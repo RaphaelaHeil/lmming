@@ -5,7 +5,7 @@ from django.db import transaction
 
 from metadata.models import ProcessingStep, Job, Status
 from metadata.tasks.arab import arabComputeFromExistingFields, arabMintHandle
-from metadata.tasks.fac import computeFromExistingFields, extractFromImage, mintArks
+from metadata.tasks.fac import computeFromExistingFields, extractFromImage, mintArks, translateToSwedish
 from metadata.tasks.shared import extractFromFileNames, fileMakerLookup, namedEntityRecognition
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
@@ -17,7 +17,8 @@ TASK_INDEX = {ProcessingStep.ProcessingStepType.FILENAME.value: extractFromFileN
               ProcessingStep.ProcessingStepType.NER.value: namedEntityRecognition,
               ProcessingStep.ProcessingStepType.MINT_ARKS.value: mintArks,
               ProcessingStep.ProcessingStepType.ARAB_GENERATE.value: arabComputeFromExistingFields,
-              ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value: arabMintHandle}
+              ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value: arabMintHandle,
+              ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH.value: translateToSwedish}
 
 
 def restartTask(jobId: int, stepType: ProcessingStep.ProcessingStepType):

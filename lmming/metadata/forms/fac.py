@@ -2,11 +2,13 @@ from django.forms import Form, CharField, TextInput, DateField, DateInput, Choic
     MultipleChoiceField, CheckboxSelectMultiple
 
 from metadata.models import Report
+from metadata.i18n import SWEDISH
 
 
 class ComputeForm(Form):
     title = CharField(label="Title [required]", required=True, widget=TextInput(attrs={'class': 'form-control'}))
-    created = CharField(label="Year Created [optional]", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    created = CharField(label="Year Created [optional]", required=False,
+                        widget=TextInput(attrs={'class': 'form-control'}))
     available = DateField(label="Available from [optional]", required=False, input_formats=['%Y-%m-%d'],
                           widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
     accessRights = ChoiceField(choices=Report.AccessRights, required=True, label="Access Rights [required]",
@@ -27,7 +29,6 @@ class FacManualForm(Form):
 
 
 class MintForm(Form):
-    # TODO: does this also update the pages? probably not ...
     identifier = URLField(label="ARK identifier URL [required]", required=True, max_length=200,
                           widget=TextInput(attrs={'class': 'form-control'}))
 
@@ -39,3 +40,22 @@ class FacFileNameForm(Form):
                                widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
     date = CharField(label="Report date by year (comma-separted for multiple years) [required]", required=True,
                      widget=TextInput(attrs={'class': 'form-control'}))
+
+
+class TranslateForm(Form):
+    coverageEN = CharField(label="English Coverage", disabled=True)
+    coverage = ChoiceField(label="Coverage [required]", choices=((a, a) for a in SWEDISH.coverage.values()),
+                           required=True, widget=Select(attrs={"class": "form-select"}))
+    typeEN = CharField(label="English Report Type", disabled=True)
+    type = MultipleChoiceField(label="Report Type [required]", choices=((a, a) for a in SWEDISH.type.values()),
+                               required=True, widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    isFormatOfEN = CharField(label="English Format", disabled=True)
+    isFormatOf = MultipleChoiceField(label="Format [required]", choices=((a, a) for a in SWEDISH.isFormatOf.values()),
+                                     required=True, widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    accessRightsEN = CharField(label="English Access Rights", disabled=True)
+    accessRights = ChoiceField(label="Access Rights [required]",
+                               choices=((a, a) for a in SWEDISH.accessRights.values()), required=True,
+                               widget=Select(attrs={"class": "form-select"}))
+    descriptionEN = CharField(label="English Report Description", disabled=True)
+    description = CharField(label="Report Description [optional]", required=False,
+                            widget=Textarea(attrs={"class": "form-control"}))

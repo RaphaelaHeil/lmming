@@ -6,7 +6,8 @@ from metadata.models import Report
 
 class ArabGenerateForm(Form):
     title = CharField(label="Title [required]", required=True, widget=TextInput(attrs={'class': 'form-control'}))
-    created = CharField(label="Year Created [optional]", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    created = CharField(label="Year Created [optional]", required=False,
+                        widget=TextInput(attrs={'class': 'form-control'}))
     available = DateField(label="Available from [optional]", required=False, input_formats=['%Y-%m-%d'],
                           widget=DateInput(format='%Y-%m-%d', attrs={"type": "date"}))
     accessRights = ChoiceField(choices=Report.AccessRights, required=True, label="Access Rights [required]",
@@ -22,10 +23,13 @@ class ArabGenerateForm(Form):
 
 
 class ArabManualForm(Form):
+    title = CharField(label="Title [required]", required=True, widget=TextInput(attrs={'class': 'form-control'}))
     reportType = MultipleChoiceField(label="Report Type [required]", choices=Report.DocumentType, required=True,
                                      widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
     description = CharField(label="Report description [optional]", required=False,
                             widget=Textarea(attrs={"class": "form-control"}))
+    descriptionSv = CharField(label="Swedish report description [optional]", required=False,
+                              widget=Textarea(attrs={"class": "form-control"}))
 
 
 class ArabMintForm(Form):
@@ -38,3 +42,6 @@ class ArabFileNameForm(Form):
                                widget=TextInput(attrs={'class': 'form-control'}))
     date = CharField(label="Report date by year (comma-separted for multiple years) [required]", required=True,
                      widget=TextInput(attrs={'class': 'form-control'}))
+
+class ArabTranslateForm(Form):
+    pass

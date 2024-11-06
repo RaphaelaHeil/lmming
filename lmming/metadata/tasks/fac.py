@@ -7,9 +7,11 @@ from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from requests.compat import urljoin
 
-from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings
+from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings, \
+    ReportTranslation
 from metadata.tasks.utils import resumePipeline
 from metadata.tasks.utils import splitIfNotNone
+from metadata.i18n import SWEDISH
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -181,6 +183,41 @@ def mintArks(jobPk: int, pipeline: bool = True):
                        f"{ark} ({jobPk} - {report.title})")
         return
 
+    if step.humanValidation:
+        step.status = Status.AWAITING_HUMAN_VALIDATION
+        step.save()
+    else:
+        step.status = Status.COMPLETE
+        step.save()
+
+    if pipeline:
+        resumePipeline(jobPk)
+
+
+@shared_task()
+def translateToSwedish(jobPk: int, pipeline: bool = True):
+    report = Report.objects.get(job__pk=jobPk)
+
+    translation = ReportTranslation.objects.filter(report=report, language="sv")
+    if not translation:
+        translation = ReportTranslation(report=report, language="sv")
+    else:
+        translation = translation.first()
+
+    translation.coverage = SWEDISH.coverage[Report.UnionLevel[report.coverage].label]
+    translation.type = [SWEDISH.type[Report.DocumentType[x].label] for x in report.type]
+    translation.isFormatOf = [SWEDISH.isFormatOf[Report.DocumentFormat[x].label] for x in report.isFormatOf]
+    translation.accessRights = SWEDISH.accessRights[Report.AccessRights[report.accessRights].label]
+    pageCount = report.page_set.count()
+    if pageCount == 1:
+        translation.description = "1 sida; " + ",".join(translation.type)
+    else:
+        translation.description = f"{pageCount} sidor; " + ",".join(translation.type)
+
+    translation.save()
+
+    step = ProcessingStep.objects.filter(job__pk=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH.value).first()
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()

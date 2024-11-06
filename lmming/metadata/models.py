@@ -145,6 +145,18 @@ class Report(Model):
         return ", ".join(self.relation if self.relation else [])
 
 
+class ReportTranslation(Model):
+    report = ForeignKey(Report, on_delete=CASCADE)
+    language = CharField(blank=True, default="")
+
+    coverage = CharField(blank=True, default="")
+    isFormatOf = ArrayField(CharField(), blank=True, null=True)
+    type = ArrayField(CharField(), blank=True, null=True)
+    accessRights = CharField(blank=True, default="")
+
+    description = TextField(blank=True, default="")
+
+
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)
     order = PositiveIntegerField(default=1)  # internal use, not for CSV
@@ -234,6 +246,8 @@ class ProcessingStep(Model):
         ARAB_GENERATE = "ARAB_GENERATE", 31, "Generate/Calculate"
         ARAB_MANUAL = "ARAB_MANUAL", 36, "Manual"
         ARAB_MINT_HANDLE = "ARAB_MINT_HANDLE", 61, "Mint Handle IDs"
+        ARAB_TRANSLATE_TO_SWEDISH = "ARAB_TRANSLATE_TO_SWEDISH", 70, "Translate to Swedish"
+        FAC_TRANSLATE_TO_SWEDISH = "FAC_TRANSLATE_TO_SWEDISH", 70, "Translate to Swedish"
 
         @property
         def order(self):

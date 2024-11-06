@@ -39,6 +39,10 @@ FAC_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILEN
                                {"label": ProcessingStep.ProcessingStepType.MINT_ARKS,
                                 "tooltip": "Mints ARKs for IIIF and AtoM, to be included in the CSV for Omeka.",
                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                "modeDisabled": False},
+                                {"label": ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH,
+                                "tooltip": "Translate coverage, type, isFormatOf and accessRights to Swedish",
+                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                 "modeDisabled": False}
                                ]
 
@@ -68,7 +72,11 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                 {"label": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE,
                                  "tooltip": "Creates and registers a new handle for each report.",
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
-                                 "modeDisabled": False}
+                                 "modeDisabled": False},
+                                {"label": ProcessingStep.ProcessingStepType.ARAB_TRANSLATE_TO_SWEDISH,
+                                "tooltip": "Translate coverage, type, isFormatOf and accessRights to Swedish",
+                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                "modeDisabled": False}
                                 ]
 
 
