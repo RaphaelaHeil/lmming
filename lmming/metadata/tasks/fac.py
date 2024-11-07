@@ -220,6 +220,12 @@ def translateToSwedish(jobPk: int, pipeline: bool = True):
     s = filename.split("_")
     typeName = s[1]
 
+    if typeName.startswith("ars"):
+        typeName = typeName.replace("ars", "års")
+
+    if "berattelse" in typeName:
+        typeName = typeName.replace("berattelse", "berättelse")
+
     if pageCount == 1:
         translation.description = "1 sida; " + typeName
     else:
