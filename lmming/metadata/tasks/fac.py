@@ -3,15 +3,16 @@ import logging
 
 import requests
 from celery import shared_task
+from celery.utils.functional import first
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from requests.compat import urljoin
 
+from metadata.i18n import SWEDISH
 from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings, \
     ReportTranslation
 from metadata.tasks.utils import resumePipeline
 from metadata.tasks.utils import splitIfNotNone
-from metadata.i18n import SWEDISH
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -209,10 +210,20 @@ def translateToSwedish(jobPk: int, pipeline: bool = True):
     translation.isFormatOf = [SWEDISH.isFormatOf[Report.DocumentFormat[x].label] for x in report.isFormatOf]
     translation.accessRights = SWEDISH.accessRights[Report.AccessRights[report.accessRights].label]
     pageCount = report.page_set.count()
+    firstPage = report.page_set.first()
+
+    filename = firstPage.originalFileName
+
+    if "fac" in filename:
+        filename = filename[filename.index("fac") + 4:]
+
+    s = filename.split("_")
+    typeName = s[1]
+
     if pageCount == 1:
-        translation.description = "1 sida; " + ",".join(translation.type)
+        translation.description = "1 sida; " + typeName
     else:
-        translation.description = f"{pageCount} sidor; " + ",".join(translation.type)
+        translation.description = f"{pageCount} sidor; " + typeName
 
     translation.save()
 

@@ -269,21 +269,33 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
     records = []
 
     for report in transfer.report_set.all():
+        translation = report.reporttranslation_set.filter(language="sv")
+        if translation:
+            translation = translation.first()
+            dcType = __toCSList__(translation.type)
+            dcCoverage = translation.coverage
+            dcAccessRights = translation.accessRights
+            dcFormat = f"{translation.description} - {__toCSList__([translation.isFormatOf])}"
+        else:
+            dcType = __toCSList__([Report.DocumentType[x].label for x in report.type])
+            dcCoverage = Report.UnionLevel[report.coverage].label
+            dcAccessRights = Report.AccessRights[report.accessRights].label
+            dcFormat = f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}"
+
         if checkRestriction and __isRestricted__(report):
             row = {"dc.identifier": report.noid,
-                   "dc.type": __toCSList__([Report.DocumentType[x].label for x in report.type]),
+                   "dc.type": dcType,
                    "dc.date": "/".join([str(d.year) for d in report.date]),
                    "dc.language": __toCSList__(report.language),
-                   "dc.coverage": Report.UnionLevel[report.coverage].label,
+                   "dc.coverage": dcCoverage,
                    "dc.title": report.title,
                    "dc.creator": report.creator,
                    "dc.source": __toCSList__(report.source),
 
                    "dc.relation": __toCSList__(report.relation),
-                   "dc.format": f"{report.description} - "
-                                f"{__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
+                   "dc.format": dcFormat,
                    # "dc.description": report.description, # TODO: ???
-                   "dc.rights1": Report.AccessRights[report.accessRights].label,
+                   "dc.rights1": dcAccessRights,
                    "dc.rights2": __toOmekaList__(report.license),
                    "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
                    }
@@ -298,19 +310,17 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
             records.append(b)
         else:
             row = {"dc.identifier": report.noid,
-                   "dc.type": __toCSList__([Report.DocumentType[x].label for x in report.type]),
+                   "dc.type": dcType,
                    "dc.date": "/".join([str(d.year) for d in report.date]),
                    "dc.language": __toCSList__(report.language),
-                   "dc.coverage": Report.UnionLevel[report.coverage].label,
+                   "dc.coverage": dcCoverage,
                    "dc.title": report.title,
                    "dc.creator": report.creator,
                    "dc.source": __toCSList__(report.source),
-
                    "dc.relation": __toCSList__(report.relation),
-                   "dc.format": f"{report.description} - "
-                                f"{__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}",
+                   "dc.format": dcFormat,
                    # "dc.description": report.description, # TODO: ???
-                   "dc.rights1": Report.AccessRights[report.accessRights].label,
+                   "dc.rights1": dcAccessRights,
                    "dc.rights2": __toOmekaList__(report.license),
                    "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
                    }
