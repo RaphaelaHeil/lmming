@@ -12,7 +12,7 @@ from .utils import correction, handleLinebreakChars, extractTranscriptionsFromXm
 TIME_EXPRESSIONS = ["Januari", "januari", "Jan", "jan", "Februari", "februari", "Feb", "feb", "Mars", "mars", "Mar",
                     "mar", "April", "april", "Apr", "apr", "Maj", "maj", "Juni", "juni", "Jun", "jun", "Juli", "juli",
                     "Jul", "jul", "Augusti", "augusti", "Aug", "aug", "September", "september", "Sept", "sept",
-                    "Oktober", "oktober", "Okt", "okt", "November", "november", "Nov", "nov", "December", "decemer",
+                    "Oktober", "oktober", "Okt", "okt", "November", "november", "Nov", "nov", "December", "december",
                     "Dec", "dec"]
 VOWELS = "[aeiouäöåAEIOUÄÖÅ]"
 CONSONANTS = "[bcdfghjklmnpqrstvwxyz]"
