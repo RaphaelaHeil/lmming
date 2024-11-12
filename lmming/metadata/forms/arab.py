@@ -6,7 +6,6 @@ from metadata.models import Report
 
 
 class ArabGenerateForm(Form):
-    title = CharField(label="Title [required]", required=True, widget=TextInput(attrs={'class': 'form-control'}))
     created = CharField(label="Year Created [optional]", required=False,
                         widget=TextInput(attrs={'class': 'form-control'}))
     available = DateField(label="Available from [optional]", required=False, input_formats=['%Y-%m-%d'],

@@ -44,7 +44,7 @@ def arabFilename(request, job):
 
 
 def arabGenerate(request, job):
-    initial = {"title": job.report.title, "created": job.report.created.year if job.report.created else "",
+    initial = {"created": job.report.created.year if job.report.created else "",
                "available": job.report.available, "language": job.report.get_language_display(),
                "license": job.report.get_license_display(), "source": job.report.get_source_display(),
                "accessRights": job.report.accessRights, "isFormatOf": job.report.isFormatOf}
@@ -52,8 +52,6 @@ def arabGenerate(request, job):
         computeForm = ArabGenerateForm(request.POST, initial=initial)
         if computeForm.is_valid():
             if computeForm.has_changed():
-                if "title" in computeForm.changed_data:
-                    job.report.title = computeForm.cleaned_data["title"]
                 if "created" in computeForm.changed_data:
                     job.report.created = date(int(computeForm.cleaned_data["created"]), month=1, day=1)
                 if "available" in computeForm.changed_data:
@@ -89,11 +87,14 @@ def arabManual(request, job):
         translation = ReportTranslation(language="sv", report=report)
     else:
         translation = translation.first()
-    initial = {"description": job.report.description, "reportType": job.report.type}
+    initial = {"description": job.report.description, "reportType": job.report.type,
+               "descriptionSv": translation.description, "title": report.title}
     if request.method == "POST":
         imageForm = ArabManualForm(request.POST, initial=initial)
         if imageForm.is_valid():
             if imageForm.has_changed():
+                if "title" in imageForm.changed_data:
+                    report.title = imageForm.cleaned_data["title"]
                 if "description" in imageForm.changed_data:
                     report.description = imageForm.cleaned_data["description"]
                 if "reportType" in imageForm.changed_data:

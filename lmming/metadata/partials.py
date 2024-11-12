@@ -56,7 +56,7 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False},
                                 {"label": ProcessingStep.ProcessingStepType.ARAB_GENERATE,
-                                 "tooltip": "Fills in the fields 'title', 'created', 'available', 'accessRights', "
+                                 "tooltip": "Fills in the fields 'created', 'available', 'accessRights', "
                                             "'language', 'license', 'source', and 'isFormatOf' based on information, "
                                             "collected in the previous steps.",
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
