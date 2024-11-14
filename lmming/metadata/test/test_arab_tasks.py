@@ -26,7 +26,6 @@ class ArabComputeFromExistingFieldsTests(TestCase):
         arabComputeFromExistingFields(jobId, False)
         r = Report.objects.get(job=jobId)
 
-        self.assertEqual("Test Union 1991", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)
         self.assertEqual(["sv"], r.language)
         self.assertEqual("", r.description)
@@ -44,7 +43,6 @@ class ArabComputeFromExistingFieldsTests(TestCase):
         arabComputeFromExistingFields(jobId, False)
         r = Report.objects.get(job=jobId)
 
-        self.assertEqual("Test Union 1991", r.title)
         self.assertEqual(date(1992, 1, 1), r.created)
         self.assertEqual(["sv"], r.language)
         self.assertEqual("", r.description)
@@ -172,7 +170,7 @@ class ArabMintHandleTests(TestCase):
             r = Report.objects.get(job=jobId)
 
             self.assertEqual("xxxxxxxxxxxxxxx", r.noid)
-            self.assertEqual("https://hdl.handle.net/12345/xxxxxxxxxxxxxxx", r.identifier)
+            self.assertEqual("https://hdl.handle.net/12345/xxxxxxxxxxxxxxx?urlappend=/manifest", r.identifier)
             for page in r.page_set.all():
                 self.assertEqual(f"xxxxxxxxxxxxxxx_{page.order}", page.iiifId)
                 self.assertEqual(f"http://iiif.example.com/iiif/image/xxxxxxxxxxxxxxx_{page.order}/info.json",

@@ -37,7 +37,7 @@ TEST_PAGES = [{"order": 1,
               ]
 
 DEFAULT_VALUES = {"license": "license", "language": "language", "source": "source", "accessRights": "RESTRICTED",
-                  "arkShoulder": "/test", "yearOffset": 70}
+                  "arkShoulder": "/test", "yearOffset": 70, "normalisationCutOff": 1910}
 
 
 def initDefaultValues(values: Dict[str, Any] = None):
@@ -65,13 +65,17 @@ def initDefaultValues(values: Dict[str, Any] = None):
     if "yearOffset" in values:
         DefaultNumberSettings.objects.create(name=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET,
                                              value=values["yearOffset"])
+    if "normalisationCutOff" in values:
+        DefaultNumberSettings.objects.create(
+            name=DefaultNumberSettings.DefaultNumberSettingsType.NER_NORMALISATION_END_YEAR,
+            value=values["normalisationCutOff"])
 
 
 def initDummyFilemaker(filemakerEntry: Dict[str, Any] = None):
     if filemakerEntry is None:
         ExternalRecord.objects.create(archiveId="1", organisationName="Test Orga", county="county",
                                       municipality="municipality", city="city", parish="parish",
-                                      catalogueLink="http://nadLink.example.com", coverage="coverage")
+                                      relationLink="http://nadLink.example.com", coverage="coverage")
     else:
         ExternalRecord.objects.create(**filemakerEntry)
 

@@ -260,8 +260,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_update(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
@@ -274,8 +274,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_ArchiveIdColumnMissing(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
@@ -286,8 +286,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_OrganisationNameColumnMissing(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "1A", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "2A", "county": "2C", "muni": "2M", "city": "2CI",
@@ -298,7 +298,7 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_ArabCoverageColumnMissing(self):
         with self.settings(ARCHIVE_INST="ARAB", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
                            ER_COVERAGE="cov"):
             df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L"},
@@ -312,8 +312,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_FacCoverageColumnMissing(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L"},
                                             {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
@@ -326,8 +326,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_OptionalColumnMissing(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "1A", "org": "1O", "county": "1C", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "2A", "org": "2O", "county": "2C", "city": "2CI",
@@ -340,8 +340,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_ArchiveIdColumnEmpty(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
@@ -352,8 +352,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_OrganisationNameColumnEmpty(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "1A", "org": "", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "2A", "org": "", "county": "2C", "muni": "2M", "city": "2CI",
@@ -364,8 +364,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_ArchiveIdColumnPartiallyEmpty(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "", "org": "1O", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",
@@ -377,8 +377,8 @@ class UpdateExternalRecordsTests(TestCase):
 
     def test_OrganisationNameColumnPartiallyEmpty(self):
         with self.settings(ARCHIVE_INST="FAC", ER_ARCHIVE_ID="archive", ER_ORGANISATION_NAME="org", ER_COUNTY="county",
-                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_CATALOGUE_LINK="link",
-                           ER_COVERAGE="cov"):
+                           ER_MUNICIPALITY="muni", ER_CITY="city", ER_PARISH="parish", ER_RELATION_LINK="link",
+                           ER_COVERAGE="cov", ER_IS_VERSION_OF_LINK="atom"):
             df = pd.DataFrame.from_records([{"archive": "1A", "org": "", "county": "1C", "muni": "1M", "city": "1CI",
                                              "parish": "1P", "link": "1L", "cov": "1CO"},
                                             {"archive": "2A", "org": "2O", "county": "2C", "muni": "2M", "city": "2CI",

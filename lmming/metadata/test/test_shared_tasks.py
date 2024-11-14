@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from pathlib import Path
 from unittest import mock
 
@@ -77,7 +78,7 @@ class FilemakerLookupTests(TestCase):
         self.assertIn("union with ID 2", step.log)
 
 
-def successfulNer(path: Path):
+def successfulNer(path: Path, normalise:bool=False):
     if "sid-01" in path.name:
         return NlpResult(text="new text", normalised="new normalised", persons={"A", "B"}, organisations={"o"},
                          locations={"l1"}, times={"1991"}, works={"lotr"}, events={"easter"}, objects={"statue"},
@@ -105,7 +106,7 @@ class NamedEntityRecognitionTests(TestCase):
     def test_ner(self, _successfulNerMock):
         initDefaultValues()
         initDummyFilemaker()
-        jobId = initDummyTransfer({"unionId": "1", "title": "test title"})
+        jobId = initDummyTransfer({"unionId": "1", "title": "test title", "created":date(1910, 1, 1)})
 
         namedEntityRecognition(jobId, False)
         r = Report.objects.get(job=jobId)
@@ -123,7 +124,7 @@ class NamedEntityRecognitionTests(TestCase):
     def test_failedNer(self, _failedNerMock):
         initDefaultValues()
         initDummyFilemaker()
-        jobId = initDummyTransfer({"unionId": "1", "title": "test title"})
+        jobId = initDummyTransfer({"unionId": "1", "title": "test title", "created":date(1910, 1, 1)})
 
         namedEntityRecognition(jobId, False)
 
