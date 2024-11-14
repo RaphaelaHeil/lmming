@@ -43,6 +43,8 @@ def handleLinebreakChars(line: str) -> str:
 
     if line[0] == "=":
         line = line[1:]
+    if line[-1] == "=":
+        return line[:-1]
 
     if line[-1] == "¬":
         line = line[:-1]

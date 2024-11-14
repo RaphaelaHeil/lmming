@@ -40,7 +40,7 @@ FAC_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILEN
                                 "tooltip": "Mints ARKs for IIIF and AtoM, to be included in the CSV for Omeka.",
                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                 "modeDisabled": False},
-                                {"label": ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH,
+                               {"label": ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH,
                                 "tooltip": "Translate coverage, type, isFormatOf and accessRights to Swedish",
                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                 "modeDisabled": False}
@@ -74,9 +74,9 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False},
                                 {"label": ProcessingStep.ProcessingStepType.ARAB_TRANSLATE_TO_SWEDISH,
-                                "tooltip": "Translate coverage, type, isFormatOf and accessRights to Swedish",
-                                "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
-                                "modeDisabled": False}
+                                 "tooltip": "Translate coverage, type, isFormatOf and accessRights to Swedish",
+                                 "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                 "modeDisabled": False}
                                 ]
 
 
@@ -112,10 +112,13 @@ def settingsModal(request):
     source = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_SOURCE).first()
     avilableYearOffset = DefaultNumberSettings.objects.filter(
         pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET).first()
+    normalisationYearCutOff = DefaultNumberSettings.objects.filter(
+        pk=DefaultNumberSettings.DefaultNumberSettingsType.NER_NORMALISATION_END_YEAR).first()
     initial = {"language": language.value if language else "",
                "license": license.value if license else "",
                "source": source.value if source else "",
-               "avilableYearOffset": avilableYearOffset.value if avilableYearOffset else 0
+               "avilableYearOffset": avilableYearOffset.value if avilableYearOffset else 0,
+               "normalisationYearCutOff": normalisationYearCutOff.value if normalisationYearCutOff else 1910
                }
     if request.method == 'POST':
         settingsForm = SettingsForm(request.POST, initial=initial)
@@ -154,6 +157,15 @@ def settingsModal(request):
                         DefaultNumberSettings.objects.create(
                             pk=DefaultNumberSettings.DefaultNumberSettingsType.AVAILABLE_YEAR_OFFSET,
                             value=settingsForm.cleaned_data["avilableYearOffset"])
+                if "normalisationYearCutOff" in settingsForm.changed_data:
+                    if normalisationYearCutOff:
+                        normalisationYearCutOff.value = settingsForm.cleaned_data["normalisationYearCutOff"]
+                        normalisationYearCutOff.save()
+                    else:
+                        DefaultNumberSettings.objects.create(
+                            pk=DefaultNumberSettings.DefaultNumberSettingsType.NER_NORMALISATION_END_YEAR,
+                            value=settingsForm.cleaned_data["normalisationYearCutOff"])
+
         if filemakerForm.is_valid():
             filemakerCsv = filemakerForm.cleaned_data["externalRecordCsv"]
             if filemakerCsv:

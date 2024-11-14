@@ -4,7 +4,7 @@ from pathlib import Path
 from celery import shared_task, signals
 from django.conf import settings
 
-from metadata.models import ProcessingStep, Status, ExternalRecord, Report
+from metadata.models import ProcessingStep, Status, ExternalRecord, Report, DefaultNumberSettings
 from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
 from metadata.tasks.utils import resumePipeline, getFacCoverage
@@ -78,9 +78,25 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
 def namedEntityRecognition(jobPk: int, pipeline: bool = True):
     # fields: everything in page, except minting
     report = Report.objects.get(job__pk=jobPk)
+    step = ProcessingStep.objects.filter(job__pk=jobPk,
+                                         processingStepType=ProcessingStep.ProcessingStepType.NER.value).first()
+
+    normalisationCutOff = DefaultNumberSettings.objects.filter(
+        pk=DefaultNumberSettings.DefaultNumberSettingsType.NER_NORMALISATION_END_YEAR).first()
+    if normalisationCutOff:
+        if report.created.year <= normalisationCutOff.value:
+            normalise = True
+        else:
+            normalise = False
+    else:
+        step.log = "No year offset was specified. Please update the system settings."
+        step.status = Status.ERROR
+        step.save()
+        return
+
     for page in report.page_set.all():
         try:
-            result = processPage(Path(page.transcriptionFile.path))
+            result = processPage(Path(page.transcriptionFile.path), normalise)
             if not result:
                 result = NlpResult()
         except Exception as e:
@@ -98,8 +114,7 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
         page.times = list(result.times)
         page.measures = result.measures
         page.save()
-    step = ProcessingStep.objects.filter(job__pk=jobPk,
-                                         processingStepType=ProcessingStep.ProcessingStepType.NER.value).first()
+
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()

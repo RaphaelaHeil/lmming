@@ -96,7 +96,7 @@ def normalize(document):
             # Rule #11 slogz > slogs, skötz > sköts
             normalized = re.sub(r"z", r"s", normalized)
             # Rule #12 försöria > försörja
-            normalized = re.sub(r"([^a])ria([^t]|$)", r"\1rja\2", normalized)
+            # normalized = re.sub(r"([^a])ria([^t]|$)", r"\1rja\2", normalized)
             # Rule #13 vijka > vika, bevijsa > bevisa
             normalized = re.sub(r"iji", r"j", normalized)
             normalized = re.sub(r"ij", r"i", normalized)
@@ -180,7 +180,7 @@ def filtered_entities(text: str, result: NlpResult):
                     result.events.add(entity)
 
 
-def processPage(pagePath: Path) -> NlpResult:
+def processPage(pagePath: Path, normalise:bool=True) -> NlpResult:
     result = NlpResult()
     if pagePath.suffix == ".xml":
         lines = extractTranscriptionsFromXml(pagePath)
@@ -194,6 +194,9 @@ def processPage(pagePath: Path) -> NlpResult:
     for line in lines:
         text += handleLinebreakChars(line)
     result.text = text
-    result.normalised = normalize(text)
+    if normalise:
+        result.normalised = normalize(text)
+    else:
+        result.normalised = text
     filtered_entities(result.normalised, result)
     return result

@@ -94,6 +94,10 @@ class SettingsForm(Form):
 
     avilableYearOffset = IntegerField(label="Default number of years after publication [required]", required=True,
                                       min_value=0, step_size=1)
+    normalisationYearCutOff = IntegerField(
+        label="Final year to apply spelling normalisations (no normalisations after given year) [required]",
+        required=True,
+        min_value=0, step_size=1, initial=1910)
 
 
 class ExternalRecordsSettingsForm(Form):

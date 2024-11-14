@@ -314,6 +314,9 @@ class DefaultNumberSettings(Model):
     class DefaultNumberSettingsType(TextChoices):
         AVAILABLE_YEAR_OFFSET = "AVAILABLE_YEAR_OFFSET", ("Number of years, calculated from date of publication, until "
                                                           "the material becomes available")
+        NER_NORMALISATION_END_YEAR = "NER_NORMALISATION_END_YEAR", ("Year after which the transcriptions should not be "
+                                                                    "normalised anymore (given year is the final year"
+                                                                    "that will be normalised)")
 
     name = CharField(primary_key=True, choices=DefaultNumberSettingsType.choices)
     value = IntegerField(blank=True, default=0)
