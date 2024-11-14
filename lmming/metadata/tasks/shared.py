@@ -89,7 +89,7 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
         else:
             normalise = False
     else:
-        step.log = "No year offset was specified. Please update the system settings."
+        step.log = "No normalisation cut-off year was specified. Please update the system settings."
         step.status = Status.ERROR
         step.save()
         return
