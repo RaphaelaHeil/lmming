@@ -132,6 +132,7 @@ USE_TZ = True
 
 DATA_UPLOAD_MAX_NUMBER_FILES = 800
 DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024 # 200MB
+DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/

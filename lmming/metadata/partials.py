@@ -118,7 +118,7 @@ def settingsModal(request):
                "license": license.value if license else "",
                "source": source.value if source else "",
                "avilableYearOffset": avilableYearOffset.value if avilableYearOffset else 0,
-               "normalisationYearCutOff": normalisationYearCutOff.value if normalisationYearCutOff else 1910
+               "normalisationYearCutOff": normalisationYearCutOff.value if normalisationYearCutOff else 1900
                }
     if request.method == 'POST':
         settingsForm = SettingsForm(request.POST, initial=initial)
