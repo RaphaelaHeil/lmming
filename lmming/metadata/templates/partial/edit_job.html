@@ -9,7 +9,7 @@
     <form class="form" method="POST" action="{% url 'metadata:edit_job' job.pk stepParam %}">
         {% csrf_token %}
         {% if stepParam == 'ner' %}
-        <div class="accordion" id="accordionExample">
+        <div class="accordion  mb-5" id="accordionExample">
             {{ form.management_form }}
             {%for pageForm in form%}
             <div class="accordion-item">
@@ -24,7 +24,54 @@
                      aria-labelledby="heading{{pageForm.order}}"
                      data-bs-parent="#accordionExample">
                     <div class="accordion-body">
-                        {{pageForm}}
+                        <div class="row">
+                            <label for="{{pageForm.measures.auto_id}}" class="form-label pt-3">{{pageForm.measures.label}}
+                                {{pageForm.measures}}</label>
+                        </div>
+                        <div class="row">
+                            <label for="{{pageForm.transcription.auto_id}}" class="form-label pt-3">{{pageForm.transcription.label}} </label>
+                            {{pageForm.transcription}}
+                        </div>
+                        <div class="row">
+                            <label for="{{pageForm.normalisedTranscription.auto_id}}" class="form-label pt-3">{{pageForm.normalisedTranscription.label}} </label>
+                            {{pageForm.normalisedTranscription}}
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <label for="{{pageForm.persons.auto_id}}" class="form-label pt-3">{{pageForm.persons.label}} </label>
+                                {{pageForm.persons}}
+                            </div>
+                            <div class="col">
+                                <label for="{{pageForm.organisations.auto_id}}" class="form-label pt-3">{{pageForm.organisations.label}} </label>
+                                {{pageForm.organisations}}
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <label for="{{pageForm.locations.auto_id}}" class="form-label pt-3">{{pageForm.locations.label}} </label>
+                                {{pageForm.locations}}
+                            </div>
+                            <div class="col">
+                                <label for="{{pageForm.times.auto_id}}"
+                                       class="form-label pt-3">{{pageForm.times.label}} </label>
+                                {{pageForm.times}}
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col">
+                                <label for="{{pageForm.works.auto_id}}"
+                                       class="form-label pt-3">{{pageForm.works.label}} </label>
+                                {{pageForm.works}}
+                            </div>
+                            <div class="col">
+                                <label for="{{pageForm.events.auto_id}}" class="form-label pt-3">{{pageForm.events.label}} </label>
+                                {{pageForm.events}}
+                            </div>
+                            <div class="col">
+                                <label for="{{pageForm.ner_objects.auto_id}}" class="form-label pt-3">{{pageForm.ner_objects.label}} </label>
+                                {{pageForm.ner_objects}}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

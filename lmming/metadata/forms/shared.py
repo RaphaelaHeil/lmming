@@ -72,16 +72,16 @@ class PageForm(Form):
                               widget=Textarea(attrs={"class": "form-control", "rows": 10}))
     normalisedTranscription = CharField(label="Normalised transcription", required=False,
                                         widget=Textarea(attrs={"class": "form-control", "rows": 10}))
-    persons = CharField(label="Persons", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+    persons = CharField(label="Persons", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 10}))
     organisations = CharField(label="Organisations", required=False,
-                              widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+                              widget=Textarea(attrs={"class": "form-control", "rows": 10}))
     locations = CharField(label="Locations", required=False,
-                          widget=Textarea(attrs={"class": "form-control", "rows": 3}))
-    times = CharField(label="Times", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
-    works = CharField(label="Works", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
-    events = CharField(label="Events", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+                          widget=Textarea(attrs={"class": "form-control", "rows": 10}))
+    times = CharField(label="Times", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 10}))
+    works = CharField(label="Works", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 5}))
+    events = CharField(label="Events", required=False, widget=Textarea(attrs={"class": "form-control", "rows": 5}))
     ner_objects = CharField(label="Objects", required=False,
-                            widget=Textarea(attrs={"class": "form-control", "rows": 3}))
+                            widget=Textarea(attrs={"class": "form-control", "rows": 5}))
 
 
 class SettingsForm(Form):
