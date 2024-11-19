@@ -1184,7 +1184,7 @@ alf,alf
 alfabet,alfabet
 alfabetisk,alfabetisk
 alfkors,alfkors
-alfresko,o
+alfresko,alfresko
 freskomålning,alfrescomålning
 alfvar,alfvar
 alvarsten,alfvarsten
