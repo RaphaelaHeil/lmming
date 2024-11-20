@@ -1,8 +1,8 @@
 from django.forms import Form, CharField, TextInput, DateField, DateInput, ChoiceField, Select, Textarea, URLField, \
     MultipleChoiceField, CheckboxSelectMultiple
 
-from metadata.models import Report
 from metadata.i18n import SWEDISH
+from metadata.models import Report
 
 
 class ComputeForm(Form):
@@ -59,3 +59,14 @@ class TranslateForm(Form):
     descriptionEN = CharField(label="English Report Description", disabled=True)
     description = CharField(label="Report Description [optional]", required=False,
                             widget=Textarea(attrs={"class": "form-control"}))
+
+
+class BatchFacManualForm(Form):
+    def __init__(self, *args, **kwargs):
+        self.reportId = kwargs["initial"]["reportId"]
+        self.date = kwargs["initial"]["date"]
+        self.title = kwargs["initial"]["title"]
+        super(BatchFacManualForm, self).__init__(*args, **kwargs)  # call base class
+
+    isFormatOf = MultipleChoiceField(label="Format [required]", choices=Report.DocumentFormat, required=True,
+                                     widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))

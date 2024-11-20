@@ -4,13 +4,15 @@ import pandas as pd
 from django.conf import settings
 from django.db.models import Q
 from django.forms import formset_factory
-from django.http import QueryDict, HttpResponse
+from django.http import QueryDict, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 
 from metadata.forms.shared import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, \
     ProcessingStepForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
     DefaultNumberSettings
+from metadata.pipeline_views.fac import bulkFacManual
 from metadata.tasks.manage import restartTask, scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps
 
@@ -275,6 +277,33 @@ def awaitingHumanInteraction(request):
     return render(request, 'partial/waiting_jobs_table.html', {"steps": stepData})
 
 
+def waitingProcesses(request):
+    processData = []
+
+    processingSteps = ProcessingStep.objects.filter(
+        Q(processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value) & (
+                Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT)))
+    transfers = {}
+    for step in processingSteps:
+        p = step.job.transfer
+        if p.name not in transfers:
+            transfers[p.name] = {"stepName": ProcessingStep.ProcessingStepType[step.processingStepType].label,
+                                 "status": Status[step.status].label, "count": 1,
+                                 "total": step.job.transfer.jobs.count(), "jobs": [str(step.job.pk)],
+                                 "stepUrl": step.processingStepType.lower()}
+        else:
+            transfers[p.name]["count"] += 1
+            transfers[p.name]["jobs"].append(str(step.job.pk))
+
+    for p in transfers:
+        x = {"processName": p}
+        x.update(transfers[p])
+        x["jobs"] = ",".join(x["jobs"])
+        processData.append(x)
+
+    return render(request, 'partial/waiting_reports_table.html', {"processes": processData})
+
+
 def waitingCount(_request):
     value = Job.objects.filter(
         Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT)).count()
@@ -282,3 +311,14 @@ def waitingCount(_request):
         return HttpResponse("")
     else:
         return HttpResponse(str(value))
+
+
+def bulkEditJobs(request, step: str, jobs: str):
+    if step == "fac_manual":
+        context = bulkFacManual(request, jobs)
+        if context:
+            return render(request, "partial/bulk_edit_job.html", context)
+        else:
+            return HttpResponseRedirect(reverse('metadata:waiting_jobs'))
+    else:
+        return HttpResponseRedirect(reverse('metadata:waiting_jobs'))

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Bulk edit{% endblock %}
+
+{% block content %}
+
+
+<div class="p-0">
+    <form class="form" method="POST" action="{% url 'metadata:bulk_edit_jobs' stepName jobIds%}">
+        {% csrf_token %}
+        {% if stepName == 'fac_manual' %}
+        <div class="accordion  mb-5" id="accordionExample">
+            {{ form.management_form }}
+            {%for pageForm in form%}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{pageForm.reportId}}">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{pageForm.reportId}}" aria-expanded="true"
+                            aria-controls="collapse{{pageForm.reportId}}">
+                        {{pageForm.title}}
+                    </button>
+                </h2>
+                <div id="collapse{{pageForm.reportId}}" class="accordion-collapse collapse show"
+                     aria-labelledby="heading{{pageForm.reportId}}"
+                     data-bs-parent="#accordionExample">
+                    <div class="accordion-body">
+                        {% for field in pageForm %}
+                        <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+                        {%if field.errors%}
+                        <label class="text-danger">Please select at least one value!</label>
+                        {%endif%}
+                        <fieldset>
+                            {% for box in field %}
+                            <div class="form-check">
+                                {{ box }}
+                            </div>
+                            {% endfor %}
+                        </fieldset>
+                        {%endfor%}
+                    </div>
+                </div>
+            </div>
+            {%endfor%}
+            <div style="position:fixed;bottom:5px;right:5px;" class="bg-light bg-gradient border rounded p-2 vstack">
+                <input type="submit" value="Confirm" class="btn btn-success float-end m-2" name="confirm">
+                <a href="{% url 'metadata:waiting_jobs' %}" class="btn btn-danger float-end m-2">Cancel</a>
+            </div>
+        </div>
+        {%endif%}
+    </form>
+</div>
+
+{% endblock %}

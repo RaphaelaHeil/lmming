@@ -1,0 +1,50 @@
+{% if processes %}
+<h2>Reports</h2>
+<div class="table-responsive">
+    <form id="checked-contacts">
+        <table class="table table-striped" hx-get="{% url 'metadata:waiting_reports_table'%}"
+               hx-trigger="every 20s[allowRefresh()], collection-deleted from:body" hx-target="#process_tablediv">
+            <thead>
+            <tr>
+                <th scope="col">
+                    Process Name
+                </th>
+                <th scope="col" class="text-center">
+                    Processing Step
+                </th>
+                <th scope="col" class="text-center">
+                    Status
+                </th>
+
+                <th scope="col" class="text-center">
+                    Job Count
+                </th>
+                <th scope="col" class="text-center">Options</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            {%for process in processes %}
+            <tr>
+                <th scope="row">
+                    {{process.processName}}
+                </th>
+                <td class="text-center">
+                    {{process.stepName}}
+                </td>
+                <td class="text-center">
+                    {{process.status}}
+                </td>
+                <td class="text-center">
+                    {{process.count}}/{{process.total}}
+                </td>
+                <td class="text-center">
+                    <a style="cursor:pointer;" href="{% url 'metadata:bulk_edit_jobs' process.stepUrl process.jobs%}"><i
+                            class="fa-solid fa-pencil text-dark"></i></a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </form>
+</div>
+{% endif %}

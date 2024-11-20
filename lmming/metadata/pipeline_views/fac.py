@@ -3,8 +3,9 @@ from urllib.parse import urljoin
 
 from django.conf import settings
 from django.db import transaction
+from django.forms import formset_factory
 
-from metadata.forms.fac import FacManualForm, MintForm, FacFileNameForm, TranslateForm
+from metadata.forms.fac import FacManualForm, MintForm, FacFileNameForm, TranslateForm, BatchFacManualForm
 from metadata.models import Status, ProcessingStep, ReportTranslation, Report
 from metadata.pipeline_views.utils import __fromDisplayList__
 from metadata.tasks.manage import scheduleTask
@@ -139,3 +140,35 @@ def facTranslate(request, job):
         translateForm = TranslateForm(initial=initial)
         return {"form": translateForm, "job": job,
                 "stepName": ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH.label}
+
+
+def bulkFacManual(request, jobIds: str):
+    ManualFormSet = formset_factory(BatchFacManualForm, extra=0)
+
+    initial = [
+        {"isFormatOf": report.isFormatOf, "reportId": report.id, "date": report.date, "title": report.title} for
+        report in Report.objects.filter(job__pk__in=jobIds.split(",")).order_by("date")]
+
+    if request.method == "POST":
+        bulkManualForm = ManualFormSet(request.POST, initial=initial)
+        if bulkManualForm.is_valid():
+            for f in bulkManualForm:
+                report = Report.objects.get(pk=f.reportId)
+                if f.has_changed():
+                    if "isFormatOf" in f.changed_data:
+                        report.isFormatOf = f.cleaned_data["isFormatOf"]
+                        report.save()
+                job = report.job
+                step = job.processingSteps.filter(
+                    processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()
+                step.status = Status.COMPLETE
+                step.save()
+                transaction.on_commit(lambda: scheduleTask(job.pk))
+            return {}
+        else:
+            return {"form": bulkManualForm, "jobIds": jobIds,
+                    "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.value.lower()}
+    else:
+        bulkManualForm = ManualFormSet(initial=initial)
+        return {"form": bulkManualForm, "jobIds": jobIds,
+                "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.value.lower()}
