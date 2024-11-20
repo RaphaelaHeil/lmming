@@ -88,11 +88,13 @@
 
                     {%if job.status == 'COMPLETE'%}
 
+                    {%if archive == 'FAC'%}
                     <span data-bs-toggle="tooltip">
                     <a href="{% url 'metadata:download_transfer' job.id 'csv'%}" style="cursor:pointer;" class="px-1"
                        title="Download complete metadata for Omeka (csv)">
                         <i class="fa-solid fa-file-csv text-dark"></i></a>
                     </span>
+                    {%endif%}
 
                     <span data-bs-toggle="tooltip">
                     <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'csv_restricted'%}"
@@ -100,24 +102,19 @@
                         <i class="fa-solid fa-file-shield text-dark"></i></a>
                     </span>
 
-                    <!--                    <span data-bs-toggle="tooltip">-->
-                    <!--                    <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'struct_map'%}"-->
-                    <!--                       class="px-1" title="Download Structural Map (xml)">-->
-                    <!--                        <i class="fa-solid fa-file-code text-dark"></i></a>-->
-                    <!--                    </span>-->
-
+                    {%if archive == 'FAC'%}
                     <span data-bs-toggle="tooltip">
                     <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'zip'%}" class="px-1"
                        title="Download complete Archivematica folder structure (zip)">
                         <i class="fa-solid fa-folder-plus text-dark"></i></a>
                     </span>
+                    {%endif%}
 
                     <span data-bs-toggle="tooltip">
                     <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'zip_restricted'%}"
                        class="px-1" title="Download restricted Archivematica folder structure (zip)">
                         <i class="fa-solid fa-folder-minus text-dark"></i></a>
                     </span>
-
 
                     {%endif%}
 

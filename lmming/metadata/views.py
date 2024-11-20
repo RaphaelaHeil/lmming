@@ -96,12 +96,12 @@ class Transfers(View):
             viewStatus[viewKey]["down"] = VIS
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:asc"
             context = {"jobs": ExtractionTransfer.objects.order_by(orderBy).reverse(), "viewStatus": viewStatus,
-                       "searchParams": f"sort={viewKey}:desc"}
+                       "searchParams": f"sort={viewKey}:desc", "archive":settings.ARCHIVE_INST}
         else:
             viewStatus[viewKey]["up"] = VIS
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:desc"
             context = {"jobs": ExtractionTransfer.objects.order_by(orderBy), "viewStatus": viewStatus,
-                       "searchParams": f"sort={viewKey}:asc"}
+                       "searchParams": f"sort={viewKey}:asc", "archive":settings.ARCHIVE_INST}
 
         return render(request, "partial/extraction_transfer_table.html", context)
 
