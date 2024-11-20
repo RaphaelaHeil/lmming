@@ -43,6 +43,7 @@ class NlpResult:
         self.events = list(dict.fromkeys(self.events))
         self.objects = list(dict.fromkeys(self.objects))
 
+
 class NerHelper:
 
     def __init__(self):
@@ -147,6 +148,14 @@ def normalize(document):
     return edited
 
 
+def __cutAddress(person: str) -> str:
+    if person.lower().startswith("herr "):
+        return person[5:]
+    if person.lower().startswith("fröken "):
+        return person[7:]
+    return person
+
+
 def filtered_entities(text: str, result: NlpResult):
     msr = 0
     processed_ra = NER_HELPER.NER_RA(text)
@@ -158,9 +167,8 @@ def filtered_entities(text: str, result: NlpResult):
             if label == "ORG":
                 result.organisations.append(entity)
             elif label == "PRS":
-                if entity.lower().startswith("herr "):
-                    entity = entity[5:]
-                if entity: # don't add empty entities
+                entity = __cutAddress(entity)
+                if entity:  # don't add empty entities
                     result.persons.append(entity)
     for element in processed_kb:
         entity = correction(element["word"])
@@ -177,8 +185,7 @@ def filtered_entities(text: str, result: NlpResult):
             # ent_final = {label: [] for label in ["ORG", "PRS", "TME", "OBJ", "LOC", "WRK", "EVN"]}
             match label:
                 case "PRS":
-                    if entity.lower().startswith("herr "):
-                        entity = entity[5:]
+                    entity = __cutAddress(entity)
                     if entity:  # don't add empty entities
                         result.persons.append(entity)
                 case "TME":
@@ -195,7 +202,7 @@ def filtered_entities(text: str, result: NlpResult):
                     result.events.append(entity)
 
 
-def processPage(pagePath: Path, normalise:bool=True) -> NlpResult:
+def processPage(pagePath: Path, normalise: bool = True) -> NlpResult:
     result = NlpResult()
     if pagePath.suffix == ".xml":
         lines = extractTranscriptionsFromXml(pagePath)
