@@ -16,6 +16,7 @@ from metadata.tasks.utils import splitIfNotNone, createArabTitle
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
 BETANUMERIC = "0123456789bcdfghjkmnpqrstvwxz"
+BETA = "bcdfghjkmnpqrstvwxz"
 
 
 @shared_task()
@@ -101,7 +102,8 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
         retries = 0
         while retries < settings.ARAB_RETRIES:
             try:
-                noid = "".join(secrets.choice(BETANUMERIC) for _ in range(15))
+                # OBS: xml:IDs may not start with a digit!
+                noid = "".join([secrets.choice(BETA)]+ [secrets.choice(BETANUMERIC) for _ in range(14)])
                 if handleAdapter.doesHandleAlreadyExist(noid):
                     retries += 1
                     continue
