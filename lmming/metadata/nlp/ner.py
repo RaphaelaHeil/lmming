@@ -1,9 +1,10 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Set
+from typing import List
 
 import nltk
+
 nltk.download('punkt_tab')
 from .aux import loadAbbreviations, loadSynonyms, get_key
 from .hf_utils import getKBPipeline, getHistbertPipeline
@@ -24,15 +25,23 @@ EMPTY = ""
 class NlpResult:
     text: str = ""
     normalised: str = ""
-    persons: Set[str] = field(default_factory=set)
-    organisations: Set[str] = field(default_factory=set)
-    locations: Set[str] = field(default_factory=set)
-    times: Set[str] = field(default_factory=set)
-    works: Set[str] = field(default_factory=set)
-    events: Set[str] = field(default_factory=set)
-    objects: Set[str] = field(default_factory=set)
+    persons: List[str] = field(default_factory=list)
+    organisations: List[str] = field(default_factory=list)
+    locations: List[str] = field(default_factory=list)
+    times: List[str] = field(default_factory=list)
+    works: List[str] = field(default_factory=list)
+    events: List[str] = field(default_factory=list)
+    objects: List[str] = field(default_factory=list)
     measures: bool = False
 
+    def removeDuplicates(self):
+        self.persons = list(dict.fromkeys(self.persons))
+        self.organisations = list(dict.fromkeys(self.organisations))
+        self.locations = list(dict.fromkeys(self.locations))
+        self.times = list(dict.fromkeys(self.times))
+        self.works = list(dict.fromkeys(self.works))
+        self.events = list(dict.fromkeys(self.events))
+        self.objects = list(dict.fromkeys(self.objects))
 
 class NerHelper:
 
@@ -147,9 +156,9 @@ def filtered_entities(text: str, result: NlpResult):
         label = element["entity_group"]
         if entity:
             if label == "ORG":
-                result.organisations.add(entity)
+                result.organisations.append(entity)
             elif label == "PRS":
-                result.persons.add(entity)
+                result.persons.append(entity)
     for element in processed_kb:
         entity = correction(element["word"])
         label = element["entity_group"]
@@ -158,26 +167,26 @@ def filtered_entities(text: str, result: NlpResult):
                 if month not in entity.split(' '):
                     pass
                 else:
-                    result.times.add(entity)
+                    result.times.append(entity)
         elif entity and label == "MSR":
             msr += 1
         elif entity and label != "PER":
             # ent_final = {label: [] for label in ["ORG", "PRS", "TME", "OBJ", "LOC", "WRK", "EVN"]}
             match label:
                 case "PRS":
-                    result.persons.add(entity)
+                    result.persons.append(entity)
                 case "TME":
-                    result.times.add(entity)
+                    result.times.append(entity)
                 case "ORG":
-                    result.organisations.add(entity)
+                    result.organisations.append(entity)
                 case "OBJ":
-                    result.objects.add(entity)
+                    result.objects.append(entity)
                 case "LOC":
-                    result.locations.add(entity)
+                    result.locations.append(entity)
                 case "WRK":
-                    result.works.add(entity)
+                    result.works.append(entity)
                 case "EVN":
-                    result.events.add(entity)
+                    result.events.append(entity)
 
 
 def processPage(pagePath: Path, normalise:bool=True) -> NlpResult:
@@ -199,4 +208,5 @@ def processPage(pagePath: Path, normalise:bool=True) -> NlpResult:
     else:
         result.normalised = text
     filtered_entities(result.normalised, result)
+    result.removeDuplicates()
     return result
