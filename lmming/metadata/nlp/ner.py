@@ -158,7 +158,10 @@ def filtered_entities(text: str, result: NlpResult):
             if label == "ORG":
                 result.organisations.append(entity)
             elif label == "PRS":
-                result.persons.append(entity)
+                if entity.lower().startswith("herr "):
+                    entity = entity[5:]
+                if entity: # don't add empty entities
+                    result.persons.append(entity)
     for element in processed_kb:
         entity = correction(element["word"])
         label = element["entity_group"]
@@ -174,7 +177,10 @@ def filtered_entities(text: str, result: NlpResult):
             # ent_final = {label: [] for label in ["ORG", "PRS", "TME", "OBJ", "LOC", "WRK", "EVN"]}
             match label:
                 case "PRS":
-                    result.persons.append(entity)
+                    if entity.lower().startswith("herr "):
+                        entity = entity[5:]
+                    if entity:  # don't add empty entities
+                        result.persons.append(entity)
                 case "TME":
                     result.times.append(entity)
                 case "ORG":
