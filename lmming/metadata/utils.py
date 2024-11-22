@@ -94,7 +94,8 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
                 d = remainder.split("-")
                 dates.add(__parseDateString(d[0]))
                 dates.add(__parseDateString(d[1]))
-            elif len(remainder) >= 4:
+            elif len(remainder) >= 4 and remainder.replace("-", "").replace("_", "").replace(":", "").isnumeric():
+                # prevent FAC fragments from ending up in this case ...
                 dates.add(__parseDateString(remainder))
             else:
                 continue

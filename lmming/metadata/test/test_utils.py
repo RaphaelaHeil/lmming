@@ -151,6 +151,18 @@ class ParseFilenameTests(TestCase):
                              {"type": Report.DocumentType.ANNUAL_REPORT, "date": [datetime(1980, 1, 1)],
                               "union_id": "550", "page": 1})
 
+    def test_fragment(self):
+        results = parseFilename("fac_04395_revisionsberattelse_1987_beklavd010klubbkampelasportenk.xml")
+        self.assertDictEqual(results,
+                             {"type": Report.DocumentType.FINANCIAL_STATEMENT, "date": [datetime(1987, 1, 1)],
+                              "union_id": "4395", "page": 1})
+
+    def test_fragment_with_page(self):
+        results = parseFilename("fac_04395_vhetsberattelse_1988_beklavd010klubbkampelasportenk_sid-02.xml")
+        self.assertDictEqual(results,
+                             {"type": Report.DocumentType.ANNUAL_REPORT, "date": [datetime(1988, 1, 1)],
+                              "union_id": "4395", "page": 2})
+
 
 class BuildReportIdentifierTests(TestCase):
 
