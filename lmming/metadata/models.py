@@ -21,6 +21,7 @@ class ExtractionTransfer(Model):
     startDate = DateTimeField(null=True, blank=True)
     endDate = DateTimeField(null=True, blank=True)
     status = CharField(choices=Status.choices, default=Status.PENDING)
+    lastUpdated = DateTimeField(auto_now=True, null=True)
 
     def updateTransferStatus(self):
         jobStatuses = set([job.status for job in self.jobs.all()])
@@ -192,6 +193,7 @@ class Job(Model):
     dateCreated = DateTimeField(auto_now_add=True)
     startDate = DateTimeField(null=True, blank=True)
     endDate = DateTimeField(null=True, blank=True)
+    lastUpdated = DateTimeField(auto_now=True, null=True)
 
     def updateStatus(self):
         stepStatuses = set([s.status for s in self.processingSteps.all()])

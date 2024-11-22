@@ -79,13 +79,15 @@ class Transfers(View):
         sortInstruction = request.GET.get("sort", "created:asc").split(":")
         viewStatus = {"name": {"up": INV, "down": INV, "sortUrl": "sort=name:asc"},
                       "status": {"up": INV, "down": INV, "sortUrl": "sort=status:asc"},
-                      "created": {"up": INV, "down": INV, "sortUrl": "sort=created:asc"}}
+                      "created": {"up": INV, "down": INV, "sortUrl": "sort=created:asc"},
+                      "updated": {"up":INV, "down":INV, "sortUrl":"sort=updated:asc"}
+                      }
         if len(sortInstruction) != 2:
             orderBy = "dateCreated"
             viewKey = "created"
         else:
             lookup = {"name": "name", "status": "status", "created": "dateCreated", "started": "startDate",
-                      "ended": "endDate"}
+                      "ended": "endDate", "updated":"lastUpdated"}
             if sortInstruction[0] in lookup:
                 viewKey = sortInstruction[0]
                 orderBy = lookup[sortInstruction[0]]

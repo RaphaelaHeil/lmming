@@ -59,6 +59,20 @@
                        hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=created:desc"
                        hx-target="#tablediv"></i>
                 </th>
+                <th scope="col">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.updated.sortUrl}}">
+                Last Updated
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.updated.up}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:asc"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.updated.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+
+
                 <th scope="col" class="text-end">Options</th>
             </tr>
             </thead>
@@ -78,6 +92,9 @@
                 </td>
                 <td>
                     {{job.dateCreated |date:"d M Y, H:i"}}
+                </td>
+                <td>
+                    {{job.lastUpdated |date:"d M Y, H:i"}}
                 </td>
                 <td class="text-end">
                     <span style="cursor:pointer;" class="px-1"
