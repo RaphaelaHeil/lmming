@@ -48,6 +48,7 @@ ALLOWED_HOSTS = [env("LMMING_HOST")]  # "127.0.0.1", "0.0.0.0", "localhost"]
 
 INSTALLED_APPS = [
     'metadata.apps.MetadataConfig',
+    'ark.apps.ArkConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

@@ -1,0 +1,43 @@
+{% extends "ark/base.html" %}
+
+{% block title %}
+{%if mode == "create"%}
+Create New ARK
+{%else%}
+Edit ARK Details
+{%endif%}
+{% endblock %}
+
+
+{% block content %}
+
+<div class="p-2 ">
+    {%if mode == "create"%}
+    <form class="form" method="POST" action="{% url 'ark:create'%}">
+        {%else%}
+        <form class="form" method="POST" action="{% url 'ark:edit'%}">
+            {%endif%}
+
+            {% csrf_token %}
+            {%for field in form %}
+            {%if field.is_hidden%}
+            {{ field }}
+            {%else%}
+
+            <div class="form-group mb-2 row">
+                {{field.widget}}
+                <label for="{{field.auto_id}}" class="col-sm-1 col-form-label">{{field.label}} </label>
+                <div class="col-sm-11">
+                    {{ field }}
+                </div>
+            </div>
+            {%endif%}
+            {%endfor%}
+            {%if mode == "create"%}
+            <input type="submit" value="Create" class="btn btn-success float-end m-2" name="confirm">
+            {%else%}
+            <input type="submit" value="Submit Changes" class="btn btn-success float-end m-2" name="confirm">
+            {%endif%}
+        </form>
+</div>
+{% endblock %}

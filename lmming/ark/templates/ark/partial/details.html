@@ -1,0 +1,77 @@
+{% extends "ark/base.html" %}
+
+{% block title %}View ARK Details{% endblock %}
+
+{% block content %}
+
+<div class="p-2 ">
+    <dl class="row">
+        <dt class="col-sm-3">ARK</dt>
+        <dd class="col-sm-9">
+        <span data-bs-toggle="tooltip">
+                <a href="{{ark}}" target="_blank" title="Opens in new tab">{{ark}}
+                    <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
+                </a>
+            </span>
+        </dd>
+
+        <dt class="col-sm-3">Target URL</dt>
+        <dd class="col-sm-9">
+            {%if url%}
+            <span data-bs-toggle="tooltip">
+                <a href="{{url}}" target="_blank" title="Opens in new tab">{{url}}
+                    <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
+                </a>
+            </span>
+            {%else%}
+            -
+            {%endif%}
+        </dd>
+
+
+        <dt class="col-sm-3">Title</dt>
+        <dd class="col-sm-9">{{title|default:'-'}}</dd>
+
+        <dt class="col-sm-3">Type</dt>
+        <dd class="col-sm-9">{{type|default:'-'}}</dd>
+
+        <dt class="col-sm-3">Commitment</dt>
+        <dd class="col-sm-9">{{commitment|default:'-'}}</dd>
+
+        <dt class="col-sm-3">Identifier</dt>
+        <dd class="col-sm-9">{{identifier|default:'-'}}</dd>
+
+        <dt class="col-sm-3">Format</dt>
+        <dd class="col-sm-9">{{format|default:'-'}}</dd>
+
+        <dt class="col-sm-3">Relation</dt>
+        <dd class="col-sm-9">
+            {%if relation%}
+            <span data-bs-toggle="tooltip">
+                <a href="{{relation}}" target="_blank" title="Opens in new tab">{{relation}}
+                    <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
+                </a>
+            </span>
+            {%else%}
+            -
+            {%endif%}
+        </dd>
+
+        <dt class="col-sm-3">Source</dt>
+        <dd class="col-sm-9">
+            {%if source%}
+            <span data-bs-toggle="tooltip">
+                <a href="{{source}}" target="_blank" title="Opens in new tab">{{source}}
+                    <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
+                </a>
+            </span>
+            {%else%}
+            -
+            {%endif%}
+        </dd>
+
+        <dt class="col-sm-3">Metadata</dt>
+        <dd class="col-sm-9">{{metadata|default:'-'}}</dd>
+    </dl>
+</div>
+{% endblock %}

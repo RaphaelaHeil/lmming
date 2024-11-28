@@ -1,0 +1,26 @@
+{% extends "ark/base.html" %}
+
+{% block title %}{{title}}{% endblock %}
+
+{% block content %}
+
+<div class="p-2 ">
+    {%if mode == "view"%}
+    <form class="form" method="POST" action="{% url 'ark:view'%}">
+        {%else%}
+        <form class="form" method="POST" action="{% url 'ark:edit'%}">
+            {%endif%}
+            {% csrf_token %}
+            <div class="form-group row">
+                {%for field in form%}
+                {{field.widget}}
+                <label for="{{field.auto_id}}" class="col-sm-1 col-form-label">{{field.label}} </label>
+                <div class="col-sm-11">
+                    {{ field }}
+                </div>
+                {%endfor%}
+            </div>
+            <input type="submit" value="Look Up" class="btn btn-success float-end m-2" name="confirm">
+        </form>
+</div>
+{% endblock %}

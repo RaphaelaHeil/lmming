@@ -3,7 +3,6 @@ import logging
 
 import requests
 from celery import shared_task
-from celery.utils.functional import first
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
 from requests.compat import urljoin

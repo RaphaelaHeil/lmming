@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ARK Management UI</title>
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
+    <script src="{% static 'metadata/htmx.min.js' %}"></script>
+    <script src="{% static 'metadata/jquery.min.js' %}"></script>
+    <link rel="shortcut icon" type="image/png" href="{% static 'metadata/favicon.png' %}"/>
+    <style>
+        body {
+          min-height: 25rem;
+          padding-top: 4.5rem;
+        }
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<nav class="navbar navbar-light navbar-expand-md bg-warning justify-content-center fixed-top">
+    <div class="container-fluid">
+        <a href="/ark" class="navbar-brand d-flex w-50 me-auto">ARKs</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsingNavbar3">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse w-100" id="collapsingNavbar3">
+            <ul class="navbar-nav w-100">
+                <li class="nav-item me-5">
+                    <a class="nav-link" href="{% url 'ark:view'%}"><i class="fa-solid fa-magnifying-glass"></i> View</a>
+                </li>
+                <li class="nav-item me-5">
+                    <a class="nav-link" href="{% url 'ark:create'%}"><i class="fa-solid fa-circle-plus"></i> Create
+                    </a>
+                </li>
+                <li class="nav-item me-5">
+                    <a class="nav-link" href="{% url 'ark:edit'%}"> <i class="fa-solid fa-pencil"></i> Edit
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<main class="container">
+    {% csrf_token %}
+    <div id="content">
+        <h2 class="mb-4">{% block title %}{% endblock %}</h2>
+        {% block content %}{% endblock %}
+    </div>
+</main>
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+</script>
+</body>
+<script src="{% static 'metadata/metadata.js' %}"></script>
+
+</html>

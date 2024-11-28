@@ -1,0 +1,33 @@
+{% extends "ark/base.html" %}
+
+{% block title %}{% endblock %}
+
+{% block content %}
+
+
+<div class="row g-5 py-5 row-cols-1 row-cols-lg-3">
+    <div class="feature col text-center">
+        <a href="{% url 'ark:view'%}" class="text-decoration-none text-reset">
+            <div class="border border-dark p-3 rounded bg-warning">
+                <h3 class="fs-2"><i class="fa-solid fa-magnifying-glass pe-3"></i> View ARK Details</h3>
+            </div>
+        </a>
+    </div>
+    <div class="feature col text-center">
+        <a href="{% url 'ark:create'%}" class="text-decoration-none text-reset">
+            <div class="border border-dark p-3 rounded bg-warning">
+                <h3 class="fs-2"><i class="fa-solid fa-circle-plus pe-3"></i> Create new ARK</h3>
+            </div>
+        </a>
+    </div>
+    <div class="feature col text-center">
+        <a href="{% url 'ark:edit'%}" class="text-decoration-none text-reset">
+            <div class="border  border-dark p-3 rounded bg-warning">
+                <h3 class="fs-2"><i class="fa-solid fa-pencil pe-3"></i> Edit Existing ARK</h3>
+            </div>
+        </a>
+    </div>
+</div>
+
+
+{% endblock %}
