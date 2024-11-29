@@ -26,7 +26,7 @@ def updateArk(arkUrl: str, details: Dict[str, str]) -> Dict[str, str]:
 
 
 def createArk(details: Dict[str, str]) -> Dict[str, str]:
-    shoulder = "/test"
+    shoulder = "/r1"
     mintUrl = settings.MINTER_URL + "/mint"
     headers = {"Authorization": f"Bearer {settings.MINTER_AUTH}"}
     mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}
