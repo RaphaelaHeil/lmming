@@ -20,8 +20,8 @@ class EditArk(Form):
                            widget=TextInput(attrs={'class': 'form-control'}))
     format = CharField(max_length=200, required=False, label="Format",
                        widget=TextInput(attrs={'class': 'form-control'}))
-    relation = URLField(max_length=200, label="Relation", required=False,
-                        widget=URLInput(attrs={'class': 'form-control', 'placeholder': 'URL to Relation '}))
+    relation = CharField(max_length=200, label="Relation", required=False,
+                        widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'URL to Relation '}))
     source = URLField(max_length=200, label="Source", required=False,
                       widget=URLInput(attrs={'class': 'form-control', 'placeholder': 'URL to Source'}))
     metadata = CharField(max_length=200, required=False, label="Metadata",

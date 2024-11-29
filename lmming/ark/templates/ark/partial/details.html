@@ -45,17 +45,7 @@
         <dd class="col-sm-9">{{format|default:'-'}}</dd>
 
         <dt class="col-sm-3">Relation</dt>
-        <dd class="col-sm-9">
-            {%if relation%}
-            <span data-bs-toggle="tooltip">
-                <a href="{{relation}}" target="_blank" title="Opens in new tab">{{relation}}
-                    <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i>
-                </a>
-            </span>
-            {%else%}
-            -
-            {%endif%}
-        </dd>
+        <dd class="col-sm-9">{{relation|default:'-'}}</dd>
 
         <dt class="col-sm-3">Source</dt>
         <dd class="col-sm-9">
