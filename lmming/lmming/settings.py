@@ -33,6 +33,8 @@ env = environ.Env(
 
 environ.Env.read_env(BASE_DIR / ".env")
 
+ARCHIVE_INST = env("ARCHIVE_INST", str).upper()
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -48,7 +50,6 @@ ALLOWED_HOSTS = [env("LMMING_HOST")]  # "127.0.0.1", "0.0.0.0", "localhost"]
 
 INSTALLED_APPS = [
     'metadata.apps.MetadataConfig',
-    'ark.apps.ArkConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,6 +59,10 @@ INSTALLED_APPS = [
     'django_bootstrap5',
     'fontawesomefree'
 ]
+
+if ARCHIVE_INST == "FAC":
+    INSTALLED_APPS.append('ark.apps.ArkConfig')
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -157,7 +162,6 @@ MEDIA_ROOT = BASE_DIR / Path(env("MEDIA_PATH"))  # BASE_DIR / "media"
 
 NER_BASE_DIR = MEDIA_ROOT / "ner_data"
 
-ARCHIVE_INST = env("ARCHIVE_INST", str).upper()
 if ARCHIVE_INST == "FAC":
     MINTER_URL = env("MINTER_URL", str)
     MINTER_AUTH = env("MINTER_AUTH", str)
