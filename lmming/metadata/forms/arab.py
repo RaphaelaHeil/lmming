@@ -58,6 +58,7 @@ class ArabTranslateForm(Form):
     accessRights = ChoiceField(label="Access Rights [required]",
                                choices=((a, a) for a in SWEDISH.accessRights.values()), required=True,
                                widget=Select(attrs={"class": "form-select"}))
-    descriptionEN = CharField(label="English Report Description", disabled=True)
+    descriptionEN = CharField(label="English Report Description", disabled=True,
+                              widget=Textarea(attrs={"class": "form-control"}))
     description = CharField(label="Report Description [optional]", required=False,
                             widget=Textarea(attrs={"class": "form-control"}))

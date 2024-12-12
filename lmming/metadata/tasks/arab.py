@@ -30,6 +30,21 @@ def arabComputeFromExistingFields(jobPk: int, pipeline: bool = True):
     report.created = sorted(report.date)[-1] + relativedelta(years=1)
     report.language = ["sv"]
 
+    translation = ReportTranslation.objects.filter(report=report, language="sv")
+    if not translation:
+        translation = ReportTranslation(report=report, language="sv")
+    else:
+        translation = translation.first()
+
+    pageCount = report.page_set.count()
+    if pageCount == 1:
+        report.description = "1 page"
+        translation.description = "1 sida"
+    else:
+        report.description = f"{pageCount} pages"
+        translation.description = f"{pageCount} sidor"
+    translation.save()
+
     report.isFormatOf = [Report.DocumentFormat.PRINTED]
 
     license = DefaultValueSettings.objects.filter(pk=DefaultValueSettings.DefaultValueSettingsType.DC_LICENSE).first()
@@ -103,7 +118,7 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
         while retries < settings.ARAB_RETRIES:
             try:
                 # OBS: xml:IDs may not start with a digit!
-                noid = "".join([secrets.choice(BETA)]+ [secrets.choice(BETANUMERIC) for _ in range(14)])
+                noid = "".join([secrets.choice(BETA)] + [secrets.choice(BETANUMERIC) for _ in range(14)])
                 if handleAdapter.doesHandleAlreadyExist(noid):
                     retries += 1
                     continue

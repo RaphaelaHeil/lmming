@@ -6,7 +6,6 @@ from django.conf import settings
 from django.db import transaction
 
 from metadata.forms.arab import ArabGenerateForm, ArabManualForm, ArabMintForm, ArabFileNameForm, ArabTranslateForm
-from metadata.forms.fac import MintForm
 from metadata.models import Status, ProcessingStep, ReportTranslation, Report
 from metadata.pipeline_views.utils import __fromDisplayList__
 from metadata.tasks.manage import scheduleTask
@@ -145,7 +144,7 @@ def arabMint(request, job):
         else:
             return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label}
     else:
-        mintForm = MintForm(initial=initial)
+        mintForm = ArabMintForm(initial=initial)
         return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label}
 
 
