@@ -3,7 +3,7 @@ import os
 from base64 import b64encode, b64decode
 from datetime import date
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import requests
 from Crypto.Hash import SHA256
@@ -11,6 +11,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from requests import Timeout, ConnectionError, TooManyRedirects
 
+from ark.utils import updateArk
 from metadata.models import Report
 
 
@@ -249,3 +250,59 @@ class HandleAdapter(metaclass=Singleton):
         except Exception as exception:
             raise HandleError("An issue occcurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
+
+
+class ArkError(Exception):
+
+    def __init__(self, userMessage: str, adminMessage: str):
+        super().__init__(userMessage, adminMessage)
+        self.userMessage = userMessage
+        self.adminMessage = adminMessage
+
+
+class ArkletAdapter:
+
+    def __init__(self, address: str, naan: str, authenticationToken: str):
+        self.arkletBaseUrl = address
+        self.naan = naan
+        self.headers = {"Authorization": f"Bearer {authenticationToken}"}
+
+        if self.arkletBaseUrl.endswith("/"):
+            self.arkletBaseUrl = self.arkletBaseUrl.rstrip("/")
+
+    def createArk(self, shoulder: str, details: Dict[str, str]) -> str:
+        mintUrl = self.arkletBaseUrl + "/mint"
+        mintBody = {"naan": self.naan, "shoulder": shoulder}
+        mintBody.update(details)
+        response = requests.post(mintUrl, headers=self.headers, json=mintBody)
+        if response.ok:
+            ark = response.json()["ark"]
+            if ark:
+                return ark
+            else:
+                raise ArkError(f"Arklet did not return a new ARK. Please contact your admin.",
+                               f"Arklet returned empty ARK for shoulder {shoulder}")
+        else:
+            raise ArkError(
+                f"An error occurred while obtaining a new ARK, reason: {response.status_code} {response.reason}. "
+                f"Please verify that ARKlet is running and try again.",
+                f"Error creating ARK, reason: {response.status_code} {response.reason}")
+
+    def updateArk(self, noid: str, details: Dict[str, str]):
+        ark = f"ark:/{self.naan}/{noid}"
+        details["ark"] = ark
+
+        response = requests.put(url=self.arkletBaseUrl + "/update", headers=self.headers, json=details)
+        if not response.ok:
+            raise ArkError(
+                f"An error occurred while updating the ARK {ark} ({response.status_code} {response.reason}).",
+                f"Error updating ARK {ark}, reason: {response.status_code} {response.reason}")
+
+    def createArkWithDependentUrl(self, shoulder: str, urlFormat: str, details: Dict[str, str]) -> str:
+        ark = self.createArk(shoulder, details)
+        noid = ark.split("/")[-1]
+
+        url = urlFormat.format(noid)
+        details["url"] = url
+        updateArk(noid, details)
+        return ark
