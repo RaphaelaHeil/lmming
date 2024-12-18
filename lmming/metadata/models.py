@@ -157,6 +157,12 @@ class ReportTranslation(Model):
 
     description = TextField(blank=True, default="")
 
+    def get_isFormatOf_display(self):
+        return ", ".join(self.isFormatOf)
+
+    def get_type_display(self):
+        return ", ".join(self.type)
+
 
 class Page(Model):
     report = ForeignKey(Report, on_delete=CASCADE)

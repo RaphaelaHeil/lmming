@@ -1,0 +1,63 @@
+<div class="p-1 pb-5">
+    <h3>Report Translation</h3>
+    <div class="accordion" id="translationAccordeon">
+        {% for translation in translations %}
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="heading{{translation.language}}">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#collapse{{translation.language}}" aria-expanded="true"
+                        aria-controls="collapse{{translation.language}}">
+                    Translation: {{translation.language}}
+                </button>
+            </h2>
+            <div id="collapse{{translation.language}}" class="accordion-collapse collapse show"
+                 aria-labelledby="heading{{page.order}}" data-bs-parent="#translationAccordeon">
+                <div class="accordion-body">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>Coverage:</strong>
+                            </div>
+                            <div class="col">
+                                <p>{{translation.coverage|default:'not assigned yet'}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>isFormatOf:</strong>
+                            </div>
+                            <div class="col">
+                                <p>{{translation.get_isFormatOf_display|default:'not assigned yet'}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>Type:</strong>
+                            </div>
+                            <div class="col">
+                                <p>{{translation.get_type_display|default:'not assigned yet'}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>AccessRights:</strong>
+                            </div>
+                            <div class="col">
+                                <p>{{translation.accessRights|default:'not assigned yet'}}</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-2 text-center">
+                                <strong>Description:</strong>
+                            </div>
+                            <div class="col">
+                                <p>{{translation.description|default:'not assigned yet'}}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
