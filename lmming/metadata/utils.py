@@ -8,10 +8,11 @@ from typing import Dict, Union, List, Any, Tuple
 
 import pandas as pd
 from django.conf import settings
-from lxml.etree import SubElement, register_namespace, QName, Element, tostring
+from django.db.models.enums import TextChoices
+from lxml.etree import SubElement, register_namespace, QName, Element, tostring, parse
 from requests.compat import urljoin
 
-from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep
+from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status
 
 __REPORT_TYPE_INDEX = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
                        "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
@@ -29,6 +30,16 @@ def __parseDateString(dateString: str) -> datetime:
         month = int(s[1]) if s[1].isnumeric() else 1
         day = int(s[2]) if s[2].isnumeric() else 1
         return datetime(int(year), month, day)
+
+
+def parseUnionId(filename: str) -> str:
+    if "fac" in filename:
+        filename = filename[filename.index("fac") + 4:]
+    if "arab" in filename:
+        filename = filename[filename.index("arab") + 5:]
+
+    unionId = filename.split("_")[0].lstrip("0") or "0"
+    return unionId
 
 
 def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[datetime]]]:
@@ -438,4 +449,27 @@ def buildProcessingSteps(config, job):
     for entry in config:
         ProcessingStep.objects.create(job=job, order=entry["stepType"].order,
                                       processingStepType=entry["stepType"].value,
-                                      humanValidation=entry["humanValidation"], mode=entry["mode"])
+                                      humanValidation=entry["humanValidation"], mode=entry["mode"],
+                                      status=entry["status"] if "status" in entry else Status.PENDING)
+
+
+def getStructureFromStructMap(structMapFile: Path) -> Dict[str, Dict[str, str]]:
+    tree = parse(structMapFile)
+    root = tree.getroot()
+    reports = root.xpath("//*[@TYPE='report']")
+
+    parsedData = {}
+
+    for report in reports:
+        title = report.attrib["LABEL"]
+        id = report.attrib["ID"]
+        pageData = []
+        pages = report.xpath("./*[@TYPE='page']")
+        for page in pages:
+            pageId = page.attrib["ID"]
+            filename = page.xpath("./*[contains(@FILEID,'.xml')]")[0].attrib["FILEID"]
+            order = page.attrib["ORDER"]
+            pageData.append({"id": pageId, "filename": filename, "order": order})
+
+        parsedData[id] = {"title": title, "pages": pageData}
+    return parsedData

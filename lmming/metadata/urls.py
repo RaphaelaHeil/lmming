@@ -8,6 +8,7 @@ urlpatterns = [
     path("", views.index, name="index"),
     path("transfers", views.Transfers.as_view(), name="transfer_table"),
     path("transfer/create", partials.createTransfer, name="create_transfer"),
+    path("transfer/import", partials.importTransfer, name="import_transfer"),
     path("transfer/<int:transfer_id>", views.Transfer.as_view(), name="transfer"),
     path("transfer/<int:transfer_id>/verify", partials.verifyTransfer, name="verify_transfer"),
     path("transfer/<int:transfer_id>/download/<str:filetype>", views.downloadTransfer, name="download_transfer"),

@@ -1,4 +1,6 @@
 from copy import deepcopy
+from datetime import datetime
+from typing import List
 
 import pandas as pd
 from django.conf import settings
@@ -9,12 +11,13 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from metadata.forms.shared import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, \
-    ProcessingStepForm
+    ProcessingStepForm, TransferImportForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
-    DefaultNumberSettings
+    DefaultNumberSettings, ReportTranslation
 from metadata.pipeline_views.fac import bulkFacManual
 from metadata.tasks.manage import restartTask, scheduleTask
-from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps
+from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps, \
+    getStructureFromStructMap, parseUnionId
 
 FAC_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILENAME,
                                 "tooltip": "Extracts 'date' and 'type' information, as well as the organisation's id, "
@@ -322,3 +325,131 @@ def bulkEditJobs(request, step: str, jobs: str):
             return HttpResponseRedirect(reverse('metadata:waiting_jobs'))
     else:
         return HttpResponseRedirect(reverse('metadata:waiting_jobs'))
+
+
+def __splitAndStrip(text: str) -> List[str]:
+    return [x.strip() for x in text.split("|")]
+
+
+def importTransfer(request):
+    importForm = TransferImportForm()
+
+    if request.method == 'POST':
+        importForm = TransferImportForm(request.POST, request.FILES)
+
+        errors = []
+
+        if importForm.is_valid():
+            transferName = importForm.cleaned_data["processName"]
+            transferInstance = ExtractionTransfer.objects.create(name=transferName, status=Status.COMPLETE)
+
+            itemsFile = importForm.cleaned_data["itemsFile"]
+            mediaFile = importForm.cleaned_data["mediaFile"]
+            structMapFile = importForm.cleaned_data["structMapFile"]
+
+            structure = getStructureFromStructMap(structMapFile)
+            reportData = pd.read_csv(itemsFile, dtype=str, keep_default_na=False)
+            mediaData = pd.read_csv(mediaFile, dtype=str, keep_default_na=False)
+            transcriptionFiles = importForm.cleaned_data["transcriptionFiles"]
+            files = {str(f): f for f in transcriptionFiles}
+
+            for reportId in structure:
+                rows = reportData[reportData["dcterms:identifier"].str.contains(reportId)]
+                if len(rows) == 0:
+                    errors.append(f"No entry for report ID {reportId} in items.csv")
+                    continue
+                reportRow = rows.iloc[0]
+                unionId = parseUnionId(structure[reportId]["pages"][0]["filename"])
+
+                coverage = [x for x in Report.UnionLevel if x.label == reportRow["dcterms:coverage"]][0]
+                docType = [x for x in Report.DocumentType if x.label in reportRow["dcterms:type"]]
+                isFormatOf = [x for x in Report.DocumentFormat if x.label in reportRow["dcterms:isFormatOf"]]
+                accessRights = [x for x in Report.AccessRights if x.label == reportRow["dcterms:accessRights"]][0]
+                date = [datetime(int(x), 1, 1) for x in
+                        reportRow["dcterms:date"].split("/")]  # TODO: fix date parsing!
+                available = datetime.strptime(reportRow["dcterms:available"], '%Y-%m-%d')
+                created = datetime(int(reportRow["dcterms:created"]), 1, 1)
+
+                r = Report.objects.create(transfer=transferInstance, unionId=unionId, noid=reportId, date=date,
+                                          description=reportRow["dcterms:description"], created=created,
+                                          title=reportRow["dcterms:title"].strip(), available=available,
+                                          creator=reportRow["dcterms:creator"].strip(),
+                                          language=__splitAndStrip(reportRow["dcterms:language"]),
+                                          spatial=__splitAndStrip(reportRow["dcterms:spatial"]),
+                                          license=__splitAndStrip(reportRow["dcterms:license"]),
+                                          isVersionOf=reportRow["dcterms:isVersionOf"].strip(),
+                                          accessRights=accessRights,
+                                          identifier=reportRow["dcterms:identifier"].strip(), isFormatOf=isFormatOf,
+                                          source=__splitAndStrip(reportRow["dcterms:source"]), type=docType,
+                                          relation=__splitAndStrip(reportRow["dcterms:relation"]), coverage=coverage)
+
+                if "." in "".join(reportRow.index.to_list()):
+                    sortedTranslations = {}
+
+                    for colName in reportRow.index.to_list():
+                        if "." in colName:
+                            s = colName.split(".")
+                            language = s[-1]
+                            if language not in sortedTranslations:
+                                sortedTranslations[language] = {}
+                            key = s[0].split(":")[-1]
+                            sortedTranslations[language][key] = reportRow[colName]
+
+                    for language in sortedTranslations:
+                        ReportTranslation.objects.create(report=r, language=language,
+                                                         coverage=sortedTranslations[language]["coverage"].strip(),
+                                                         isFormatOf=__splitAndStrip(
+                                                             sortedTranslations[language]["isFormatOf"]),
+                                                         type=__splitAndStrip(sortedTranslations[language]["type"]),
+                                                         accessRights=sortedTranslations[language][
+                                                             "accessRights"].strip(),
+                                                         description=sortedTranslations[language][
+                                                             "description"].strip())
+
+                for pageData in structure[reportId]["pages"]:
+                    pageId = pageData["id"]
+                    filename = pageData["filename"]
+                    order = pageData["order"]
+                    pageRows = mediaData[mediaData["dcterms:identifier"].str.contains(pageId)]
+                    if len(pageRows) == 0:
+                        errors.append(f"No entry for report ID {pageId} in media.csv")
+                        continue
+                    pageRow = pageRows.iloc[0]
+
+                    persons = __splitAndStrip(pageRow["lm:person"])
+                    organisations = __splitAndStrip(pageRow["lm:organisation"])
+                    location = __splitAndStrip(pageRow["lm:location"])
+                    times = __splitAndStrip(pageRow["lm:time"])
+                    works = __splitAndStrip(pageRow["lm:work"])
+                    events = __splitAndStrip(pageRow["lm:event"])
+                    ner_objects = __splitAndStrip(pageRow["lm:object"])
+                    measure = True if pageRow["lm:measure"].lower() == "true" else False
+
+                    Page.objects.create(report=r, order=int(order), transcriptionFile=files[filename],
+                                        originalFileName=filename,
+                                        identifier=pageRow["dcterms:identifier"].strip(),
+                                        transcription=pageRow["lm:transcription"].strip(),
+                                        normalisedTranscription=pageRow["lm:normalised"].strip(), persons=persons,
+                                        organisations=organisations, locations=location, times=times, works=works,
+                                        events=events, ner_objects=ner_objects, measures=measure, iiifId=pageId)
+
+                # Page.objects.bulk_create([Page(report=r, order=int(page["page"]), transcriptionFile=page["file"],
+                #                                originalFileName=page["file"]) for page in pages])
+
+                if settings.ARCHIVE_INST == "FAC":
+                    config = [{"stepType": f["label"], "mode": f["mode"], "humanValidation": False,
+                               "status": Status.COMPLETE} for f in FAC_PROCESSING_STEP_INITIAL]
+                else:
+                    config = [{"stepType": f["label"], "mode": f["mode"], "humanValidation": False,
+                               "status": Status.COMPLETE} for f in ARAB_PROCESSING_STEP_INITIAL]
+
+                j = Job.objects.create(transfer=transferInstance, report=r)
+                buildProcessingSteps(config, j)
+                r.job = j
+                r.save()
+
+            # TODO: error handling
+
+            return redirect("metadata:verify_transfer", transfer_id=transferInstance.pk)
+
+    return render(request, 'partial/import_transfer.html', {"form": importForm})

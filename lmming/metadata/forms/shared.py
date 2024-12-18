@@ -1,5 +1,6 @@
 from django.forms import ClearableFileInput, FileField, Form, CharField, TextInput, ChoiceField, Select, BooleanField, \
-    CheckboxInput, Textarea, IntegerField, URLField
+    CheckboxInput, Textarea, IntegerField, URLField, FileInput
+from torch.optim.optimizer import required
 
 from metadata.models import ProcessingStep, Report
 
@@ -26,6 +27,18 @@ class ExtractionTransferDetailForm(Form):
     processName = CharField(max_length=100, label="Extraction Process Name:", required=True,
                             widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}))
     file_field = MultipleFileField(label="Select transcription files (*.xml):")
+
+
+class TransferImportForm(Form):
+    processName = CharField(max_length=100, label="Extraction Process Name:", required=True,
+                            widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}))
+    transcriptionFiles = MultipleFileField(label="Select (unrestricted!) transcription files (*.xml):", required=True)
+    itemsFile = FileField(label="items.csv (unrestricted!)", required=True,
+                          widget=FileInput(attrs={"accept": ".csv", "class": "form-control"}))
+    mediaFile = FileField(label="media.csv (unrestricted!)", required=True,
+                          widget=FileInput(attrs={"accept": ".csv", "class": "form-control"}))
+    structMapFile = FileField(label="mets_structmap.xml (unrestricted!)", required=True,
+                          widget=FileInput(attrs={"accept": ".xml", "class": "form-control"}))
 
 
 class ProcessingStepForm(Form):
