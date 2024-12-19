@@ -6,8 +6,8 @@ from django.db import transaction
 from django.forms import formset_factory
 
 from metadata.forms.fac import FacManualForm, MintForm, FacFileNameForm, TranslateForm, BatchFacManualForm
-from metadata.models import Status, ProcessingStep, ReportTranslation, Report
-from metadata.pipeline_views.utils import __fromDisplayList__
+from metadata.models import Status, ProcessingStep, ReportTranslation, Report, FacSpecificData
+from metadata.pipeline_views.utils import __fromDisplayList__, fromCommaList
 from metadata.tasks.manage import scheduleTask
 
 
@@ -24,7 +24,7 @@ def facFilename(request, job):
                 if "type" in filenameForm.changed_data:
                     job.report.type = filenameForm.cleaned_data["type"]
                 if "date" in filenameForm.changed_data:
-                    years = [int(d) for d in __fromDisplayList__(filenameForm.data["date"])]
+                    years = [int(d) for d in fromCommaList(filenameForm.data["date"])]
                     job.report.date = [datetime.date(year=y, month=1, day=1) for y in years]
                 job.report.save()
 
@@ -43,14 +43,24 @@ def facFilename(request, job):
 
 
 def facManual(request, job):
-    initial = {"isFormatOf": job.report.isFormatOf}
+    if not hasattr(job.report, "facspecificdata"):
+        data = FacSpecificData.objects.create(report=job.report)
+    else:
+        data = job.report.facspecificdata
+    initial = {"isFormatOf": job.report.isFormatOf, "seriesVolumeName": data.seriesVolumeName,
+               "seriesVolumeSignum": data.seriesVolumeSignum}
     if request.method == "POST":
-        imageForm = FacManualForm(request.POST, initial=initial)
-        if imageForm.is_valid():
-            if imageForm.has_changed():
-                if "isFormatOf" in imageForm.changed_data:
-                    job.report.isFormatOf = imageForm.cleaned_data["isFormatOf"]
+        manualForm = FacManualForm(request.POST, initial=initial)
+        if manualForm.is_valid():
+            if manualForm.has_changed():
+                if "isFormatOf" in manualForm.changed_data:
+                    job.report.isFormatOf = manualForm.cleaned_data["isFormatOf"]
+                if "seriesVolumeName" in manualForm.changed_data:
+                    data.seriesVolumeName = manualForm.cleaned_data["seriesVolumeName"]
+                if "seriesVolumeSignum" in manualForm.changed_data:
+                    data.seriesVolumeSignum = manualForm.cleaned_data["seriesVolumeSignum"]
                 job.report.save()
+                data.save()
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()
             step.status = Status.COMPLETE
@@ -58,10 +68,10 @@ def facManual(request, job):
             transaction.on_commit(lambda: scheduleTask(job.pk))
             return {"job": job}
         else:
-            return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.label}
+            return {"form": manualForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.label}
     else:
-        imageForm = FacManualForm(initial=initial)
-        return {"form": imageForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.label}
+        manualForm = FacManualForm(initial=initial)
+        return {"form": manualForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.FAC_MANUAL.label}
 
 
 def mint(request, job):
@@ -145,9 +155,16 @@ def facTranslate(request, job):
 def bulkFacManual(request, jobIds: str):
     ManualFormSet = formset_factory(BatchFacManualForm, extra=0)
 
-    initial = [
-        {"isFormatOf": report.isFormatOf, "reportId": report.id, "date": report.date, "title": report.title} for
-        report in Report.objects.filter(job__pk__in=jobIds.split(",")).order_by("date")]
+    initial = []
+    for report in Report.objects.filter(job__pk__in=jobIds.split(",")).order_by("date"):
+        if not hasattr(report, "facspecificdata"):
+            data = FacSpecificData.objects.create(report=report)
+        else:
+            data = report.facspecificdata
+        initial.append(
+            {"isFormatOf": report.isFormatOf, "reportId": report.id, "date": report.date, "title": report.title,
+             "seriesVolumeName": data.seriesVolumeName,
+             "seriesVolumeSignum": data.seriesVolumeSignum})
 
     if request.method == "POST":
         bulkManualForm = ManualFormSet(request.POST, initial=initial)
@@ -158,6 +175,11 @@ def bulkFacManual(request, jobIds: str):
                     if "isFormatOf" in f.changed_data:
                         report.isFormatOf = f.cleaned_data["isFormatOf"]
                         report.save()
+                    if "seriesVolumeName" in f.changed_data:
+                        report.facspecificdata.seriesVolumeName = f.cleaned_data["seriesVolumeName"]
+                    if "seriesVolumeSignum" in f.changed_data:
+                        report.facspecificdata.seriesVolumeSignum = f.cleaned_data["seriesVolumeSignum"]
+                    report.facspecificdata.save()
                 job = report.job
                 step = job.processingSteps.filter(
                     processingStepType=ProcessingStep.ProcessingStepType.FAC_MANUAL.value).first()

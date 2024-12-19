@@ -26,6 +26,10 @@ class ComputeForm(Form):
 class FacManualForm(Form):
     isFormatOf = MultipleChoiceField(label="Format [required]", choices=Report.DocumentFormat, required=True,
                                      widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    seriesVolumeName = CharField(label="Series Volume Name", required=False,
+                                 widget=TextInput(attrs={'class': 'form-control'}))
+    seriesVolumeSignum = CharField(label="Series Volume Signum", required=False,
+                                   widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class MintForm(Form):
@@ -70,3 +74,7 @@ class BatchFacManualForm(Form):
 
     isFormatOf = MultipleChoiceField(label="Format [required]", choices=Report.DocumentFormat, required=True,
                                      widget=CheckboxSelectMultiple(attrs={"class": "form-check-input"}))
+    seriesVolumeName = CharField(label="Series Volume Name", required=False,
+                                 widget=TextInput(attrs={'class': 'form-control'}))
+    seriesVolumeSignum = CharField(label="Series Volume Signum", required=False,
+                                   widget=TextInput(attrs={'class': 'form-control'}))

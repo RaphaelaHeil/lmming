@@ -348,3 +348,15 @@ class ExternalRecord(Model):
     relationLink = URLField(blank=True, default="")
     coverage = CharField(blank=True, default="")
     isVersionOfLink = URLField(blank=True, default="")
+
+
+class InstituteSpecificData(Model):
+    report = OneToOneField(Report, on_delete=CASCADE, primary_key=True, default=None)
+
+    class Meta:
+        abstract = True
+
+
+class FacSpecificData(InstituteSpecificData):
+    seriesVolumeName = CharField(blank=True, default="")
+    seriesVolumeSignum = CharField(blank=True, default="")

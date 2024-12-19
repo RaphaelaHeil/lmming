@@ -350,6 +350,11 @@ def importTransfer(request):
             structure = getStructureFromStructMap(structMapFile)
             reportData = pd.read_csv(itemsFile, dtype=str, keep_default_na=False)
             mediaData = pd.read_csv(mediaFile, dtype=str, keep_default_na=False)
+            if "dcterms:source" not in mediaData.columns:
+                mediaData["dcterms:source"] = ""
+            if "dcterms:bibliographicCitation" not in mediaData.columns:
+                mediaData["dcterms:bibliographicCitation"] = ""
+
             transcriptionFiles = importForm.cleaned_data["transcriptionFiles"]
             files = {str(f): f for f in transcriptionFiles}
 
@@ -365,8 +370,22 @@ def importTransfer(request):
                 docType = [x for x in Report.DocumentType if x.label in reportRow["dcterms:type"]]
                 isFormatOf = [x for x in Report.DocumentFormat if x.label in reportRow["dcterms:isFormatOf"]]
                 accessRights = [x for x in Report.AccessRights if x.label == reportRow["dcterms:accessRights"]][0]
-                date = [datetime(int(x), 1, 1) for x in
-                        reportRow["dcterms:date"].split("/")]  # TODO: fix date parsing!
+                dateString = reportRow["dcterms:date"]
+                if "/" in dateString:
+                    date = [datetime(int(x), 1, 1) for x in dateString.split("/")]
+                else:
+                    date = []
+                    ds = dateString.split("|")
+                    for d in ds:
+                        if "--" in d:
+                            dateRange = d.split("--")
+                            start = int(dateRange[0].strip())
+                            end = int(dateRange[1].strip())
+                            for year in range(start, end + 1):
+                                date.append(datetime(year, 1, 1))
+                        else:
+                            date.append(datetime(int(d.strip()), 1, 1))
+
                 available = datetime.strptime(reportRow["dcterms:available"], '%Y-%m-%d')
                 created = datetime(int(reportRow["dcterms:created"]), 1, 1)
 
@@ -431,7 +450,9 @@ def importTransfer(request):
                                         transcription=pageRow["lm:transcription"].strip(),
                                         normalisedTranscription=pageRow["lm:normalised"].strip(), persons=persons,
                                         organisations=organisations, locations=location, times=times, works=works,
-                                        events=events, ner_objects=ner_objects, measures=measure, iiifId=pageId)
+                                        events=events, ner_objects=ner_objects, measures=measure, iiifId=pageId,
+                                        source=pageRow["dcterms:source"],
+                                        bibCitation=pageRow["dcterms:bibliographicCitation"])
 
                 # Page.objects.bulk_create([Page(report=r, order=int(page["page"]), transcriptionFile=page["file"],
                 #                                originalFileName=page["file"]) for page in pages])

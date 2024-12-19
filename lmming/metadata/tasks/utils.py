@@ -11,7 +11,6 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from requests import Timeout, ConnectionError, TooManyRedirects
 
-from ark.utils import updateArk
 from metadata.models import Report
 
 
@@ -304,5 +303,5 @@ class ArkletAdapter:
 
         url = urlFormat.format(noid)
         details["url"] = url
-        updateArk(noid, details)
+        self.updateArk(noid, details)
         return ark

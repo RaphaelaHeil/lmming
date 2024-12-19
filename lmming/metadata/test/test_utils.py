@@ -4,7 +4,8 @@ import pandas as pd
 from django.test import TestCase
 
 from metadata.models import Report, ExtractionTransfer, Job, ProcessingStep, Status, ExternalRecord
-from metadata.utils import parseFilename, buildReportIdentifier, buildProcessingSteps, updateExternalRecords
+from metadata.utils import parseFilename, buildReportIdentifier, buildProcessingSteps, updateExternalRecords, \
+    formatDateString
 
 
 class ParseFilenameTests(TestCase):
@@ -399,3 +400,74 @@ class UpdateExternalRecordsTests(TestCase):
             externalRecords = ExternalRecord.objects.all()
             self.assertEqual(1, len(externalRecords))
             self.assertEqual("2A", externalRecords[0].archiveId)
+
+
+class FormatDateStringTests(TestCase):
+
+    def test_singleYear(self):
+        dates = [datetime(year=1991, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991")
+
+    def test_nonContinuousYears(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=2010, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991, 2010")
+
+    def test_continuousYears(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1992, month=1, day=1),
+                 datetime(year=1993, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991--1993")
+
+    def test_repeatedYears(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1991, month=12, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991")
+
+    def test_continuousAndNonContinuousYears(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1992, month=1, day=1),
+                 datetime(year=1993, month=1, day=1), datetime(year=2010, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991--1993, 2010")
+
+    def test_nonContinuousAndContinuousYears(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=2010, month=1, day=1),
+                 datetime(year=2011, month=1, day=1), datetime(year=2012, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991, 2010--2012")
+
+
+    def test_multipleContinuousYears(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1992, month=1, day=1),
+                 datetime(year=1993, month=1, day=1), datetime(year=2010, month=1, day=1),
+                 datetime(year=2011, month=1, day=1), datetime(year=2012, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, ","), "1991--1993, 2010--2012")
+
+    def test_singleYearBar(self):
+        dates = [datetime(year=1991, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991")
+
+    def test_nonContinuousYearsBar(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=2010, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991|2010")
+
+    def test_continuousYearsBar(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1992, month=1, day=1),
+                 datetime(year=1993, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991--1993")
+
+    def test_repeatedYearsBar(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1991, month=12, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991")
+
+    def test_continuousAndNonContinuousYearsBar(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1992, month=1, day=1),
+                 datetime(year=1993, month=1, day=1), datetime(year=2010, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991--1993|2010")
+
+    def test_nonContinuousAndContinuousYearsBar(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=2010, month=1, day=1),
+                 datetime(year=2011, month=1, day=1), datetime(year=2012, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991|2010--2012")
+
+
+    def test_multipleContinuousYearsBar(self):
+        dates = [datetime(year=1991, month=1, day=1), datetime(year=1992, month=1, day=1),
+                 datetime(year=1993, month=1, day=1), datetime(year=2010, month=1, day=1),
+                 datetime(year=2011, month=1, day=1), datetime(year=2012, month=1, day=1)]
+        self.assertEqual(formatDateString(dates, "|"), "1991--1993|2010--2012")

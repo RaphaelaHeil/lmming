@@ -14,3 +14,8 @@ def __fromDisplayList__(inputList: str) -> List[Any]:
     else:
         return []
 
+def fromCommaList(inputList:str) -> List[Any]:
+    if inputList:
+        return [s.strip() for s in inputList.split(",")]
+    else:
+        return []

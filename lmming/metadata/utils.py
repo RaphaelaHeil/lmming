@@ -8,7 +8,6 @@ from typing import Dict, Union, List, Any, Tuple
 
 import pandas as pd
 from django.conf import settings
-from django.db.models.enums import TextChoices
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring, parse
 from requests.compat import urljoin
 
@@ -30,6 +29,47 @@ def __parseDateString(dateString: str) -> datetime:
         month = int(s[1]) if s[1].isnumeric() else 1
         day = int(s[2]) if s[2].isnumeric() else 1
         return datetime(int(year), month, day)
+
+
+def formatDateString(dates: List[datetime], separator: str) -> str:
+    if "," in separator:
+        separator = ", "
+    if not dates:
+        return ""
+
+    dates = sorted(list(set([d.year for d in dates])))
+
+    if len(dates) == 1:
+        return str(dates[0])
+    if len(dates) == 2:
+        y1 = dates[0]
+        y2 = dates[1]
+        if abs(y1 - y2) == 1:
+            return f"{y1}--{y2}"
+        else:
+            return f"{y1}{separator}{y2}"
+    prev = dates[0]
+    isRange = False
+    formattedDates = str(prev)
+
+    for this in dates[1:]:
+        if prev == this:
+            continue
+        if prev + 1 == this:
+            isRange = True
+            prev = this
+        else:
+            if isRange:
+                formattedDates += "--" + str(prev) + separator + str(this)
+                prev = this
+                isRange = False
+            else:
+                formattedDates += separator + str(this)
+                prev = this
+    if isRange:
+        formattedDates += "--" + str(prev)
+
+    return formattedDates
 
 
 def parseUnionId(filename: str) -> str:
@@ -160,7 +200,7 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
         reportEntry = {"dcterms:identifier": report.identifier,
                        "dcterms:title": report.title,
                        "dcterms:creator": report.creator,
-                       "dcterms:date": "/".join([str(d.year) for d in report.date]),
+                       "dcterms:date": formatDateString(report.date, "|"),
                        "dcterms:coverage": Report.UnionLevel[report.coverage].label,
                        "dcterms:language": __toOmekaList__(report.language),
                        "dcterms:spatial": __toOmekaList__(report.spatial),
@@ -200,6 +240,8 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
             pageSummary.append({"dcterms:isPartOf": report.identifier,
                                 "dcterms:identifier": urljoin(settings.IIIF_BASE_URL,
                                                               f"iiif/image/{report.noid}_1/info.json"),
+                                "dcterms:source": "",
+                                "dcterms:bibliographicCitation": "",
                                 "lm:transcription": transcription, "lm:normalised": "", "lm:person": "",
                                 "lm:organisation": "", "lm:location": "", "lm:time": "", "lm:work": "", "lm:event": "",
                                 "lm:object": "", "lm:measure": False})
@@ -207,6 +249,8 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
             for page in report.page_set.all().order_by("order"):
                 pageSummary.append({"dcterms:isPartOf": report.identifier,
                                     "dcterms:identifier": page.identifier,
+                                    "dcterms:source": page.source,
+                                    "dcterms:bibliographicCitation": page.bibCitation,
                                     "lm:transcription": page.transcription,
                                     "lm:normalised": page.normalisedTranscription,
                                     "lm:person": __toOmekaList__(page.persons),
@@ -254,7 +298,7 @@ def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False)
         else:
             for page in report.page_set.all():
                 pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER=str(page.order),
-                                      LABEL=page.originalFileName, ID=f"{report.noid}_{page.order}")
+                                      LABEL=page.originalFileName, ID=f"{page.noid}")
                 filename = Path(page.originalFileName).stem
                 SubElement(pageNode, f("fptr"), FILEID=f"{filename}.jpg", CONTENTIDS=f"objects/{filename}.jpg")
                 SubElement(pageNode, f("fptr"), FILEID=f"{filename}.xml",

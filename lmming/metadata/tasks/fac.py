@@ -1,17 +1,16 @@
 import datetime
 import logging
 
-import requests
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
 from django.conf import settings
-from requests.compat import urljoin
 
 from metadata.i18n import SWEDISH
 from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings, \
     ReportTranslation
 from metadata.tasks.utils import resumePipeline, ArkletAdapter, ArkError
 from metadata.tasks.utils import splitIfNotNone
+from metadata.utils import formatDateString
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -114,8 +113,10 @@ def mintArks(jobPk: int, pipeline: bool = True):
     # shoulderSetting = DefaultValueSettings.objects.filter(
     #     pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
 
-    reportShoulderSetting = ""
-    pageShoulderSetting = ""
+    reportShoulderSetting = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.REPORT_ARK_SHOULDER).first()
+    pageShoulderSetting = DefaultValueSettings.objects.filter(
+        pk=DefaultValueSettings.DefaultValueSettingsType.PAGE_ARK_SHOULDER).first()
 
     if not reportShoulderSetting or not reportShoulderSetting.value:
         step.status = Status.ERROR
@@ -184,6 +185,13 @@ def mintArks(jobPk: int, pipeline: bool = True):
             logger.warning(f"{report.title} (job: {jobPk}): {e.adminMessage}")
             return
 
+    volumeSeriesInfo = ""
+    if hasattr(report, "facspecificdata"):
+        volumeSeriesInfo = f"{report.facspecificdata.seriesVolumeName} {report.facspecificdata.seriesVolumeSignum}"
+
+    bibCitation = ", ".join(
+        [f"{report.creator} ({report.unionId})", volumeSeriesInfo, formatDateString(report.date, ",")])
+
     for page in report.page_set.all():
         if page.noid:
             resolveToFormat = iiifBase + "iiif/image/{}"
@@ -193,6 +201,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
             arkLink = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
             page.identifier = arkLink + "/info.json"
             page.source = arkLink + "/full/full/0/default.jpg"
+            page.bibCitation = f"{bibCitation} ({report.identifier}, page ID: {page.noid})"
             page.save()
         else:
             try:
@@ -204,6 +213,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
                 arkLink = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
                 page.identifier = arkLink + "/info.json"
                 page.source = arkLink + "/full/full/0/default.jpg"
+                page.bibCitation = f"{bibCitation} ({report.identifier}, page ID: {page.noid})"
                 page.save()
             except ArkError as e:
                 step.status = Status.ERROR
