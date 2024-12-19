@@ -63,7 +63,6 @@ INSTALLED_APPS = [
 if ARCHIVE_INST == "FAC":
     INSTALLED_APPS.append('ark.apps.ArkConfig')
 
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -137,7 +136,7 @@ USE_I18N = False  # TODO: revisit this decision ...
 USE_TZ = True
 
 DATA_UPLOAD_MAX_NUMBER_FILES = 800
-DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024 # 200MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 200 * 1024 * 1024  # 200MB
 DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 
 # Static files (CSS, JavaScript, Images)
@@ -178,6 +177,8 @@ else:
     raise ValueError("Unknown Archival Institution")
 
 IIIF_BASE_URL = env("IIIF_BASE_URL", str)
+if not IIIF_BASE_URL.endswith("/"):
+    IIIF_BASE_URL += "/"
 
 ER_ARCHIVE_ID = env("ER_ARCHIVE_ID", str)
 ER_ORGANISATION_NAME = env("ER_ORGANISATION_NAME", str)

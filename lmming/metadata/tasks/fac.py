@@ -10,7 +10,7 @@ from requests.compat import urljoin
 from metadata.i18n import SWEDISH
 from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings, \
     ReportTranslation
-from metadata.tasks.utils import resumePipeline
+from metadata.tasks.utils import resumePipeline, ArkletAdapter, ArkError
 from metadata.tasks.utils import splitIfNotNone
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
@@ -111,77 +111,106 @@ def mintArks(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
 
-    shoulderSetting = DefaultValueSettings.objects.filter(
-        pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
-    if not shoulderSetting:
+    # shoulderSetting = DefaultValueSettings.objects.filter(
+    #     pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
+
+    reportShoulderSetting = ""
+    pageShoulderSetting = ""
+
+    if not reportShoulderSetting or not reportShoulderSetting.value:
         step.status = Status.ERROR
-        step.log = "The ARK Shoulder is not set. Please contact your admin to verify LMMing's configuration."
+        step.log = "The ARK Shoulder for reports is not set. Please contact your admin to verify LMMing's configuration."
         step.save()
-        logger.warning("ARK Shoulder is not set!")
+        logger.warning("ARK Shoulder for reports is not set or empty!")
         return
 
-    shoulder: str = shoulderSetting.value
-    if not shoulder:
+    if not pageShoulderSetting or not pageShoulderSetting.value:
         step.status = Status.ERROR
-        step.log = "The ARK Shoulder is empty. Please contact your admin to verify LMMing's configuration."
+        step.log = "The ARK Shoulder for pages is not set. Please contact your admin to verify LMMing's configuration."
         step.save()
-        logger.warning("Empty ARK Shoulder!")
+        logger.warning("ARK Shoulder for pages is not set is not set or empty!")
         return
-    if not shoulder.startswith("/"):
-        step.status = Status.ERROR
-        step.log = (f"The ARK Shoulder should start with a slash but it is {shoulder}. Please contact your admin to "
-                    f"verify LMMing's configuration.")
-        step.save()
-        logger.warning(f"ARK Shoulder does not start with a slash - {shoulder}")
-        return
-    arkletBaseUrl = settings.MINTER_URL
-    headers = {"Authorization": f"Bearer {settings.MINTER_AUTH}"}
 
-    mintUrl = urljoin(arkletBaseUrl, "mint")
+    reportShoulder = reportShoulderSetting.value
+    pageShoulder = pageShoulderSetting.value
+
+    if not reportShoulder.startswith("/"):
+        step.status = Status.ERROR
+        step.log = (f"The ARK Shoulder for reports should start with a slash but it is {reportShoulder}. Please contact"
+                    f" your admin to verify LMMing's configuration.")
+        step.save()
+        logger.warning(f"Report ARK shoulder does not start with a slash - {reportShoulder}")
+        return
+
+    if not pageShoulder.startswith("/"):
+        step.status = Status.ERROR
+        step.log = (f"The ARK Shoulder for pages should start with a slash but it is {pageShoulder}. Please contact "
+                    f"your admin to verify LMMing's configuration.")
+        step.save()
+        logger.warning(f"Page ARK shoulder does not start with a slash - {pageShoulder}")
+        return
+
+    arkAdapter = ArkletAdapter(address=settings.MINTER_URL, naan=settings.MINTER_ORG_ID,
+                               authenticationToken=settings.MINTER_AUTH)
 
     iiifBase = settings.IIIF_BASE_URL
 
-    if not report.noid:
-        mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}
-        response = requests.post(mintUrl, headers=headers, json=mintBody)
+    if report.noid:
+        viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
+        resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
+        try:
+            arkAdapter.updateArk(report.noid, {"url": resolveTo, "title": report.title})
+            # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
+        except ArkError as e:
+            step.status = Status.ERROR
+            step.log = e.userMessage
+            step.save()
+            logger.warning(f"{report.title} (job: {jobPk}): {e.adminMessage}")
+            return
+    else:
+        try:
+            viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
+            resolveToFormat = viewerArk + "?manifest=" + iiifBase + "iiif/presentation/{}/manifest"
 
-        if response.ok:
-            ark = response.json()["ark"]
+            ark = arkAdapter.createArkWithDependentUrl(reportShoulder, resolveToFormat, {"title": report.title})
             noid = ark.split("/")[-1]
             report.noid = noid
-            report.identifier = f"https://ark.fauppsala.se/{ark}/manifest"  # TODO: remove hardcoding once arklet is set up properly
+            report.identifier = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
             report.save()
-
-            for page in report.page_set.all():
-                page.iiifId = f"{report.noid}_{page.order}"
-                page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
-                page.save()
-        else:
+        except ArkError as e:
             step.status = Status.ERROR
-            step.log = (f"An error occurred while obtaining a new ARK: {response.status_code}. Please verify that "
-                        f"ARKlet is running and try again.")
+            step.log = e.userMessage
             step.save()
-            logger.warning(f"ARKlet returned status {response.status_code} while trying to mint ARK for {jobPk} - "
-                           f"{report.title}")
+            logger.warning(f"{report.title} (job: {jobPk}): {e.adminMessage}")
             return
 
-    ark = f"ark:/{settings.MINTER_ORG_ID}/{report.noid}"
-
-    resolveTo = urljoin(iiifBase, f"iiif/presentation/{report.noid}")
-
-    # only adding the bare minimum for now:
-    details = {"ark": ark, "url": resolveTo, "title": report.title, }
-    # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
-
-    updateResponse = requests.put(url=urljoin(arkletBaseUrl, "update"), headers=headers, json=details)
-    if not updateResponse.ok:
-        step.status = Status.ERROR
-        step.log = (f"An error occurred while updating the ARK {ark}, status: {updateResponse.status_code}"
-                    f". Please verify that ARKlet is running and try again.")
-        step.save()
-        logger.warning(f"ARKlet returned status {updateResponse.status_code} while trying to update content for "
-                       f"{ark} ({jobPk} - {report.title})")
-        return
+    for page in report.page_set.all():
+        if page.noid:
+            resolveToFormat = iiifBase + "iiif/image/{}"
+            ark = arkAdapter.updateArk(page.noid, {"url": resolveToFormat, "title": f"Page from '{report.title}'"})
+            noid = ark.split("/")[-1]
+            page.noid = noid
+            arkLink = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
+            page.identifier = arkLink + "/info.json"
+            page.source = arkLink + "/full/full/0/default.jpg"
+            page.save()
+        else:
+            try:
+                resolveToFormat = iiifBase + "iiif/image/{}"
+                ark = arkAdapter.createArkWithDependentUrl(pageShoulder, resolveToFormat,
+                                                           {"title": f"Page from '{report.title}'"})
+                noid = ark.split("/")[-1]
+                page.noid = noid
+                arkLink = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
+                page.identifier = arkLink + "/info.json"
+                page.source = arkLink + "/full/full/0/default.jpg"
+                page.save()
+            except ArkError as e:
+                step.status = Status.ERROR
+                step.log = e.userMessage
+                step.save()
+                logger.warning(f"{report.title} (job: {jobPk}): {e.adminMessage}")
+                return
 
     if step.humanValidation:
         step.status = Status.AWAITING_HUMAN_VALIDATION

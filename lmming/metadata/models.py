@@ -183,6 +183,9 @@ class Page(Model):
     measures = BooleanField(default=False)  # optional/default = False
 
     iiifId = CharField(blank=True, default="")  # iiif URL + structmap
+    noid = CharField(blank=True, default="")
+    source = CharField(blank=True, default="")
+    bibCitation = CharField(blank=True, default="")
 
 
 # noinspection PyUnusedLocal
@@ -306,7 +309,9 @@ class DefaultValueSettings(Model):
         DC_LICENSE = "DC_LICENSE", "dcterms:license"
         DC_SOURCE = "DC_SOURCE", "dcterms:source"
         DC_ACCESS_RIGHTS = "DC_ACCESS_RIGHTS", "dcterms:accessRights"
-        ARK_SHOULDER = "ARK_SHOULDER", "ARK Shoulder"
+        ARK_SHOULDER = "ARK_SHOULDER", "ARK Shoulder (deprecated)"
+        REPORT_ARK_SHOULDER = "REPORT_ARK_SHOULDER", "Report-level ARK Shoulder"
+        PAGE_ARK_SHOULDER = "PAGE_ARK_SHOULDER", "Page-level ARK Shoulder"
 
     name = CharField(primary_key=True, choices=DefaultValueSettingsType.choices)
     value = CharField(blank=True, default="")
