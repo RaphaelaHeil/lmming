@@ -169,32 +169,32 @@ class BuildReportIdentifierTests(TestCase):
 
     def test_annualReportSingleYear(self):
         a = {"type": Report.DocumentType.ANNUAL_REPORT, "date": [date(1910, 1, 1)], "union_id": "1234", "page": 1}
-        self.assertEquals("1234-ANNUAL_REPORT-1910-01-01", buildReportIdentifier(a))
+        self.assertEqual("1234-ANNUAL_REPORT-1910-01-01", buildReportIdentifier(a))
 
     def test_annualReportDoubleYear(self):
         a = {"type": Report.DocumentType.ANNUAL_REPORT, "date": [date(1910, 1, 1), date(1911, 1, 1)],
              "union_id": "1234", "page": 1}
-        self.assertEquals("1234-ANNUAL_REPORT-1910-01-01--1911-01-01", buildReportIdentifier(a))
+        self.assertEqual("1234-ANNUAL_REPORT-1910-01-01--1911-01-01", buildReportIdentifier(a))
 
     def test_financialStatementSingleYear(self):
         a = {"type": Report.DocumentType.FINANCIAL_STATEMENT, "date": [date(1910, 1, 1)], "union_id": "1234", "page": 1}
-        self.assertEquals("1234-FINANCIAL_STATEMENT-1910-01-01", buildReportIdentifier(a))
+        self.assertEqual("1234-FINANCIAL_STATEMENT-1910-01-01", buildReportIdentifier(a))
 
     def test_financialStatementDoubleYear(self):
         a = {"type": Report.DocumentType.FINANCIAL_STATEMENT, "date": [date(1910, 1, 1), date(1911, 1, 1)],
              "union_id": "1234", "page": 1}
-        self.assertEquals("1234-FINANCIAL_STATEMENT-1910-01-01--1911-01-01", buildReportIdentifier(a))
+        self.assertEqual("1234-FINANCIAL_STATEMENT-1910-01-01--1911-01-01", buildReportIdentifier(a))
 
     def test_multiTypeSingleYear(self):
         a = {"type": [Report.DocumentType.ANNUAL_REPORT, Report.DocumentType.FINANCIAL_STATEMENT],
              "date": [date(1910, 1, 1)],
              "union_id": "1234", "page": 1}
-        self.assertEquals("1234-ANNUAL_REPORT-FINANCIAL_STATEMENT-1910-01-01", buildReportIdentifier(a))
+        self.assertEqual("1234-ANNUAL_REPORT-FINANCIAL_STATEMENT-1910-01-01", buildReportIdentifier(a))
 
     def test_multiTypeDoubleYear(self):
         a = {"type": [Report.DocumentType.ANNUAL_REPORT, Report.DocumentType.FINANCIAL_STATEMENT],
              "date": [date(1910, 1, 1), date(1911, 1, 1)], "union_id": "1234", "page": 1}
-        self.assertEquals("1234-ANNUAL_REPORT-FINANCIAL_STATEMENT-1910-01-01--1911-01-01", buildReportIdentifier(a))
+        self.assertEqual("1234-ANNUAL_REPORT-FINANCIAL_STATEMENT-1910-01-01--1911-01-01", buildReportIdentifier(a))
 
 
 class BuildProcessingStepsTests(TestCase):

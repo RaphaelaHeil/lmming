@@ -13,6 +13,8 @@ from requests.compat import urljoin
 
 from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status
 
+from collections.abc import Iterable
+
 __REPORT_TYPE_INDEX = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
                        "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
                        "revisionsberattelse": Report.DocumentType.FINANCIAL_STATEMENT}
@@ -141,7 +143,7 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
                     dates.add(datetime(y, 1, 1))
                     y += 1
                 dates.add(end)
-            elif re.match("\d{4}-\d{4}", remainder):
+            elif re.match(r"\d{4}-\d{4}", remainder):
                 d = remainder.split("-")
                 dates.add(__parseDateString(d[0]))
                 dates.add(__parseDateString(d[1]))
@@ -173,25 +175,25 @@ def buildReportIdentifier(data: Dict[str, Union[str, int, List[datetime]]]) -> s
     return f"{data['union_id']}-{reportType}-{dateRepr}"
 
 
-def __toOmekaList__(ll: List[Any]) -> str:
+def __toOmekaList(ll: Iterable[Any]) -> str:
     if ll:
         return " | ".join(str(e) for e in ll)
     else:
         return ""
 
 
-def __toCSList__(ll: List[Any]) -> str:
+def __toCSList(ll: List[Any]) -> str:
     if ll:
         return ",".join(str(e) for e in ll)
     else:
         return ""
 
 
-def __isRestricted__(report: Report) -> bool:
+def __isRestricted(report: Report) -> bool:
     return report.accessRights == Report.AccessRights.RESTRICTED
 
 
-def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False) -> \
+def __buildOmekaSummaries(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False) -> \
         Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
     reportSummary = []
     pageSummary = []
@@ -202,30 +204,38 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
                        "dcterms:creator": report.creator,
                        "dcterms:date": formatDateString(report.date, "|"),
                        "dcterms:coverage": Report.UnionLevel[report.coverage].label,
-                       "dcterms:language": __toOmekaList__(report.language),
-                       "dcterms:spatial": __toOmekaList__(report.spatial),
-                       "dcterms:type": __toOmekaList__([Report.DocumentType[x].label for x in report.type]),
-                       "dcterms:license": __toOmekaList__(report.license),
+                       "dcterms:language": __toOmekaList(report.language),
+                       "dcterms:spatial": __toOmekaList(report.spatial),
+                       "dcterms:type": __toOmekaList([Report.DocumentType[x].label for x in report.type]),
+                       "dcterms:license": __toOmekaList(report.license),
                        "dcterms:isVersionOf": report.isVersionOf,
-                       "dcterms:isFormatOf": __toOmekaList__(
+                       "dcterms:isFormatOf": __toOmekaList(
                            [Report.DocumentFormat[x].label for x in report.isFormatOf]),
                        "dcterms:accessRights": Report.AccessRights[report.accessRights].label,
-                       "dcterms:relation": __toOmekaList__(report.relation),
+                       "dcterms:relation": __toOmekaList(report.relation),
                        "dcterms:created": report.created.year,
                        "dcterms:available": report.available,
-                       "dcterms:source": __toOmekaList__(report.source),
+                       "dcterms:source": __toOmekaList(report.source),
                        "dcterms:description": report.description}
         for translation in report.reporttranslation_set.all():
             language = translation.language
             reportEntry.update({f"dcterms:coverage.{language}": translation.coverage,
-                                f"dcterms:type.{language}": __toOmekaList__(translation.type),
-                                f"dcterms:isFormatOf.{language}": __toOmekaList__(translation.isFormatOf),
+                                f"dcterms:type.{language}": __toOmekaList(translation.type),
+                                f"dcterms:isFormatOf.{language}": __toOmekaList(translation.isFormatOf),
                                 f"dcterms:accessRights.{language}": translation.accessRights,
                                 f"dcterms:description.{language}": translation.description})
 
         reportSummary.append(reportEntry)
 
-        if checkRestriction and __isRestricted__(report):
+        persons = set()
+        organisations = set()
+        locations = set()
+        times = set()
+        works = set()
+        events = set()
+        objects = set()
+
+        if checkRestriction and __isRestricted(report):
             transcription = ("FOLKRÖRELSEARKVET FÖR UPPSALA LÄN The contents of this report are "
                              "not publicly available. Please contact Folkrörelsearkivet för "
                              "Uppsala Län for more information. Email: info@fauppsala.se "
@@ -253,20 +263,34 @@ def __buildOmekaSummaries__(transfer: ExtractionTransfer, checkRestriction: bool
                                     "dcterms:bibliographicCitation": page.bibCitation,
                                     "lm:transcription": page.transcription,
                                     "lm:normalised": page.normalisedTranscription,
-                                    "lm:person": __toOmekaList__(page.persons),
-                                    "lm:organisation": __toOmekaList__(page.organisations),
-                                    "lm:location": __toOmekaList__(page.locations),
-                                    "lm:time": __toOmekaList__(page.times),
-                                    "lm:work": __toOmekaList__(page.works),
-                                    "lm:event": __toOmekaList__(page.events),
-                                    "lm:object": __toOmekaList__(page.ner_objects),
+                                    "lm:person": __toOmekaList(page.persons),
+                                    "lm:organisation": __toOmekaList(page.organisations),
+                                    "lm:location": __toOmekaList(page.locations),
+                                    "lm:time": __toOmekaList(page.times),
+                                    "lm:work": __toOmekaList(page.works),
+                                    "lm:event": __toOmekaList(page.events),
+                                    "lm:object": __toOmekaList(page.ner_objects),
                                     "lm:measure": page.measures})
+                persons.update(page.persons)
+                organisations.update(page.organisations)
+                locations.update(page.locations)
+                times.update(page.times)
+                works.update(page.works)
+                events.update(page.events)
+                objects.update(page.ner_objects)
+        reportEntry["lm:person"] = __toOmekaList(persons)
+        reportEntry["lm:organisation"] = __toOmekaList(organisations)
+        reportEntry["lm:location"] = __toOmekaList(locations)
+        reportEntry["lm:time"] = __toOmekaList(times)
+        reportEntry["lm:work"] = __toOmekaList(works)
+        reportEntry["lm:event"] = __toOmekaList(events)
+        reportEntry["lm:object"] = __toOmekaList(objects)
 
     return reportSummary, pageSummary
 
 
 def buildTransferCsvs(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False):
-    reportSummary, pageSummary = __buildOmekaSummaries__(transfer, checkRestriction, forArab=forArab)
+    reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
 
     zip_buffer = BytesIO()
     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
@@ -289,7 +313,7 @@ def buildStructMap(transfer: ExtractionTransfer, checkRestriction: bool = False)
     for report in transfer.report_set.all():
         reportNode = SubElement(outerDiv, f("div"), TYPE="report", LABEL=report.title, ID=str(report.noid))
 
-        if checkRestriction and __isRestricted__(report):
+        if checkRestriction and __isRestricted(report):
             filename = f"page_not_available_{report.noid}"
             pageNode = SubElement(reportNode, f("div"), TYPE="page", ORDER="1", LABEL=filename, ID=f"{report.noid}_1")
             SubElement(pageNode, f("fptr"), FILEID=f"{filename}.jpg", CONTENTIDS=f"objects/{filename}.jpg")
@@ -328,31 +352,31 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
         translation = report.reporttranslation_set.filter(language="sv")
         if translation:
             translation = translation.first()
-            dcType = __toCSList__(translation.type)
+            dcType = __toCSList(translation.type)
             dcCoverage = translation.coverage
             dcAccessRights = translation.accessRights
-            dcFormat = f"{translation.description} - {__toCSList__([translation.isFormatOf])}"
+            dcFormat = f"{translation.description} - {__toCSList([translation.isFormatOf])}"
         else:
-            dcType = __toCSList__([Report.DocumentType[x].label for x in report.type])
+            dcType = __toCSList([Report.DocumentType[x].label for x in report.type])
             dcCoverage = Report.UnionLevel[report.coverage].label
             dcAccessRights = Report.AccessRights[report.accessRights].label
-            dcFormat = f"{report.description} - {__toCSList__([Report.DocumentFormat[x].label for x in report.isFormatOf])}"
+            dcFormat = f"{report.description} - {__toCSList([Report.DocumentFormat[x].label for x in report.isFormatOf])}"
 
-        if checkRestriction and __isRestricted__(report):
+        if checkRestriction and __isRestricted(report):
             row = {"dc.identifier": report.noid,
                    "dc.type": dcType,
                    "dc.date": "/".join([str(d.year) for d in report.date]),
-                   "dc.language": __toCSList__(report.language),
+                   "dc.language": __toCSList(report.language),
                    "dc.coverage": dcCoverage,
                    "dc.title": report.title,
                    "dc.creator": report.creator,
-                   "dc.source": __toCSList__(report.source),
+                   "dc.source": __toCSList(report.source),
 
-                   "dc.relation": __toCSList__(report.relation),
+                   "dc.relation": __toCSList(report.relation),
                    "dc.format": dcFormat,
                    # "dc.description": report.description, # TODO: ???
                    "dc.rights1": dcAccessRights,
-                   "dc.rights2": __toOmekaList__(report.license),
+                   "dc.rights2": __toOmekaList(report.license),
                    "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
                    }
             filename = f"page_not_available_{report.noid}"
@@ -368,16 +392,16 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
             row = {"dc.identifier": report.noid,
                    "dc.type": dcType,
                    "dc.date": "/".join([str(d.year) for d in report.date]),
-                   "dc.language": __toCSList__(report.language),
+                   "dc.language": __toCSList(report.language),
                    "dc.coverage": dcCoverage,
                    "dc.title": report.title,
                    "dc.creator": report.creator,
-                   "dc.source": __toCSList__(report.source),
-                   "dc.relation": __toCSList__(report.relation),
+                   "dc.source": __toCSList(report.source),
+                   "dc.relation": __toCSList(report.relation),
                    "dc.format": dcFormat,
                    # "dc.description": report.description, # TODO: ???
                    "dc.rights1": dcAccessRights,
-                   "dc.rights2": __toOmekaList__(report.license),
+                   "dc.rights2": __toOmekaList(report.license),
                    "dc.contributor": "", "dc.publisher": "", "dc.subject": ""  # these 3 stay emtpy for now!
                    }
             for page in report.page_set.all():
@@ -414,7 +438,7 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
             zf.writestr(zif, "")
 
         for report in transfer.report_set.all():
-            if checkRestriction and __isRestricted__(report):
+            if checkRestriction and __isRestricted(report):
                 page_name = f"page_not_available_{report.noid}"
                 zf.write(__DUMMY_DIR / f"{dummyFileName}.jpg", f"manualNormalization/access/{page_name}.jpg")
                 zf.write(__DUMMY_DIR / f"{dummyFileName}.jpg", f"{page_name}.jpg")
@@ -441,7 +465,7 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
         zf.writestr("metadata/metadata.csv", buildMetadataCsv(transfer, checkRestriction))
         zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer, checkRestriction))
 
-        reportSummary, pageSummary = __buildOmekaSummaries__(transfer, checkRestriction, forArab=forArab)
+        reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
         zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
         zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
 
