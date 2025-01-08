@@ -177,7 +177,7 @@ def buildReportIdentifier(data: Dict[str, Union[str, int, List[datetime]]]) -> s
 
 def __toOmekaList(ll: Iterable[Any]) -> str:
     if ll:
-        return " | ".join(str(e) for e in ll)
+        return " | ".join(str(e) for e in ll if str(e))
     else:
         return ""
 
