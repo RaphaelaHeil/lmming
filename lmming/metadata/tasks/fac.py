@@ -156,6 +156,11 @@ def mintArks(jobPk: int, pipeline: bool = True):
 
     iiifBase = settings.IIIF_BASE_URL
 
+    if report.identifier and report.identifier.endswith("/manifest"):
+        # remove legacy identifier artifacts 
+        report.identifier = report.identifier[:-9]
+        report.save()
+
     if report.noid:
         viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
         resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
