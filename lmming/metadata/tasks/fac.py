@@ -157,7 +157,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
     iiifBase = settings.IIIF_BASE_URL
 
     if report.identifier and report.identifier.endswith("/manifest"):
-        # remove legacy identifier artifacts 
+        # remove legacy identifier artifacts
         report.identifier = report.identifier[:-9]
         report.save()
 
@@ -200,9 +200,8 @@ def mintArks(jobPk: int, pipeline: bool = True):
     for page in report.page_set.all():
         if page.noid:
             resolveToFormat = iiifBase + "iiif/image/{}"
-            ark = arkAdapter.updateArk(page.noid, {"url": resolveToFormat, "title": f"Page from '{report.title}'"})
-            noid = ark.split("/")[-1]
-            page.noid = noid
+            arkAdapter.updateArk(page.noid, {"url": resolveToFormat, "title": f"Page from '{report.title}'"})
+            ark = f"ark:/{settings.MINTER_ORG_ID}/{noid}"
             arkLink = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
             page.identifier = arkLink + "/info.json"
             page.source = arkLink + "/full/full/0/default.jpg"
