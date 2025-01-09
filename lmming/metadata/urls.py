@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, partials
+from . import views, partials, api
 
 app_name = "metadata"
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path("jobs/waiting/table", partials.awaitingHumanInteraction, name="waiting_jobs_table"),
     path("jobs/waiting/count", partials.waitingCount, name="waiting_count"),
     path("jobs/edit/<str:step>/<str:jobs>", partials.bulkEditJobs, name="bulk_edit_jobs"),
+    path("api/jobs", api.updateJobs)
 ]
