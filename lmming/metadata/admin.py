@@ -7,6 +7,10 @@ from .models import ExtractionTransfer, Job, Report, Page, ProcessingStep, Defau
 class ProcessingStepAdmin(admin.ModelAdmin):
     list_filter = ["processingStepType"]
 
+class JobAdmin(admin.ModelAdmin):
+    list_filter = ["status"]
+    sortable_by = ["lastUpdated"]
+
 admin.site.register(ExtractionTransfer)
 admin.site.register(Job)
 admin.site.register(Report)
