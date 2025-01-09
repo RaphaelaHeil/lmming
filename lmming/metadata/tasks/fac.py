@@ -199,7 +199,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
 
     for page in report.page_set.all():
         if page.noid:
-            resolveToFormat = iiifBase + "iiif/image/{}"
+            resolveToFormat = iiifBase + f"iiif/image/{page.noid}"
             arkAdapter.updateArk(page.noid, {"url": resolveToFormat, "title": f"Page from '{report.title}'"})
             ark = f"ark:/{settings.MINTER_ORG_ID}/{page.noid}"
             arkLink = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
