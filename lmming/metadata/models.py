@@ -158,10 +158,10 @@ class ReportTranslation(Model):
     description = TextField(blank=True, default="")
 
     def get_isFormatOf_display(self):
-        return ", ".join(self.isFormatOf)
+        return ", ".join(self.isFormatOf if self.isFormatOf else [])
 
     def get_type_display(self):
-        return ", ".join(self.type)
+        return ", ".join(self.type if self.type else [])
 
 
 class Page(Model):
