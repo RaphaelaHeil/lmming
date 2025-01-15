@@ -1,7 +1,7 @@
 <div class="p-1">
     <h3>Pages</h3>
     <div class="accordion" id="pageAccordeon">
-        {% for page in pages|dictsort:"order"  %}
+        {% for page in pages|dictsort:"order" %}
         <div class="accordion-item">
             <h2 class="accordion-header" id="heading{{page.order}}">
                 <button class="accordion-button" type="button" data-bs-toggle="collapse"
@@ -19,7 +19,13 @@
                                 <strong>Identifier:</strong>
                             </div>
                             <div class="col">
-                                <p>{{page.identifier|default:'not assigned yet'}}</p>
+                                {%if page.identifier%}
+                                <span data-bs-toggle="tooltip"><a href="{{page.identifier}}" target="_blank"
+                                                                  title="Opens in new tab">{{page.identifier}}
+                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
+                                {%else%}
+                                not assigned yet
+                                {%endif%}
                             </div>
                         </div>
                         <div class="row">
@@ -27,7 +33,13 @@
                                 <strong>Source:</strong>
                             </div>
                             <div class="col">
-                                <p>{{page.source|default:'not assigned yet'}}</p>
+                               {%if page.source%}
+                                <span data-bs-toggle="tooltip"><a href="{{page.source}}" target="_blank"
+                                                                  title="Opens in new tab">{{page.source}}
+                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
+                                {%else%}
+                                not assigned yet
+                                {%endif%}
                             </div>
                         </div>
                         <div class="row">
