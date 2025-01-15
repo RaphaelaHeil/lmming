@@ -1,7 +1,6 @@
 import datetime
 import logging
 import secrets
-from urllib.parse import urljoin
 
 from celery import shared_task
 from dateutil.relativedelta import relativedelta
@@ -10,8 +9,9 @@ from django.conf import settings
 from metadata.i18n import SWEDISH
 from metadata.models import ProcessingStep, Status, Report, DefaultNumberSettings, DefaultValueSettings, \
     ReportTranslation
-from metadata.tasks.utils import resumePipeline, HandleAdapter, HandleError
-from metadata.tasks.utils import splitIfNotNone, createArabTitle
+from metadata.tasks.utils import resumePipeline, HandleAdapter, HandleError, HandleLocation
+from metadata.tasks.utils import splitIfNotNone
+from metadata.utils import formatDateString
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -113,7 +113,21 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
     handleAdapter = HandleAdapter(address=handleServerIp, port=handleServerPort, prefix=prefix, user=handleAdmin,
                                   userKeyFile=privateKeyFile, certificateFile=certFile)
 
-    if not report.noid:
+    viewerHandle = "http://hdl.handle.net/20.500.14494/tn84kt4mmznbqc2"  # TODO: extract to settings
+
+    if report.noid:
+        resolveTo = viewerHandle + "?urlappend=?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
+        try:
+            handle = handleAdapter.updatePlainHandle(report.noid, resolveTo)
+            report.identifier = f"https://hdl.handle.net/{handle}"
+            report.save()
+        except HandleError as handleError:
+            step.log = handleError.userMessage
+            logger.warning(handleError.adminMessage)
+            step.status = Status.ERROR
+            step.save()
+            return
+    else:
         retries = 0
         while retries < settings.ARAB_RETRIES:
             try:
@@ -123,52 +137,95 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
                     retries += 1
                     continue
 
-                resolveTo = urljoin(iiifBase, f"iiif/presentation/{noid}")
-                handle = handleAdapter.createHandle(noid, resolveTo)
+                resolveTo = viewerHandle + "?urlappend=?manifest=" + iiifBase + f"iiif/presentation/{noid}/manifest"
+                handle = handleAdapter.createPlainHandle(noid, resolveTo)
 
                 if handle:
                     report.noid = noid
-                    report.identifier = f"https://hdl.handle.net/{handle}?urlappend=/manifest"
+                    report.identifier = f"https://hdl.handle.net/{handle}"
                     report.save()
-                    for page in report.page_set.all():
-                        page.iiifId = f"{report.noid}_{page.order}"
-                        page.identifier = urljoin(iiifBase, f"iiif/image/{page.iiifId}/info.json")
-                        page.save()
-                    if step.humanValidation:
-                        step.status = Status.AWAITING_HUMAN_VALIDATION
-                        step.save()
-                    else:
-                        step.status = Status.COMPLETE
-                        step.save()
-                    if pipeline:
-                        resumePipeline(jobPk)
-                    return
+                    break
             except HandleError as handleError:
                 step.log = handleError.userMessage
                 logger.warning(handleError.adminMessage)
                 step.status = Status.ERROR
                 step.save()
                 return
-            except Exception as e:
-                step.log = "An exception occurred. Please try again or contact your administrator if the issue persists."
-                logger.warning(f"{e.args}")
+        else:
+            step.log = f"Could not generate unique handle. Made {retries} attempt(s)."
+            step.status = Status.ERROR
+            step.save()
+
+    bibCitationBase = f"{report.title} ({formatDateString(report.date, ',')}) "
+
+    for page in report.page_set.all():
+        if page.noid:
+            resolveToBase = iiifBase + f"iiif/image/{page.noid}"
+
+            locations = [HandleLocation(1, resolveToBase + "/info.json"),
+                         HandleLocation(0, resolveToBase + "/full/full/0/default.jpg", "jpgfull"),
+                         HandleLocation(0, resolveToBase + "/info.json", "manifest")]
+
+            try:
+                handle = handleAdapter.updateLocationBasedHandle(page.noid, locations)
+
+                page.iiifId = page.noid
+                page.identifier = f"https://hdl.handle.net/{handle}?locatt=view:manifest"
+                page.source = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
+                page.bibCitation = bibCitationBase + page.source
+                page.save()
+            except HandleError as handleError:
+                step.log = handleError.userMessage
+                logger.warning(handleError.adminMessage)
                 step.status = Status.ERROR
                 step.save()
                 return
+        else:
+            retries = 0
+            while retries < settings.ARAB_RETRIES:
+                try:
+                    # OBS: xml:IDs may not start with a digit!
+                    noid = "".join([secrets.choice(BETA)] + [secrets.choice(BETANUMERIC) for _ in range(14)])
+                    if handleAdapter.doesHandleAlreadyExist(noid):
+                        retries += 1
+                        continue
 
-        step.log = f"Could not generate unique handle. Made {retries} attempt(s)."
-        step.status = Status.ERROR
+                    page.noid = noid
+
+                    resolveToBase = iiifBase + f"iiif/image/{page.noid}"
+
+                    locations = [HandleLocation(1, resolveToBase + "/info.json"),
+                                 HandleLocation(0, resolveToBase + "/full/full/0/default.jpg", "jpgfull"),
+                                 HandleLocation(0, resolveToBase + "/info.json", "manifest")]
+
+                    handle = handleAdapter.updateLocationBasedHandle(page.noid, locations)
+                    page.iiifId = page.noid
+                    page.identifier = f"https://hdl.handle.net/{handle}?locatt=view:manifest"
+                    page.source = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
+
+                    page.bibCitation = bibCitationBase + page.source
+                    page.save()
+                    break
+                except HandleError as handleError:
+                    step.log = handleError.userMessage
+                    logger.warning(handleError.adminMessage)
+                    step.status = Status.ERROR
+                    step.save()
+                    return
+            else:
+                step.log = f"Could not generate unique handle. Made {retries} attempt(s)."
+                step.status = Status.ERROR
+                step.save()
+
+    if step.humanValidation:
+        step.status = Status.AWAITING_HUMAN_VALIDATION
         step.save()
     else:
-        if step.humanValidation:
-            step.status = Status.AWAITING_HUMAN_VALIDATION
-            step.save()
-        else:
-            step.status = Status.COMPLETE
-            step.save()
-        if pipeline:
-            resumePipeline(jobPk)
-        return
+        step.status = Status.COMPLETE
+        step.save()
+    if pipeline:
+        resumePipeline(jobPk)
+    return
 
 
 @shared_task()

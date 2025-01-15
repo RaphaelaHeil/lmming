@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import os
 from base64 import b64encode, b64decode
@@ -112,6 +113,16 @@ def createAuthenticationString(user, userKeyFile, sessionId, serverNonceBytes):
             f'alg="SHA256", signature="{signatureString}"')
 
 
+@dataclasses.dataclass
+class HandleLocation:
+    weight: int
+    href: str
+    view: str = ""
+
+    def toXml(self):
+        return f'<location href="{self.href}" weight="{self.weight}" {"view=\"" + self.view + "\"" if self.view else ""}/>'
+
+
 class HandleError(Exception):
 
     def __init__(self, userMessage: str, adminMessage: str):
@@ -128,7 +139,7 @@ class HandleAdapter(metaclass=Singleton):
         self.user = user
         self.userIndex = userIndex
         self.userKeyFile = userKeyFile
-        self.certificateFile = certificateFile
+        self.certificateFile = False # disable checks until cert issues have been fixed ...
         self.sessionId = ""
         self.serverNonce = ""
         self.serverNonceBytes = b""
@@ -156,10 +167,10 @@ class HandleAdapter(metaclass=Singleton):
                 return False
         except (ConnectionError, Timeout, TooManyRedirects) as exception:
             raise HandleError(
-                "Connectivitiy issues occurred. Please try again later, and contact your admin if the issue persists.",
+                "Connectivity issues occurred. Please try again later, and contact your admin if the issue persists.",
                 f"{type(exception).__name__} - {exception}")
         except Exception as exception:
-            raise HandleError("An issue occcurred, Please try again later.",
+            raise HandleError("An issue occurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
 
     def __updateSession(self):
@@ -193,10 +204,10 @@ class HandleAdapter(metaclass=Singleton):
                                   f"Session could not be established: {response.status_code} - {response.content}")
         except (ConnectionError, Timeout, TooManyRedirects) as exception:
             raise HandleError(
-                "Connectivitiy issues occurred. Please try again later, and contact your admin if the issue persists.",
+                "Connectivity issues occurred. Please try again later, and contact your admin if the issue persists.",
                 f"{type(exception).__name__} - {exception}")
         except Exception as exception:
-            raise HandleError("An issue occcurred, Please try again later.",
+            raise HandleError("An issue occurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
 
     def doesHandleAlreadyExist(self, noid) -> bool:
@@ -208,19 +219,64 @@ class HandleAdapter(metaclass=Singleton):
                 return False
         except (ConnectionError, Timeout, TooManyRedirects) as exception:
             raise HandleError(
-                "Connectivitiy issues occurred. Please try again later, and contact your admin if the issue persists.",
+                "Connectivity issues occurred. Please try again later, and contact your admin if the issue persists.",
                 f"{type(exception).__name__} - {exception}")
         except Exception as exception:
-            raise HandleError("An issue occcurred, Please try again later.",
+            raise HandleError("An issue occurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
 
-    def createHandle(self, noid, resolveTo) -> str:
+    def updateLocationBasedHandle(self, noid: str, locations: List[HandleLocation]):
         try:
             if not self.__isHandleSessionActive():
                 self.__updateSession()
+
+            authorizationHeaderString = createAuthenticationString(self.user, self.userKeyFile, self.sessionId,
+                                                                   self.serverNonceBytes)
+            headers = {"Content-Type": "application/json", "Authorization": authorizationHeaderString}
+
+            locationString = "<locations>" + "".join(x.toXml() for x in locations) + "</locations>"
+
+            handleRecord = {"values": [{"index": 100, "type": "HS_ADMIN",
+                                        "data": {"format": "admin", "value": {"handle": self.user, "index": 200,
+                                                                              "permissions": "011111110011"}}},
+                                       {"index": 1000, "type": "10320/loc",
+                                        "data": {"format": "string", "value": locationString}}
+                                       ]}
+            response = requests.put(url=f"{self.baseUrl}/api/handles/{self.prefix}/{noid}", headers=headers,
+                                    verify=self.certificateFile, data=json.dumps(handleRecord))
+            if response.ok:
+                return f"{self.prefix}/{noid}"
+            else:
+                raise HandleError(f"Could not update handle {self.prefix}/{noid} - please try again, and contact your "
+                                  f"admin if the issue persists.",
+                                  f"Could not update handle {self.prefix}/{noid} - response: {response.status_code} - "
+                                  f"{response.content}")
+
+        except HandleError as exception:
+            raise exception
+        except (ConnectionError, Timeout, TooManyRedirects) as exception:
+            raise HandleError("Connectivity issues occurred. Please try again later, and contact your admin if the "
+                              "issue persists.", f"{type(exception).__name__} - {exception}")
+        except Exception as exception:
+            raise HandleError("An issue occurred, Please try again later.",
+                              f"{type(exception).__name__} - {exception}")
+
+    def createLocationBasedHandle(self, noid: str, locations: List[HandleLocation]):
+        try:
             if self.doesHandleAlreadyExist(noid):
                 raise HandleError(f"Handle '{self.prefix}/{noid}' already exists",
                                   f"Handle '{self.prefix}/{noid}' already exists")
+            return self.updatePlainHandle(noid, locations)
+        except HandleError as e:
+            if "update" in e.userMessage:
+                e.userMessage.replace("update", "create")
+                e.adminMessage.replace("update", "create")
+            raise e
+
+    def updatePlainHandle(self, noid, resolveTo) -> str:
+        try:
+            if not self.__isHandleSessionActive():
+                self.__updateSession()
 
             authorizationHeaderString = createAuthenticationString(self.user, self.userKeyFile, self.sessionId,
                                                                    self.serverNonceBytes)
@@ -236,19 +292,31 @@ class HandleAdapter(metaclass=Singleton):
             if response.ok:
                 return f"{self.prefix}/{noid}"
             else:
-                raise HandleError(f"Could not create handle {self.prefix}/{noid} - please try again, and contact your "
+                raise HandleError(f"Could not update handle {self.prefix}/{noid} - please try again, and contact your "
                                   f"admin if the issue persists.",
-                                  f"Could not create handle {self.prefix}/{noid} - response: {response.status_code} - "
+                                  f"Could not update handle {self.prefix}/{noid} - response: {response.status_code} - "
                                   f"{response.content}")
 
         except HandleError as exception:
             raise exception
         except (ConnectionError, Timeout, TooManyRedirects) as exception:
-            raise HandleError("Connectivitiy issues occurred. Please try again later, and contact your admin if the "
+            raise HandleError("Connectivity issues occurred. Please try again later, and contact your admin if the "
                               "issue persists.", f"{type(exception).__name__} - {exception}")
         except Exception as exception:
-            raise HandleError("An issue occcurred, Please try again later.",
+            raise HandleError("An issue occurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
+
+    def createPlainHandle(self, noid:str, resolveTo:str) -> str:
+        try:
+            if self.doesHandleAlreadyExist(noid):
+                raise HandleError(f"Handle '{self.prefix}/{noid}' already exists",
+                                  f"Handle '{self.prefix}/{noid}' already exists")
+            return self.updatePlainHandle(noid, resolveTo)
+        except HandleError as e:
+            if "update" in e.userMessage:
+                e.userMessage.replace("update", "create")
+                e.adminMessage.replace("update", "create")
+            raise e
 
 
 class ArkError(Exception):
@@ -284,7 +352,7 @@ class ArkletAdapter:
         else:
             raise ArkError(
                 f"An error occurred while obtaining a new ARK, reason: {response.status_code} {response.reason}. "
-                f"Please verify that ARKlet is running and try again.",
+                f"Please verify that Arklet is running and try again.",
                 f"Error creating ARK, reason: {response.status_code} {response.reason}")
 
     def updateArk(self, noid: str, details: Dict[str, str]):
