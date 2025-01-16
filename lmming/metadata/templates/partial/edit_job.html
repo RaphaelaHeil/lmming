@@ -85,6 +85,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-7 px-3 border rounded h-100">
+
                     {% for field in form %}
                     <div class="row py-3 px-2">
                         {%if field.field.widget.input_type == 'checkbox'%}
@@ -106,18 +107,89 @@
                         {%endif%}
                     </div>
                     {% endfor %}
+
+                    {% if 'mint' in stepParam%}
+                    <div class="accordion  my-5" id="pageLevel">
+
+                        <div class="alert alert-warning" role="alert">
+                            NOTE: Changing the page-links below does NOT create or update records in the handle server!
+                        </div>
+
+
+                        {%if pageForm.errors%}
+                        <div class="alert alert-danger" role="alert">One or more pages below contain errors. Please
+                            verify your inputs.
+                        </div>
+                        {%endif%}
+                        {{ pageForm.management_form }}
+                        {%for pf in pageForm%}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading{{pf.filename}}">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                        data-bs-target="#collapse{{pf.filename}}" aria-expanded="true"
+                                        aria-controls="collapse{{pf.filename}}">
+                                    Page: {{pf.filename}}
+                                </button>
+                            </h2>
+                            <div id="collapse{{pf.filename}}" class="accordion-collapse collapse show"
+                                 aria-labelledby="heading{{pf.filename}}"
+                                 data-bs-parent="#pageLevel">
+                                <div class="accordion-body">
+                                    {% for field in pf %}
+                                    <div class="row py-3 px-2">
+                                        {%if field.field.widget.input_type == 'checkbox'%}
+                                        <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+                                        {%if field.errors%}
+                                        <label class="text-danger">Please select at least one value!</label>
+                                        {%endif%}
+                                        <fieldset>
+                                            {% for box in field %}
+                                            <div class="form-check">
+                                                {{ box }}
+                                            </div>
+                                            {% endfor %}
+                                        </fieldset>
+                                        {%else%}
+                                        {{field.widget}}
+                                        <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+                                        {{ field }}
+                                        {%if field.errors%}
+                                        {%for e in field.errors%}
+                                        <label class="text-danger">{{e}}</label>
+                                        {%endfor%}
+                                        {%endif%}
+                                        {%endif%}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {%endfor%}
+
+                        {% if pageForm.total_form_count > 3 %}
+                        <div style="position:fixed;bottom:5px;right:5px;"
+                             class="bg-light bg-gradient border rounded p-2 vstack">
+                            <input type="submit" value="Confirm" class="btn btn-success float-end m-2" name="confirm">
+                            <a href="{% url 'metadata:job' job.pk %}" class="btn btn-danger float-end m-2">Cancel</a>
+                        </div>
+                        {% endif %}
+
+                    </div>
+                    {% endif %}
                     <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 ms-2 float-end"
                            name="confirm">
                     <a href="{% url 'metadata:job' job.pk %}" class="btn btn-danger mb-3 mt-2 float-end">Cancel</a>
+
+
                 </div>
                 <div class="col">
                     {% include "components/report_details.html" with report=job.report show_pages=False%}
                 </div>
             </div>
+
         </div>
 
         {%endif%}
-
     </form>
 </div>
 

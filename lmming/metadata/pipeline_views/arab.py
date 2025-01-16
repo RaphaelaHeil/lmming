@@ -6,9 +6,11 @@ from django.conf import settings
 from django.db import transaction
 
 from metadata.forms.arab import ArabGenerateForm, ArabManualForm, ArabMintForm, ArabFileNameForm, ArabTranslateForm
-from metadata.models import Status, ProcessingStep, ReportTranslation, Report
+from metadata.forms.shared import BatchPageHandleForm
+from metadata.models import Status, ProcessingStep, ReportTranslation, Report, Page
 from metadata.pipeline_views.utils import __fromDisplayList__
 from metadata.tasks.manage import scheduleTask
+from django.forms import formset_factory
 
 
 def arabFilename(request, job):
@@ -117,9 +119,15 @@ def arabManual(request, job):
 
 def arabMint(request, job):
     initial = {"identifier": job.report.identifier}
+
+    BatchPageFormSet = formset_factory(BatchPageHandleForm, extra=0)
+    pageInitial = [{"source": p.source, "bibCitation": p.bibCitation, "pageId": p.pk, "filename": p.originalFileName,
+                    "identifier": p.identifier} for p in job.report.page_set.all().order_by("order")]
+
     if request.method == "POST":
         mintForm = ArabMintForm(request.POST, initial=initial)
-        if mintForm.is_valid():
+        pageForm = BatchPageFormSet(request.POST, initial=pageInitial)
+        if mintForm.is_valid() and pageForm.is_valid():
             if mintForm.has_changed():
                 if "identifier" in mintForm.changed_data:
                     identifier = mintForm.cleaned_data["identifier"]
@@ -130,11 +138,15 @@ def arabMint(request, job):
                     job.report.noid = identifier.split("/")[-1]
                     job.report.save()
 
-                    for page in job.report.page_set.all():
-                        page.iiifId = f"{job.report.noid}_{page.order}"
-                        page.identifier = urljoin(settings.IIIF_BASE_URL, f"iiif/image/{page.iiifId}/info.json")
-                        page.save()
-
+            for f in pageForm:
+                if f.has_changed():
+                    page = Page.objects.get(pk=f.pageId)
+                    page.identifier = f.cleaned_data["identifier"]
+                    page.source = f.cleaned_data["source"]
+                    page.bibCitation = f.cleaned_data["bibCitation"]
+                    page.noid = ""
+                    page.iiifId = ""
+                    page.save()
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.value).first()
             step.status = Status.COMPLETE
@@ -142,10 +154,13 @@ def arabMint(request, job):
             transaction.on_commit(lambda: scheduleTask(job.pk))
             return {"job": job}
         else:
-            return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label}
+            return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label,
+                    "pageForm": pageForm}
     else:
         mintForm = ArabMintForm(initial=initial)
-        return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label}
+        pageForm = BatchPageFormSet(initial=pageInitial)
+        return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.ARAB_MINT_HANDLE.label,
+                "pageForm": pageForm}
 
 
 def arabTranslate(request, job):

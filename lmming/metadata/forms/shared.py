@@ -38,7 +38,7 @@ class TransferImportForm(Form):
     mediaFile = FileField(label="media.csv (unrestricted!)", required=True,
                           widget=FileInput(attrs={"accept": ".csv", "class": "form-control"}))
     structMapFile = FileField(label="mets_structmap.xml (unrestricted!)", required=True,
-                          widget=FileInput(attrs={"accept": ".xml", "class": "form-control"}))
+                              widget=FileInput(attrs={"accept": ".xml", "class": "form-control"}))
 
 
 class ProcessingStepForm(Form):
@@ -117,3 +117,16 @@ class ExternalRecordsSettingsForm(Form):
     externalRecordCsv = FileField(label="External Record CSV",
                                   widget=ClearableFileInput(attrs={"accept": ".csv", "class": "form-control"}),
                                   required=False)
+
+
+class BatchPageHandleForm(Form):
+    def __init__(self, *args, **kwargs):
+        self.pageId = kwargs["initial"]["pageId"]
+        self.filename = kwargs["initial"]["filename"]
+        super(BatchPageHandleForm, self).__init__(*args, **kwargs)
+
+    identifier = CharField(label="Identifier [mandatory]", required=True,
+                           widget=TextInput(attrs={'class': 'form-control'}))
+    source = CharField(label="Source [optional]", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    bibCitation = CharField(label="Bibliographic Citation [optional]", required=False,
+                            widget=Textarea(attrs={'class': 'form-control', 'rows': 5}))

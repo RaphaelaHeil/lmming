@@ -6,7 +6,8 @@ from django.db import transaction
 from django.forms import formset_factory
 
 from metadata.forms.fac import FacManualForm, MintForm, FacFileNameForm, TranslateForm, BatchFacManualForm
-from metadata.models import Status, ProcessingStep, ReportTranslation, Report, FacSpecificData
+from metadata.forms.shared import BatchPageHandleForm
+from metadata.models import Status, ProcessingStep, ReportTranslation, Report, FacSpecificData, Page
 from metadata.pipeline_views.utils import __fromDisplayList__, fromCommaList
 from metadata.tasks.manage import scheduleTask
 
@@ -76,9 +77,15 @@ def facManual(request, job):
 
 def mint(request, job):
     initial = {"identifier": job.report.identifier}
+
+    BatchPageFormSet = formset_factory(BatchPageHandleForm, extra=0)
+    pageInitial = [{"source": p.source, "bibCitation": p.bibCitation, "pageId": p.pk, "filename": p.originalFileName,
+                    "identifier": p.identifier} for p in job.report.page_set.all().order_by("order")]
+
     if request.method == "POST":
         mintForm = MintForm(request.POST, initial=initial)
-        if mintForm.is_valid():
+        pageForm = BatchPageFormSet(request.POST, initial=pageInitial)
+        if mintForm.is_valid() and pageForm.is_valid():
             if mintForm.has_changed():
                 if "identifier" in mintForm.changed_data:
                     identifier = mintForm.cleaned_data["identifier"]
@@ -89,12 +96,16 @@ def mint(request, job):
                     job.report.noid = identifier.split("/")[-1]
                     job.report.save()
 
-                    for page in job.report.page_set.all():
-                        page.iiifId = f"{job.report.noid}_{page.order}"
-                        page.identifier = urljoin(settings.IIIF_BASE_URL, f"iiif/image/{page.iiifId}/info.json")
+                for f in pageForm:
+                    if f.has_changed():
+                        page = Page.objects.get(pk=f.pageId)
+                        page.identifier = f.cleaned_data["identifier"]
+                        page.source = f.cleaned_data["source"]
+                        page.bibCitation = f.cleaned_data["bibCitation"]
+                        page.noid = ""
+                        page.iiifId = ""
                         page.save()
 
-                job.report.save()
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
             step.status = Status.COMPLETE
@@ -102,10 +113,13 @@ def mint(request, job):
             transaction.on_commit(lambda: scheduleTask(job.pk))
             return {"job": job}
         else:
-            return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.MINT_ARKS.label}
+            return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.MINT_ARKS.label,
+                    "pageForm": pageForm}
     else:
         mintForm = MintForm(initial=initial)
-        return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.MINT_ARKS.label}
+        pageForm = BatchPageFormSet(initial=pageInitial)
+        return {"form": mintForm, "job": job, "stepName": ProcessingStep.ProcessingStepType.MINT_ARKS.label,
+                "pageForm": pageForm}
 
 
 def facTranslate(request, job):
