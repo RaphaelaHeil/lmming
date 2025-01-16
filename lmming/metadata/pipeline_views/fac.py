@@ -96,15 +96,16 @@ def mint(request, job):
                     job.report.noid = identifier.split("/")[-1]
                     job.report.save()
 
-                for f in pageForm:
-                    if f.has_changed():
-                        page = Page.objects.get(pk=f.pageId)
-                        page.identifier = f.cleaned_data["identifier"]
-                        page.source = f.cleaned_data["source"]
-                        page.bibCitation = f.cleaned_data["bibCitation"]
-                        page.noid = ""
-                        page.iiifId = ""
-                        page.save()
+            for f in pageForm:
+                if f.has_changed():
+                    page = Page.objects.get(pk=f.pageId)
+                    print(f.cleaned_data)
+                    page.identifier = f.cleaned_data["identifier"]
+                    page.source = f.cleaned_data["source"]
+                    page.bibCitation = f.cleaned_data["bibCitation"]
+                    page.noid = ""
+                    page.iiifId = ""
+                    page.save()
 
             step = job.processingSteps.filter(
                 processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
