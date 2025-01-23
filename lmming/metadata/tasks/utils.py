@@ -120,7 +120,12 @@ class HandleLocation:
     view: str = ""
 
     def toXml(self):
-        return f'<location href="{self.href}" weight="{self.weight}" {"view=\"" + self.view + "\"" if self.view else ""}/>'
+        xml = f'<location href="{self.href}" weight="{self.weight}"'
+        if self.view:
+            xml += 'view="' + self.view + '" '
+        xml += "/>"
+        
+        return xml
 
 
 class HandleError(Exception):
@@ -139,7 +144,7 @@ class HandleAdapter(metaclass=Singleton):
         self.user = user
         self.userIndex = userIndex
         self.userKeyFile = userKeyFile
-        self.certificateFile = False # disable checks until cert issues have been fixed ...
+        self.certificateFile = False  # disable checks until cert issues have been fixed ...
         self.sessionId = ""
         self.serverNonce = ""
         self.serverNonceBytes = b""
@@ -306,7 +311,7 @@ class HandleAdapter(metaclass=Singleton):
             raise HandleError("An issue occurred, Please try again later.",
                               f"{type(exception).__name__} - {exception}")
 
-    def createPlainHandle(self, noid:str, resolveTo:str) -> str:
+    def createPlainHandle(self, noid: str, resolveTo: str) -> str:
         try:
             if self.doesHandleAlreadyExist(noid):
                 raise HandleError(f"Handle '{self.prefix}/{noid}' already exists",
