@@ -35,7 +35,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
                                          ).first()
     entries = ExternalRecord.objects.filter(archiveId=report.unionId)
     if entries.count() == 0:
-        step.log = f"No Filemaker entry found for union with ID {report.unionId}."
+        step.log = f"No entry found in external record for union with ID {report.unionId}."
         step.status = Status.ERROR
         step.save()
         return
@@ -43,7 +43,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
         filemaker = entries.first()
 
         if not filemaker.organisationName:
-            step.log = f"Organisation name is empty for union with ID {report.unionId}."
+            step.log = f"No Organisation name given in external record for union with ID {report.unionId}."
             step.status = Status.ERROR
             step.save()
             return
