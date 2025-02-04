@@ -15,9 +15,9 @@ from metadata.models import Report, ExtractionTransfer, ExternalRecord, Processi
 
 from collections.abc import Iterable
 
-__REPORT_TYPE_INDEX = {"arsberattelse": Report.DocumentType.ANNUAL_REPORT,
-                       "verksamhetsberattelse": Report.DocumentType.ANNUAL_REPORT,
-                       "revisionsberattelse": Report.DocumentType.FINANCIAL_STATEMENT}
+__REPORT_TYPE_INDEX = {"ars": Report.DocumentType.ANNUAL_REPORT,
+                       "verksam": Report.DocumentType.ANNUAL_REPORT,
+                       "revision": Report.DocumentType.FINANCIAL_STATEMENT}
 
 __DUMMY_DIR = Path(__file__).parent.resolve() / "dummy_content"
 
@@ -115,10 +115,12 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
     typeName = typeName.replace("ä", "a")
     typeName = typeName.replace("å", "a")
     typeName = typeName.replace("ö", "o")
-    if typeName in __REPORT_TYPE_INDEX:
-        reportType = __REPORT_TYPE_INDEX[typeName]
-    else:
-        reportType = Report.DocumentType.ANNUAL_REPORT
+
+    reportType = Report.DocumentType.ANNUAL_REPORT
+    for typeKey, typeConstant in __REPORT_TYPE_INDEX.items():
+        if typeName.startswith(typeKey):
+            reportType = typeConstant
+            break
 
     dates = set()
     page = 1
