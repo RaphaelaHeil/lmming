@@ -118,7 +118,7 @@ def arabManual(request, job):
 
 
 def arabMint(request, job):
-    initial = {"identifier": job.report.identifier}
+    initial = {"identifier": job.report.identifier, "references": job.report.references}
 
     BatchPageFormSet = formset_factory(BatchPageHandleForm, extra=0)
     pageInitial = [{"source": p.source, "bibCitation": p.bibCitation, "pageId": p.pk, "filename": p.originalFileName,
@@ -133,10 +133,15 @@ def arabMint(request, job):
                     identifier = mintForm.cleaned_data["identifier"]
                     identifier = identifier.replace("?urlappend=/manifest", "")
                     identifier = identifier.strip("/")
-
                     job.report.identifier = identifier
                     job.report.noid = identifier.split("/")[-1]
-                    job.report.save()
+                if "references" in mintForm.changed_data:
+                    references = mintForm.cleaned_data["references"]
+                    references = references.rstrip("/")
+                    referencesNoid = references.split("/")[-1]
+                    job.report.references = references
+                    job.report.referencesNoid = referencesNoid
+                job.report.save()
 
             for f in pageForm:
                 if f.has_changed():

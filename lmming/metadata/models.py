@@ -110,6 +110,9 @@ class Report(Model):
     unionId = CharField(blank=True, default="")
     noid = CharField(blank=True, default="")
 
+    references = CharField(blank=True, default="")
+    referencesNoid = CharField(blank=True, default="")
+
     def dateString(self) -> str:
         if len(self.date) == 0:
             return ""

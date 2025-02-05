@@ -110,9 +110,6 @@ def mintArks(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.MINT_ARKS.value).first()
 
-    # shoulderSetting = DefaultValueSettings.objects.filter(
-    #     pk=DefaultValueSettings.DefaultValueSettingsType.ARK_SHOULDER).first()
-
     reportShoulderSetting = DefaultValueSettings.objects.filter(
         pk=DefaultValueSettings.DefaultValueSettingsType.REPORT_ARK_SHOULDER).first()
     pageShoulderSetting = DefaultValueSettings.objects.filter(
@@ -162,8 +159,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
         report.save()
 
     if report.noid:
-        viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
-        resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
+        resolveTo = iiifBase + f"iiif/presentation/{report.noid}/manifest"
         try:
             arkAdapter.updateArk(report.noid, {"url": resolveTo, "title": report.title})
             # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
@@ -175,13 +171,39 @@ def mintArks(jobPk: int, pipeline: bool = True):
             return
     else:
         try:
-            viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
-            resolveToFormat = viewerArk + "?manifest=" + iiifBase + "iiif/presentation/{}/manifest"
-
+            resolveToFormat = iiifBase + "iiif/presentation/{}/manifest"
             ark = arkAdapter.createArkWithDependentUrl(reportShoulder, resolveToFormat, {"title": report.title})
             noid = ark.split("/")[-1]
             report.noid = noid
             report.identifier = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
+            report.save()
+        except ArkError as e:
+            step.status = Status.ERROR
+            step.log = e.userMessage
+            step.save()
+            logger.warning(f"{report.title} (job: {jobPk}): {e.adminMessage}")
+            return
+
+    viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
+    if report.referencesNoid:
+        resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.referencesNoid}/manifest"
+        try:
+            arkAdapter.updateArk(report.referencesNoid, {"url": resolveTo, "title": report.title})
+            # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
+        except ArkError as e:
+            step.status = Status.ERROR
+            step.log = e.userMessage
+            step.save()
+            logger.warning(f"{report.title} (job: {jobPk}): {e.adminMessage}")
+            return
+    else:
+        try:
+            resolveToFormat = viewerArk + "?manifest=" + iiifBase + "iiif/presentation/{}/manifest"
+
+            ark = arkAdapter.createArkWithDependentUrl(reportShoulder, resolveToFormat, {"title": report.title})
+            noid = ark.split("/")[-1]
+            report.referencesNoid = noid
+            report.references = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
             report.save()
         except ArkError as e:
             step.status = Status.ERROR

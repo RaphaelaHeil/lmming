@@ -33,7 +33,9 @@ class FacManualForm(Form):
 
 
 class MintForm(Form):
-    identifier = URLField(label="ARK identifier URL [required]", required=True, max_length=200,
+    identifier = URLField(label="Identifier ARK [required]", required=True, max_length=200,
+                          widget=TextInput(attrs={'class': 'form-control'}))
+    references = URLField(label="References ARK [optional]", required=False, max_length=200,
                           widget=TextInput(attrs={'class': 'form-control'}))
 
 

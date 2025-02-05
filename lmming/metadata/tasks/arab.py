@@ -116,9 +116,9 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
     viewerHandle = "http://hdl.handle.net/20.500.14494/tn84kt4mmznbqc2"  # TODO: extract to settings
 
     if report.noid:
-        resolveTo = viewerHandle + "?urlappend=?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
+        manifestLink = iiifBase + f"iiif/presentation/{report.noid}/manifest"
         try:
-            handle = handleAdapter.updatePlainHandle(report.noid, resolveTo)
+            handle = handleAdapter.updatePlainHandle(report.noid, manifestLink)
             report.identifier = f"https://hdl.handle.net/{handle}"
             report.save()
         except HandleError as handleError:
@@ -137,12 +137,52 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
                     retries += 1
                     continue
 
-                resolveTo = viewerHandle + "?urlappend=?manifest=" + iiifBase + f"iiif/presentation/{noid}/manifest"
-                handle = handleAdapter.createPlainHandle(noid, resolveTo)
+                handle = handleAdapter.createPlainHandle(noid, iiifBase + f"iiif/presentation/{noid}/manifest")
 
                 if handle:
                     report.noid = noid
                     report.identifier = f"https://hdl.handle.net/{handle}"
+                    report.save()
+                    break
+            except HandleError as handleError:
+                step.log = handleError.userMessage
+                logger.warning(handleError.adminMessage)
+                step.status = Status.ERROR
+                step.save()
+                return
+        else:
+            step.log = f"Could not generate unique handle. Made {retries} attempt(s)."
+            step.status = Status.ERROR
+            step.save()
+
+    viewerLink = viewerHandle + "?urlappend=?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
+
+    if report.referencesNoid:
+        try:
+            handle = handleAdapter.updatePlainHandle(report.referencesNoid, viewerLink)
+            report.references = f"https://hdl.handle.net/{handle}"
+            report.save()
+        except HandleError as handleError:
+            step.log = handleError.userMessage
+            logger.warning(handleError.adminMessage)
+            step.status = Status.ERROR
+            step.save()
+            return
+    else:
+        retries = 0
+        while retries < settings.ARAB_RETRIES:
+            try:
+                # OBS: xml:IDs may not start with a digit!
+                referencesNoid = "".join([secrets.choice(BETA)] + [secrets.choice(BETANUMERIC) for _ in range(14)])
+                if handleAdapter.doesHandleAlreadyExist(referencesNoid):
+                    retries += 1
+                    continue
+
+                handle = handleAdapter.createPlainHandle(referencesNoid, viewerLink)
+
+                if handle:
+                    report.referencesNoid = referencesNoid
+                    report.references = f"https://hdl.handle.net/{handle}"
                     report.save()
                     break
             except HandleError as handleError:

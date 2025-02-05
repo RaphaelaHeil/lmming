@@ -8,6 +8,14 @@
 <div class="p-0">
     <form class="form" method="POST" action="{% url 'metadata:edit_job' job.pk stepParam %}">
         {% csrf_token %}
+        {% if 'mint' in stepParam%}
+        <div class="alert alert-warning" role="alert">
+            <p>NOTE: Changing the ARK/Handle links below does NOT create or update any records in the ARK/Handle
+                server!</p>
+            <p>Please use the respective, dedicated tool, if you want to create or modify records in the ARK/Handle
+                server!</p>
+        </div>
+        {%endif %}
         {% if stepParam == 'ner' %}
         <div class="accordion  mb-5" id="accordionExample">
             {{ form.management_form }}
@@ -110,12 +118,6 @@
 
                     {% if 'mint' in stepParam%}
                     <div class="accordion  my-5" id="pageLevel">
-
-                        <div class="alert alert-warning" role="alert">
-                            NOTE: Changing the page-links below does NOT create or update records in the handle server!
-                        </div>
-
-
                         {%if pageForm.errors%}
                         <div class="alert alert-danger" role="alert">One or more pages below contain errors. Please
                             verify your inputs.

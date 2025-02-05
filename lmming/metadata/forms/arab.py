@@ -33,7 +33,9 @@ class ArabManualForm(Form):
 
 
 class ArabMintForm(Form):
-    identifier = URLField(label="Handle identifier URL [required]", required=True, max_length=200,
+    identifier = URLField(label="Identifier Handle [required]", required=True, max_length=200,
+                          widget=TextInput(attrs={'class': 'form-control'}))
+    references = URLField(label="References Handle [optional]", required=False, max_length=200,
                           widget=TextInput(attrs={'class': 'form-control'}))
 
 
