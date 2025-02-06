@@ -36,7 +36,7 @@
                        hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=name:desc"
                        hx-target="#tablediv"></i>
                 </th>
-
+<!--                <th scope="col">Pages/Reports</th>-->
                 <th scope="col">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
                   hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.status.sortUrl}}">
@@ -50,6 +50,7 @@
                        hx-target="#tablediv"></i>
                 </th>
 
+                {%comment%}
                 <th scope="col">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
                   hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.created.sortUrl}}">
@@ -62,6 +63,8 @@
                        hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=created:desc"
                        hx-target="#tablediv"></i>
                 </th>
+                {%endcomment%}
+
                 <th scope="col">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
                   hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.updated.sortUrl}}">
@@ -90,11 +93,13 @@
                 <th scope="row">
                     {{job.name}}
                 </th>
+                {% comment %}
+                <td>
+                    {{job.report_set.count}}
+                </td>
+                {% endcomment %}
                 <td>
                     {{job.get_status_display}}
-                </td>
-                <td>
-                    {{job.dateCreated |date:"d M Y, H:i"}}
                 </td>
                 <td>
                     {{job.lastUpdated |date:"d M Y, H:i"}}

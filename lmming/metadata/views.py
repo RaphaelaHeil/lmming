@@ -76,34 +76,33 @@ class Transfers(View):
     def get(self, request, *_args, **_kwargs):
         INV = "lightgray"
         VIS = "black"
-        sortInstruction = request.GET.get("sort", "created:asc").split(":")
+        sortInstruction = request.GET.get("sort", "updated:asc").split(":")
         viewStatus = {"name": {"up": INV, "down": INV, "sortUrl": "sort=name:asc"},
                       "status": {"up": INV, "down": INV, "sortUrl": "sort=status:asc"},
-                      "created": {"up": INV, "down": INV, "sortUrl": "sort=created:asc"},
-                      "updated": {"up":INV, "down":INV, "sortUrl":"sort=updated:asc"}
+                      # "created": {"up": INV, "down": INV, "sortUrl": "sort=created:asc"},
+                      "updated": {"up": INV, "down": INV, "sortUrl": "sort=updated:asc"}
                       }
         if len(sortInstruction) != 2:
-            orderBy = "dateCreated"
-            viewKey = "created"
+            orderBy = "lastUpdated"
+            viewKey = "updated"
         else:
-            lookup = {"name": "name", "status": "status", "created": "dateCreated", "started": "startDate",
-                      "ended": "endDate", "updated":"lastUpdated"}
+            lookup = {"name": "name", "status": "status", "updated": "lastUpdated"}
             if sortInstruction[0] in lookup:
                 viewKey = sortInstruction[0]
                 orderBy = lookup[sortInstruction[0]]
             else:
-                viewKey = "created"
-                orderBy = "dateCreated"
+                viewKey = "updated"
+                orderBy = "lastUpdated"
         if len(sortInstruction) < 2 or sortInstruction[1] == "desc":
             viewStatus[viewKey]["down"] = VIS
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:asc"
             context = {"jobs": ExtractionTransfer.objects.order_by(orderBy).reverse(), "viewStatus": viewStatus,
-                       "searchParams": f"sort={viewKey}:desc", "archive":settings.ARCHIVE_INST}
+                       "searchParams": f"sort={viewKey}:desc", "archive": settings.ARCHIVE_INST}
         else:
             viewStatus[viewKey]["up"] = VIS
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:desc"
             context = {"jobs": ExtractionTransfer.objects.order_by(orderBy), "viewStatus": viewStatus,
-                       "searchParams": f"sort={viewKey}:asc", "archive":settings.ARCHIVE_INST}
+                       "searchParams": f"sort={viewKey}:asc", "archive": settings.ARCHIVE_INST}
 
         return render(request, "partial/extraction_transfer_table.html", context)
 
