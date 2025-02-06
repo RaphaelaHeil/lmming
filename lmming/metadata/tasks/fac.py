@@ -186,7 +186,7 @@ def mintArks(jobPk: int, pipeline: bool = True):
 
     viewerArk = "http://ark.fauppsala.se/ark:/30441/r1wwjhb60rn"  # TODO: extract to settings
     if report.referencesNoid:
-        resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.referencesNoid}/manifest"
+        resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
         try:
             arkAdapter.updateArk(report.referencesNoid, {"url": resolveTo, "title": report.title})
             # OBS: if added, source has to be a *valid* URL, otherwise ARKlet will reject the request with a "Bad Request" response!
@@ -198,9 +198,8 @@ def mintArks(jobPk: int, pipeline: bool = True):
             return
     else:
         try:
-            resolveToFormat = viewerArk + "?manifest=" + iiifBase + "iiif/presentation/{}/manifest"
-
-            ark = arkAdapter.createArkWithDependentUrl(reportShoulder, resolveToFormat, {"title": report.title})
+            resolveTo = viewerArk + "?manifest=" + iiifBase + f"iiif/presentation/{report.noid}/manifest"
+            ark = arkAdapter.createArk(reportShoulder, {"url": resolveTo, "title": report.title})
             noid = ark.split("/")[-1]
             report.referencesNoid = noid
             report.references = f"https://ark.fauppsala.se/{ark}"  # TODO: remove hardcoding once arklet is set up properly
