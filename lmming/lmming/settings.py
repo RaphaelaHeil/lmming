@@ -200,6 +200,9 @@ if ER_RELATION_LINK == "UNSET":
 
 ER_IS_VERSION_OF_LINK = env("ER_IS_VERSION_OF_LINK", str, "ATOM_LINK")
 
+ER_START_DATE = env("ER_START_DATE", str, "start_date")
+ER_END_DATE = env("ER_END_DATE", str, "end_date")
+
 if ARCHIVE_INST == "ARAB":
     ER_COVERAGE = env("ER_COVERAGE", str)
 else:

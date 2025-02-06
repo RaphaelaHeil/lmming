@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import List
 
 from celery import shared_task, signals
 from django.conf import settings
@@ -9,7 +10,27 @@ from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
 from metadata.tasks.utils import resumePipeline, getFacCoverage
 
+from datetime import date
+
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
+
+
+def __dateCheck(report, externalRecords):
+    candidates = set()
+    for d in report.date:
+        for entry in externalRecords:
+            if not entry.startDate and not entry.endDate:
+                candidates.add(entry)
+            if entry.startDate:
+                if d >= entry.startDate:
+                    if entry.endDate and d > entry.endDate:
+                        continue
+                    else:
+                        candidates.add(entry)
+            else:
+                if entry.endDate and d <= entry.endDate:
+                    candidates.add(entry)
+    return candidates
 
 
 @shared_task()
@@ -33,33 +54,44 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP.value
                                          ).first()
-    entries = ExternalRecord.objects.filter(archiveId=report.unionId)
+    entries = ExternalRecord.objects.filter(arabRecordId=report.unionId)
     if entries.count() == 0:
         step.log = f"No entry found in external record for union with ID {report.unionId}."
         step.status = Status.ERROR
         step.save()
         return
     else:
-        filemaker = entries.first()
-
-        if not filemaker.organisationName:
-            step.log = f"No Organisation name given in external record for union with ID {report.unionId}."
+        candidates = __dateCheck(report, entries)
+        if len(candidates) == 1:
+            filemaker = candidates.pop()
+        else:
+            if len(candidates) == 0:
+                message = f"No Organisation with matching date range found in external record for union with ID {report.unionId} and date {report.get_date_display()}."
+            else:
+                message = f"Found several matching dates in external record for union ID {report.unionId} and date {report.get_date_display()}."
+            step.log = message
             step.status = Status.ERROR
             step.save()
             return
 
-        report.creator = filemaker.organisationName
-        report.relation = [filemaker.relationLink if filemaker.relationLink else ""]
-        report.spatial = ["SE"] + [x for x in
-                                   [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
-                                   if x]
+    if not filemaker.organisationName:
+        step.log = f"No Organisation name given in external record for union with ID {report.unionId}."
+        step.status = Status.ERROR
+        step.save()
+        return
 
-        if settings.ARCHIVE_INST == "FAC":
-            report.coverage = getFacCoverage(filemaker.organisationName)
-            report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://forskarsal.e-arkivportalen.se/"
-        else:
-            report.coverage = Report.UnionLevel.NATIONAL_BRANCH
-            report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://www.arbark.se/"
+    report.creator = filemaker.organisationName
+    report.relation = [filemaker.relationLink if filemaker.relationLink else ""]
+    report.spatial = ["SE"] + [x for x in
+                               [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
+                               if x]
+
+    if settings.ARCHIVE_INST == "FAC":
+        report.coverage = getFacCoverage(filemaker.organisationName)
+        report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://forskarsal.e-arkivportalen.se/"
+    else:
+        report.coverage = Report.UnionLevel.NATIONAL_BRANCH
+        report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://www.arbark.se/"
 
     report.save()
 

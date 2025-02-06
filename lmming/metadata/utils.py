@@ -1,6 +1,7 @@
 import re
 import zipfile
-from datetime import datetime
+from collections.abc import Iterable
+from datetime import datetime, date
 from functools import partial
 from io import BytesIO
 from pathlib import Path
@@ -12,8 +13,6 @@ from lxml.etree import SubElement, register_namespace, QName, Element, tostring,
 from requests.compat import urljoin
 
 from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status
-
-from collections.abc import Iterable
 
 __REPORT_TYPE_INDEX = {"ars": Report.DocumentType.ANNUAL_REPORT,
                        "verksam": Report.DocumentType.ANNUAL_REPORT,
@@ -477,24 +476,9 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
     return outfile
 
 
-def updateExternalRecords(df: pd.DataFrame):
-    df = df.fillna("")
-
-    cols = df.columns
-    if settings.ER_ARCHIVE_ID not in cols:
-        raise ValueError(f"No column with name '{settings.ER_ARCHIVE_ID}' found in CSV.")
-    if settings.ER_ORGANISATION_NAME not in cols:
-        raise ValueError(f"No column with name '{settings.ER_ORGANISATION_NAME}' found in CSV.")
-
-    for key in [settings.ER_COUNTY, settings.ER_MUNICIPALITY, settings.ER_CITY, settings.ER_PARISH,
-                settings.ER_CATALOGUE_LINK, settings.ER_IS_VERSION_OF_LINK]:
-        if key not in cols:
-            df[key] = ""
-
-    if settings.ER_COVERAGE not in cols:
-        df[settings.ER_COVERAGE] = ""
-
+def updateExternalRecordsFAC(df: pd.DataFrame):
     ExternalRecord.objects.bulk_create([ExternalRecord(archiveId=row[settings.ER_ARCHIVE_ID],
+                                                       arabRecordId=row[settings.ER_ARCHIVE_ID],
                                                        organisationName=row[settings.ER_ORGANISATION_NAME],
                                                        county=row[settings.ER_COUNTY],
                                                        municipality=row[settings.ER_MUNICIPALITY],
@@ -508,6 +492,55 @@ def updateExternalRecords(df: pd.DataFrame):
                                        update_fields=["organisationName", "county", "municipality", "city",
                                                       "relationLink", "coverage", "isVersionOfLink"],
                                        )
+
+
+def safe_parseDate(value: str):
+    try:
+        return date.fromisoformat(value)
+    except ValueError as e:
+        return None
+
+
+def updateExternalRecordsARAB(df: pd.DataFrame):
+    # drop all, then bulk create ...
+    ExternalRecord.objects.all().delete()
+    ExternalRecord.objects.bulk_create([ExternalRecord(arabRecordId=row[settings.ER_ARCHIVE_ID],
+                                                       organisationName=row[settings.ER_ORGANISATION_NAME],
+                                                       county=row[settings.ER_COUNTY],
+                                                       municipality=row[settings.ER_MUNICIPALITY],
+                                                       city=row[settings.ER_CITY], parish=row[settings.ER_PARISH],
+                                                       relationLink=row[settings.ER_RELATION_LINK],
+                                                       coverage=row[settings.ER_COVERAGE],
+                                                       isVersionOfLink=row[settings.ER_IS_VERSION_OF_LINK],
+                                                       startDate=safe_parseDate(row[settings.ER_START_DATE]),
+                                                       endDate=safe_parseDate(row[settings.ER_END_DATE])) for
+                                        _, row
+                                        in df.iterrows()
+                                        if row[settings.ER_ARCHIVE_ID] and row[settings.ER_ORGANISATION_NAME]],
+                                       )
+
+
+def updateExternalRecords(df: pd.DataFrame):
+    df = df.fillna("")
+
+    cols = df.columns
+    if settings.ER_ARCHIVE_ID not in cols:
+        raise ValueError(f"No column with name '{settings.ER_ARCHIVE_ID}' found in CSV.")
+    if settings.ER_ORGANISATION_NAME not in cols:
+        raise ValueError(f"No column with name '{settings.ER_ORGANISATION_NAME}' found in CSV.")
+
+    for key in [settings.ER_COUNTY, settings.ER_MUNICIPALITY, settings.ER_CITY, settings.ER_PARISH,
+                settings.ER_CATALOGUE_LINK, settings.ER_IS_VERSION_OF_LINK, settings.ER_START_DATE,
+                settings.ER_END_DATE, settings.ER_COVERAGE]:
+        if key not in cols:
+            df[key] = ""
+
+    if settings.ARCHIVE_INST == "FAC":
+        updateExternalRecordsFAC(df)
+    elif settings.ARCHIVE_INST == "ARAB":
+        updateExternalRecordsARAB(df)
+    else:
+        raise ValueError("unknown archive inst. - can't parse external record CSV")
 
 
 def buildProcessingSteps(config, job):

@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, PositiveIntegerField, FileField, BooleanField, CharField, TextField, \
     ForeignKey, DateField, TextChoices, DateTimeField, CASCADE, OneToOneField, URLField, IntegerField, Q, Choices
@@ -342,7 +344,8 @@ class DefaultNumberSettings(Model):
 
 
 class ExternalRecord(Model):
-    archiveId = CharField(primary_key=True)
+    arabRecordId = CharField(blank=True, default="")
+    archiveId = CharField(primary_key=True, default=uuid.uuid4)
     organisationName = CharField()
     county = CharField(blank=True, default="")
     municipality = CharField(blank=True, default="")
@@ -351,6 +354,25 @@ class ExternalRecord(Model):
     relationLink = URLField(blank=True, default="")
     coverage = CharField(blank=True, default="")
     isVersionOfLink = URLField(blank=True, default="")
+    startDate = DateField(blank=True, null=True)
+    endDate = DateField(blank=True, null=True)
+
+    def __str__(self):
+        recordId = self.archiveId
+        if self.arabRecordId:
+            recordId = self.arabRecordId
+
+        if not self.startDate and not self.startDate:
+            dateString = ""
+        else:
+            s, e = "", ""
+            if self.startDate:
+                s = str(self.startDate)
+            if self.endDate:
+                e = str(self.endDate)
+            dateString = f"({s} - {e})"
+
+        return f"{recordId} - {self.organisationName} {dateString}"
 
 
 class InstituteSpecificData(Model):
