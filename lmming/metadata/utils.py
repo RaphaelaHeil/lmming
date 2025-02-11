@@ -290,6 +290,23 @@ def __buildOmekaSummaries(transfer: ExtractionTransfer, checkRestriction: bool =
     return reportSummary, pageSummary
 
 
+def buildBulkTransferCsvs(transfers: List[ExtractionTransfer], checkRestriction: bool = False, forArab: bool = False):
+    reportBulk = []
+    pageBulk = []
+    for transfer in transfers:
+        reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
+        reportBulk.extend(reportSummary)
+        pageBulk.extend(pageSummary)
+
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("bulk_items.csv", pd.DataFrame.from_records(reportBulk).to_csv(index=False))
+        zf.writestr("bulk_media.csv", pd.DataFrame.from_records(pageBulk).to_csv(index=False))
+    zip_buffer.seek(0)
+
+    return zip_buffer
+
+
 def buildTransferCsvs(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False):
     reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
 

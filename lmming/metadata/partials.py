@@ -7,7 +7,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.forms import formset_factory
 from django.http import QueryDict, HttpResponse, HttpResponseRedirect
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from django.urls import reverse
 
 from metadata.forms.shared import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, \
@@ -99,6 +99,15 @@ def batchDeleteModal(request):
             result += f"&ids={ID}"
     return render(request, "modal/bulk_delete.html",
                   {"ids": result, "jobs": (ExtractionTransfer.objects.filter(id__in=ids))})
+
+
+def batchDownloadRedirect(request):
+    # redirect is needed so that HTMX + file download work properly
+    ids = request.GET.getlist('ids')
+    response = HttpResponse()
+    redirectTo = resolve_url("metadata:transfer_batch_export")
+    response["HX-Redirect"] = f"{redirectTo}?ids={'&ids='.join(ids)}"
+    return response
 
 
 def deleteModal(request, transfer_id):

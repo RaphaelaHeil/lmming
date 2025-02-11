@@ -6,8 +6,11 @@
         <i class="fa-solid fa-file-circle-plus"></i> Import Extraction Process
     </a>
 
-    <div hx-include="#checked-contacts" hx-target="#tbody">
-        <button class="btn btn-danger checkbox-action-button"
+    <div hx-include="[name='ids']" hx-target="#tbody">
+        <button class="btn btn-primary checkbox-action-button disabled" hx-get="{% url 'metadata:transfer_batch_redirect'%}">
+            <i class="fa-solid fa-download"></i> Export Selected CSVs
+        </button>
+        <button class="btn btn-danger checkbox-action-button disabled"
                 hx-delete="{% url 'metadata:transfer_batch_delete'%}" hx-target="#modalContainer" hx-trigger="click"
                 data-bs-toggle="modal" data-bs-target="#modalContainer">
 
@@ -36,7 +39,7 @@
                        hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=name:desc"
                        hx-target="#tablediv"></i>
                 </th>
-<!--                <th scope="col">Pages/Reports</th>-->
+                <!--                <th scope="col">Pages/Reports</th>-->
                 <th scope="col">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
                   hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.status.sortUrl}}">

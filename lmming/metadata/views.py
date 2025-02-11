@@ -3,7 +3,7 @@ from io import BytesIO
 from typing import Dict, Any
 
 from django.conf import settings
-from django.http import HttpResponseRedirect, FileResponse, HttpResponse
+from django.http import HttpResponseRedirect, FileResponse, HttpResponse, QueryDict
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
@@ -12,7 +12,7 @@ from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
 from metadata.pipeline_views.arab import arabGenerate, arabManual, arabMint, arabFilename, arabTranslate
 from metadata.pipeline_views.fac import mint, facManual, facFilename, facTranslate
 from metadata.pipeline_views.shared import ner, compute, filemaker
-from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure
+from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure, buildBulkTransferCsvs
 
 
 def index(request):
@@ -69,6 +69,15 @@ def downloadTransfer(_request, transfer_id: int, filetype: str):
     else:
         # TODO: raise error
         pass
+
+
+def batchDownload(request):
+    forArab = settings.ARCHIVE_INST == "ARAB"
+    ids = [int(id) for id in request.GET.getlist('ids')]
+    transfers = ExtractionTransfer.objects.filter(id__in=ids, status=Status.COMPLETE)
+    outFile = buildBulkTransferCsvs(transfers, checkRestriction=True, forArab=forArab)
+    return FileResponse(outFile, as_attachment=True,
+                        filename=f"bulk_Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
 
 
 class Transfers(View):

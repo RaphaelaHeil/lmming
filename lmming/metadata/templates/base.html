@@ -11,7 +11,7 @@
     <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
     <script src="{% static 'metadata/htmx.min.js' %}"></script>
     <script src="{% static 'metadata/jquery.min.js' %}"></script>
-    <link rel="shortcut icon" type="image/png" href="{% static 'metadata/favicon.png' %}"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'metadata/favicon-32x32.png' %}">
     <style>
         body {
           min-height: 25rem;
@@ -89,9 +89,7 @@
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
       return new bootstrap.Tooltip(tooltipTriggerEl)
     })
-
 </script>
 </body>
 <script src="{% static 'metadata/metadata.js' %}"></script>
-
 </html>
