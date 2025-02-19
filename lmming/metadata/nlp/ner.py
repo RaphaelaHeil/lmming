@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
+from string import capwords
 from typing import List
 
 import nltk
@@ -156,6 +157,10 @@ def __cutAddress(person: str) -> str:
     return person
 
 
+def __allCapsToPascal(person: str) -> str:
+    return capwords(person)
+
+
 def filtered_entities(text: str, result: NlpResult):
     msr = 0
     processed_ra = NER_HELPER.NER_RA(text)
@@ -167,9 +172,12 @@ def filtered_entities(text: str, result: NlpResult):
             if label == "ORG":
                 result.organisations.append(entity)
             elif label == "PRS":
+                if not entity:
+                    continue
                 entity = __cutAddress(entity)
-                if entity:  # don't add empty entities
-                    result.persons.append(entity)
+                if entity.isupper():
+                    entity = __allCapsToPascal(entity)
+                result.persons.append(entity)
     for element in processed_kb:
         entity = correction(element["word"])
         label = element["entity_group"]
@@ -185,9 +193,12 @@ def filtered_entities(text: str, result: NlpResult):
             # ent_final = {label: [] for label in ["ORG", "PRS", "TME", "OBJ", "LOC", "WRK", "EVN"]}
             match label:
                 case "PRS":
+                    if not entity:
+                        continue
                     entity = __cutAddress(entity)
-                    if entity:  # don't add empty entities
-                        result.persons.append(entity)
+                    if entity.isupper():
+                        entity = __allCapsToPascal(entity)
+                    result.persons.append(entity)
                 case "TME":
                     result.times.append(entity)
                 case "ORG":
