@@ -5,7 +5,8 @@ from django.urls import reverse
 from django.views.generic import View
 
 from v2.forms.vocabulary import VocabularyForm, MetadataTermForm
-from v2.models import Vocabulary, MetadataTerm
+from v2.forms.project import ProjectForm
+from v2.models import Vocabulary, MetadataTerm, Project
 
 
 def index(request):
@@ -96,3 +97,63 @@ class VocabularyView(View):
                                                "metadataForm": metadataForm})
         vocabulary.save()
         return HttpResponseRedirect(reverse('v2:vocabularies'))
+
+
+class ProjectView(View):
+
+    def get(self, request, *args, **kwargs):
+        mode = request.GET.get("mode", "view")
+        if mode == "create":
+            form = ProjectForm()
+
+            return render(request, "v2/partial/project/create_edit.html", context={"form": form, "mode": mode})
+
+        if "id" in kwargs:
+            project = get_object_or_404(Project, pk=kwargs["id"])
+
+            if mode == "edit":
+                form = ProjectForm(initial={"name": project.name, "recordIdColumnName": project.recordIdColumnName,
+                                            "description": project.description, "abbreviation": project.abbreviation,
+                                            "externalRecordColumnNames": ",".join(project.externalRecordColumnNames)})
+                # MetadataFormSet = formset_factory(MetadataTermForm, extra=0, can_delete=True)
+                # metadataForm = MetadataFormSet(
+                #     initial=[{"description": m.description, "standardTerm": m.standardTerm, "id": m.id} for m in
+                #              vocabulary.metadataterm_set.all()])
+                return render(request, "v2/partial/project/create_edit.html",
+                              context={"form": form, "id": project.pk, "mode": "edit"})
+            else:
+                return render(request, "v2/partial/project/details.html",
+                              context={"project": project, "mode": mode})
+        else:
+            projects = Project.objects.order_by("name")
+            return render(request, "v2/partial/project/table.html", context={"projects": projects})
+
+    def post(self, request, *args, **kwargs):
+        mode = request.GET.get("mode", "view")
+
+        # MetadataFormSet = formset_factory(MetadataTermForm, can_delete=True)
+
+        if mode == "edit":
+            project = get_object_or_404(Project, pk=kwargs["id"])
+            initial = {"name": project.name, "recordIdColumnName": project.recordIdColumnName,
+                       "description": project.description, "abbreviation": project.abbreviation,
+                       "externalRecordColumnNames": ",".join(project.externalRecordColumnNames)}
+        else:
+            project = Project()
+            initial = {}
+        projectForm = ProjectForm(request.POST, initial=initial)
+
+        if projectForm.is_valid():
+            if projectForm.has_changed():
+                if "name" in projectForm.changed_data:
+                    project.name = projectForm.cleaned_data["name"]
+                if "description" in projectForm.changed_data:
+                    project.description = projectForm.cleaned_data["description"]
+                if "abbreviation" in projectForm.changed_data:
+                    project.abbreviation = projectForm.cleaned_data["abbreviation"]
+                if "recordIdColumnName" in projectForm.changed_data:
+                    project.recordIdColumnName = projectForm.cleaned_data["recordIdColumnName"]
+                if "externalRecordColumnNames" in projectForm.changed_data:
+                    project.externalRecordColumnNames = projectForm.cleaned_data["externalRecordColumnNames"].split(",")
+        project.save()
+        return HttpResponseRedirect(reverse('v2:projects'))

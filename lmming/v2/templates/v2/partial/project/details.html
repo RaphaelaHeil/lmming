@@ -1,0 +1,61 @@
+{% extends "v2/base.html" %}
+
+{% block title %}
+Project Details
+<a class="btn btn-primary float-end" href="{% url 'v2:project_view_edit' project.id%}?mode=edit">
+    <i class="fa-solid fa-pencil"></i> Edit
+</a>
+{% endblock %}
+{% block content %}
+<div class="ms-3">
+<div class="row d-flex align-items-center py-2 border">
+    <div class="col-3 ">
+        <strong>Name:</strong>
+    </div>
+    <div class="col">
+        {{project.name}}
+    </div>
+</div>
+<div class="row d-flex align-items-center py-2 border">
+    <div class="col-3">
+        <strong>Abbreviation:</strong>
+    </div>
+    <div class="col">
+        {{project.abbreviation}}
+    </div>
+</div>
+
+<div class="row d-flex  py-2 border">
+    <div class="col-3">
+        <strong>Description:</strong>
+    </div>
+    <div class="col">
+        {{project.description | linebreaks}}
+    </div>
+</div>
+
+<div class="row d-flex align-items-center py-2 border">
+    <div class="col-3">
+        <strong>Record ID Column Name:</strong>
+    </div>
+    <div class="col">
+        {{project.recordIdColumnName}}
+    </div>
+</div>
+
+
+<div class="row d-flex py-2 border">
+    <div class="col-3">
+        <strong>External Record Column Names:</strong>
+    </div>
+    <div class="col">
+        <ul>
+            {%for n in project.externalRecordColumnNames%}
+            <li>{{n}}</li>
+            {%endfor%}
+        </ul>
+    </div>
+</div>
+</div>
+
+{% endblock %}

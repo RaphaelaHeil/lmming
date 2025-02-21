@@ -84,4 +84,5 @@ Edit Vocabulary
         <a href="{% url 'v2:vocabularies' %}" class="btn btn-danger mb-3 mt-2 float-end">Cancel</a>
     </form>
 
-    {% endblock %}
+    {% endblock %}{% load static %}
+    <script src="{% static 'v2/formsets.js' %}"></script>

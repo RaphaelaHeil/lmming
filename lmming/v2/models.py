@@ -1,4 +1,5 @@
 from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint
+from django.contrib.postgres.fields import ArrayField
 
 
 class MetadataValueType(TextChoices):
@@ -32,3 +33,11 @@ class MetadataTerm(Model):
 
     class Meta:
         constraints = [UniqueConstraint(fields=["vocabulary", "standardTerm"], name="vocabulary-unique-standardTerm")]
+
+
+class Project(Model):
+    name = CharField()
+    abbreviation = CharField(max_length=6)
+    description = TextField(blank=True)
+    recordIdColumnName = CharField(blank=True)
+    externalRecordColumnNames = ArrayField(CharField(), blank=list)

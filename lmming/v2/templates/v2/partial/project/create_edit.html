@@ -1,0 +1,50 @@
+{% extends "v2/base.html" %}
+
+{% block title %}
+{%if mode == 'create'%}
+Create new Project
+{% else %}
+Edit Project
+{%endif %}
+{% endblock %}
+
+
+{% block content %}
+{%if mode == 'create'%}
+<form class="form" method="POST" action="{% url 'v2:project_create'%}?mode={{mode}}" autocomplete="off">
+    {% else %}
+    <form class="form" method="POST" action="{% url 'v2:project_view_edit' id %}?mode={{mode}}" autocomplete="off">
+
+        {%endif %}
+
+        {% csrf_token %}
+        {{ form.management_form }}
+        {% for field in form %}
+        <div class="mb-3">
+            {%if field.field.widget.input_type == 'checkbox'%}
+            <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+            {%if field.errors%}
+            <label class="text-danger">Please select at least one value!</label>
+            {%endif%}
+            <fieldset>
+                {% for box in field %}
+                <div class="form-check">
+                    {{ box }}
+                </div>
+                {% endfor %}
+            </fieldset>
+            {%else%}
+            {{field.widget}}
+            <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+            {{ field }}
+            {%endif%}
+            {{field.error}}
+        </div>
+        {% endfor %}
+
+        <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 ms-2 float-end"
+               name="confirm" id="id_formset_submit_button">
+        <a href="{% url 'v2:vocabularies' %}" class="btn btn-danger mb-3 mt-2 float-end">Cancel</a>
+    </form>
+
+    {% endblock %}
