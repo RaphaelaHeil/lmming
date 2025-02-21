@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LMMing v2 - ARAB Metadata Extraction</title>
+    {% load django_bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_javascript %}
+    <script src="{% static 'fontawesomefree/js/all.min.js' %}"></script>
+    <script src="{% static 'v2/htmx.min.js' %}"></script>
+    <script src="{% static 'v2/jquery.min.js' %}"></script>
+    {%comment%}
+    <link rel="shortcut icon" type="image/png" href="{% static 'metadata/favicon.png' %}"/>
+    {%endcomment%}
+    <style>
+        body {
+          min-height: 25rem;
+          padding-top: 4.5rem;
+        }
+    </style>
+</head>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<nav class="navbar navbar-dark navbar-expand-md bg-dark justify-content-center fixed-top">
+    <div class="container-fluid">
+        <a href="/v2" class="navbar-brand d-flex w-40 me-auto">LMMing V2</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsingNavbar3">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="navbar-collapse collapse w-100" id="collapsingNavbar3">
+            <ul class="navbar-nav w-100 justify-content-center">
+                {%comment%}
+                <li class="nav-item me-5">
+                    <a class="btn btn-outline-light" href="/">Extraction Process Overview</a>
+                </li>
+                {%endcomment%}
+                <li class="nav-item me-5">
+                    <a class="btn btn-outline-light" href="{% url 'v2:vocabularies'%}">Vocabulary</a>
+                </li>
+
+
+            </ul>
+            <ul class="nav navbar-nav ms-auto w-100 justify-content-end">
+                <li class="nav-item">
+                    <span data-bs-toggle="tooltip"> {# extra span is needed so that tooltip AND modal can be applied to the same button #}
+                        <span style="cursor:pointer;" hx-get="{% url 'metadata:settings_modal'%}"
+                              hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
+                              data-bs-target="#modalContainer" class="btn btn-dark" title="Settings"
+                              id="settings_button">
+                        <i class="fa-solid fa-gear"></i>
+                        </span>
+                    </span>
+
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<main class="container">
+    {% csrf_token %}
+    <div id="content">
+        <h2 class="mb-4">{% block title %}{% endblock %}</h2>
+        {% block content %}{% endblock %}
+    </div>
+</main>
+
+<div id="modalContainer" class="modal modal-lg modal-blur fade" style="display: none" aria-hidden="false" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content"></div>
+    </div>
+</div>
+
+<script>
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+      return new bootstrap.Tooltip(tooltipTriggerEl)
+    })
+
+</script>
+</body>
+<script src="{% static 'v2/metadata.js' %}"></script>
+
+</html>

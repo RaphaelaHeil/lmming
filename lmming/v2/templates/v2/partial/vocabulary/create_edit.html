@@ -1,0 +1,87 @@
+{% extends "v2/base.html" %}
+
+{% block title %}
+{%if mode == 'create'%}
+Create new Vocabulary
+{% else %}
+Edit Vocabulary
+{%endif %}
+{% endblock %}
+
+
+{% block content %}
+<template id="id_formset_empty_form">
+    <div class="mt-3 border border-2 rounded p-2">
+        <h5>Term </h5>
+        {{ metadataForm.empty_form }}
+    </div>
+</template>
+{%if mode == 'create'%}
+<form class="form" method="POST" action="{% url 'v2:vocab_create'%}?mode={{mode}}" autocomplete="off">
+    {% else %}
+    <form class="form" method="POST" action="{% url 'v2:vocab_view_edit' id %}?mode={{mode}}" autocomplete="off">
+
+        {%endif %}
+
+        {% csrf_token %}
+        {{ form.management_form }}
+        {% for field in form %}
+        <div class="mb-3">
+            {%if field.field.widget.input_type == 'checkbox'%}
+            <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+            {%if field.errors%}
+            <label class="text-danger">Please select at least one value!</label>
+            {%endif%}
+            <fieldset>
+                {% for box in field %}
+                <div class="form-check">
+                    {{ box }}
+                </div>
+                {% endfor %}
+            </fieldset>
+            {%else%}
+            {{field.widget}}
+            <label for="{{field.auto_id}}" class="form-label">{{field.label}} </label>
+            {{ field }}
+            {%endif%}
+            {{field.error}}
+        </div>
+        {% endfor %}
+
+        <h4 class="pt-4 pb-2">Metadata Terms
+            <div class="btn btn-primary float-end" id="id_formset_add_button">Add Metadata Term</div>
+        </h4>
+
+        <div class="alert alert-primary" role="alert">
+            Please note that selecting a pre-existing metadata term for deletion will only take effect once the form is
+            submitted. Newly created (unsaved) terms will be deleted immediately upon activating the checkbox.
+        </div>
+
+        {% if metadataForm.error%}
+        <div class="alert alert-danger" role="alert">
+            {{metadataForm.error}}
+        </div>
+        {%endif%}
+
+        <div id="id_formset_container">
+            {{ metadataForm.management_form }}
+            {% for mForm in metadataForm%}
+            {%if mForm.error%}
+            <div class="alert alert-danger" role="alert">
+                {{mForm.error}}
+            </div>
+            {%endif%}
+
+            <div class="mt-3 border border-2 rounded p-2">
+                <h5>Term </h5>
+                {{mForm}}
+            </div>
+            {% endfor %}
+        </div>
+        <div class="btn btn-primary mt-3" id="id_formset_add_button_bottom">Add Metadata Term</div>
+        <input type="submit" value="Confirm" class="btn btn-success mb-3 mt-2 ms-2 float-end"
+               name="confirm" id="id_formset_submit_button">
+        <a href="{% url 'v2:vocabularies' %}" class="btn btn-danger mb-3 mt-2 float-end">Cancel</a>
+    </form>
+
+    {% endblock %}

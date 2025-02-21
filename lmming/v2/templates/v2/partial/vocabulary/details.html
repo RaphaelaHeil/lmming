@@ -1,0 +1,48 @@
+{% extends "v2/base.html" %}
+
+{% block title %}Vocabulary Details
+<a class="btn btn-primary float-end" href="{% url 'v2:vocab_view_edit' vocabulary.id%}?mode=edit">
+    <i class="fa-solid fa-pencil"></i> Edit
+</a>
+{% endblock %}
+{% block content %}
+
+<div class="row d-flex align-items-center py-2">
+    <div class="col-2">
+        <strong>Name:</strong>
+    </div>
+    <div class="col">
+        {{vocabulary.name}}
+    </div>
+</div>
+<div class="row d-flex align-items-center py-2">
+    <div class="col-2">
+        <strong>URL:</strong>
+    </div>
+    <div class="col">
+        {{vocabulary.url}}
+    </div>
+</div>
+
+<div class="row d-flex  py-2">
+    <div class="col-2">
+        <strong>Description:</strong>
+    </div>
+    <div class="col">
+        {{vocabulary.description | linebreaks}}
+    </div>
+</div>
+
+<h3 class="pt-5">Metadata Terms</h3>
+<div class="list-group">
+    {% for mt in vocabulary.metadataterm_set.all %}
+    <div class="list-group-item">
+        <div class="d-sm-flex flex-column">
+            <h5 class="mb-1">{{mt.standardTerm}}</h5>
+            <small>{{mt.description|default:'[no description]'}}</small>
+        </div>
+    </div>
+
+    {%endfor%}
+</div>
+{% endblock %}

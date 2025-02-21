@@ -63,6 +63,9 @@ INSTALLED_APPS = [
 if ARCHIVE_INST == "FAC":
     INSTALLED_APPS.append('ark.apps.ArkConfig')
 
+# if ARCHIVE_INST == "ARAB":
+INSTALLED_APPS.append('v2.apps.V2Config')
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

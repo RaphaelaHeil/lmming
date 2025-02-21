@@ -1,0 +1,65 @@
+{% extends "v2/base.html" %}
+
+{% block title %}Vocabularies
+
+<a class="btn btn-primary float-end" href="{% url 'v2:vocab_create'%}?mode=create">
+    <i class="fa-solid fa-plus"></i> Create
+</a>
+
+{% endblock %}
+
+{% block content %}
+
+<div class="table-responsive">
+    <form id="checked-contacts">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th scope="col">
+                    Name
+                </th>
+                <th scope="col">
+                    # Metadata Terms
+                </th>
+                <th scope="col" class="text-center">Options</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            {%if vocabularies%}
+            {%for vocab in vocabularies%}
+            <tr>
+                <th scope="row">
+                    {{vocab.name}}
+                </th>
+                <td>
+                    {{vocab.metadataterm_set.count}}
+                </td>
+                <td class="text-center">
+                    <a style="cursor:pointer;" href="{% url 'v2:vocab_view_edit' vocab.pk %}?mode=view"><i
+                            class="fa-solid fa-magnifying-glass text-dark"></i></a>
+                    <a style="cursor:pointer;" href="{% url 'v2:vocab_view_edit' vocab.pk %}?mode=edit"><i
+                            class="fa-solid fa-pencil text-dark"></i></a>
+                </td>
+            </tr>
+            {%endfor%}
+
+
+            {% else %}
+            <tr>
+                <td></td>
+                <th scope="row">
+                    No vocabularies registered yet
+                </th>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </form>
+</div>
+{% endblock %}
+
+
+
