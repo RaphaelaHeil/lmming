@@ -1,7 +1,10 @@
 from django.contrib import admin
 
-from v2.models import Vocabulary, MetadataTerm, Project
+from v2.models import Vocabulary, MetadataTerm, Project, ProjectMetadataTerm, BasicValueType, ChoiceValueType
 
 admin.site.register(Vocabulary)
 admin.site.register(MetadataTerm)
 admin.site.register(Project)
+admin.site.register(ProjectMetadataTerm)
+admin.site.register(BasicValueType)
+admin.site.register(ChoiceValueType)

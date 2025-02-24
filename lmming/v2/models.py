@@ -1,4 +1,5 @@
-from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint
+from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
+    BooleanField
 from django.contrib.postgres.fields import ArrayField
 
 
@@ -24,6 +25,10 @@ class Vocabulary(Model):
     name = CharField(blank=False, unique=True)
     description = TextField(blank=True)
     url = URLField(blank=True)
+    prefix = CharField(blank=False, default="prefix")
+
+    def __str__(self):
+        return f"{self.name} ({self.prefix})"
 
 
 class MetadataTerm(Model):
@@ -34,6 +39,9 @@ class MetadataTerm(Model):
     class Meta:
         constraints = [UniqueConstraint(fields=["vocabulary", "standardTerm"], name="vocabulary-unique-standardTerm")]
 
+    def __str__(self):
+        return f"{self.standardTerm} ({self.vocabulary.name})"
+
 
 class Project(Model):
     name = CharField()
@@ -41,3 +49,34 @@ class Project(Model):
     description = TextField(blank=True)
     recordIdColumnName = CharField(blank=True)
     externalRecordColumnNames = ArrayField(CharField(), blank=list)
+    prefixSeparator = CharField(blank=False, default=".")
+
+    def __str__(self):
+        return f"{self.name} ({self.abbreviation})"
+
+
+class BasicValueType(Model):
+    valueTypes = ArrayField(CharField(choices=MetadataValueType.choices), default=list, )
+    multiple = BooleanField()
+    range = BooleanField()
+
+    def __str__(self):
+        return ",".join(self.valueTypes) + (" multiple" if self.multiple else "") + (" range" if self.range else "")
+
+
+class ChoiceValueType(BasicValueType):
+    options = ArrayField(CharField(),default=list,)
+
+    def __str__(self):
+        return str(self.options) + (" multiple" if self.multiple else "") + (" range" if self.range else "")
+
+
+class ProjectMetadataTerm(Model):
+    project = ForeignKey(Project, on_delete=CASCADE)
+    metadataTerm = ForeignKey(MetadataTerm, on_delete=CASCADE)
+    mandatory = BooleanField()
+    level = CharField(choices=Level.choices)
+    valueType = ForeignKey(BasicValueType, on_delete=CASCADE)
+
+    def __str__(self):
+        return f"{self.project.name} - {self.metadataTerm.standardTerm} ({self.level}, {self.mandatory})"
