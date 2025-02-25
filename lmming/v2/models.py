@@ -1,6 +1,6 @@
-from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
-    BooleanField, DateField
 from django.contrib.postgres.fields import ArrayField
+from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
+    BooleanField, DateField, PositiveIntegerField, JSONField
 
 
 class MetadataValueType(TextChoices):
@@ -105,3 +105,11 @@ class ExternalRecordField(Model):
     def __str__(self):
         return (f"{self.externalRecord.project.abbreviation}: {self.externalRecord.recordId} - {self.key}: "
                 f"{self.value if self.value else ''}")
+
+
+class ProcessingStepConfiguration(Model):
+    order = PositiveIntegerField()
+    key = CharField()
+    description = CharField(blank=True, default="")
+    options = JSONField(default=dict, blank=True)
+    project = ForeignKey(Project, on_delete=CASCADE)
