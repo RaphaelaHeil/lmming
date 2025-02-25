@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
-    BooleanField, DateField, PositiveIntegerField, JSONField
+    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField
 
 
 class MetadataValueType(TextChoices):
@@ -19,6 +19,17 @@ class Level(TextChoices):
 class ProcessingStepMode(TextChoices):
     AUTOMATIC = "AUTOMATIC"
     MANUAL = "MANUAL"
+
+
+class FileType(TextChoices):
+    IMAGE = "IMAGE"
+    PDF = "PDF"
+    XML_ALTO = "XML_ALTO"
+    XML_PAGE = "XML_PAGE"
+    PLAINTEXT = "PLAINTEXT"
+    AUDIO = "AUDIO"
+    VIDEO = "VIDEO"
+    OTHER = "OTHER"
 
 
 class Vocabulary(Model):
@@ -113,3 +124,23 @@ class ProcessingStepConfiguration(Model):
     description = CharField(blank=True, default="")
     options = JSONField(default=dict, blank=True)
     project = ForeignKey(Project, on_delete=CASCADE)
+
+
+class Process(Model):
+    name = CharField()
+    project = ForeignKey(Project, on_delete=CASCADE)
+
+
+class Item(Model):
+    process = OneToOneField(Process, on_delete=CASCADE, primary_key=True, )
+    recordId = CharField(blank=False)
+    documentTypeIdentifier = CharField(blank=False)  # type given in the filenames
+    date = ArrayField(DateField(), blank=False, null=True)  # date(s) given in the filenames
+
+
+class Page(Model):
+    item = ForeignKey(Item, on_delete=CASCADE)
+    originalFilename = CharField(blank=False)
+    file = FileField(blank=False)
+    fileType = CharField(choices=FileType.choices, default=FileType.OTHER)
+    pageNumber = PositiveIntegerField(default=0)
