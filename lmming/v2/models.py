@@ -1,6 +1,8 @@
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
-    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField, DateTimeField
+    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField, DateTimeField, Index
 
 
 class MetadataValueType(TextChoices):
@@ -164,3 +166,42 @@ class ProcessingStep(Model):
     lastModified = DateTimeField(auto_now=True)
     mode = CharField(choices=ProcessingStepMode.choices, default=ProcessingStepMode.AUTOMATIC)
     humanValidation = BooleanField(default=False)
+
+
+class TextValue(Model):
+    text = TextField(blank=True)
+
+
+class DateValue(Model):
+    date = DateField(blank=True)
+
+
+class PlainHandleValue(Model):
+    handle = CharField(blank=True)
+    resolveTo = URLField(blank=True)
+
+
+class LocationHandleValue(Model):
+    handle = CharField(blank=True)
+
+
+class Location(Model):
+    locationHandle = ForeignKey(LocationHandleValue, on_delete=CASCADE)
+    resolveTo = URLField(blank=True)
+    view = CharField(blank=True)
+    language = CharField(blank=True)
+    weight = PositiveIntegerField(default=0)
+
+
+class MetadataAssignment(Model):
+    item = ForeignKey(Item, on_delete=CASCADE, blank=True, null=True)
+    page = ForeignKey(Page, on_delete=CASCADE, blank=True, null=True)
+    projectMetadataTerm = ForeignKey(ProjectMetadataTerm, on_delete=CASCADE)
+    content_type = ForeignKey(ContentType, on_delete=CASCADE)
+    object_id = PositiveIntegerField()
+    value = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        indexes = [
+            Index(fields=["content_type", "object_id"]),
+        ]
