@@ -1,6 +1,6 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
-    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField
+    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField, DateTimeField
 
 
 class MetadataValueType(TextChoices):
@@ -30,6 +30,15 @@ class FileType(TextChoices):
     AUDIO = "AUDIO"
     VIDEO = "VIDEO"
     OTHER = "OTHER"
+
+
+class Status(TextChoices):
+    PENDING = "PENDING"
+    IN_PROGRESS = "IN_PROGRESS"
+    COMPLETE = "COMPLETE"
+    ERROR = "ERROR"
+    AWAITING_HUMAN_INPUT = "AWAITING_HUMAN_INPUT"
+    AWAITING_HUMAN_VALIDATION = "AWAITING_HUMAN_VALIDATION"
 
 
 class Vocabulary(Model):
@@ -144,3 +153,14 @@ class Page(Model):
     file = FileField(blank=False)
     fileType = CharField(choices=FileType.choices, default=FileType.OTHER)
     pageNumber = PositiveIntegerField(default=0)
+
+
+class ProcessingStep(Model):
+    configuration = ForeignKey(ProcessingStepConfiguration, on_delete=CASCADE)
+    process = ForeignKey(Process, on_delete=CASCADE)
+    status = CharField(choices=Status.choices, default=Status.PENDING)
+    log = CharField(blank=True)
+    startDate = DateTimeField()
+    lastModified = DateTimeField(auto_now=True)
+    mode = CharField(choices=ProcessingStepMode.choices, default=ProcessingStepMode.AUTOMATIC)
+    humanValidation = BooleanField(default=False)
