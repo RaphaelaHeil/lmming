@@ -3,6 +3,8 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
     BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField, DateTimeField, Index
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
 
 
 class MetadataValueType(TextChoices):
@@ -11,6 +13,8 @@ class MetadataValueType(TextChoices):
     DATE = "DATE"
     PLAIN_HANDLE = "PLAIN HANDLE"
     LOCATION_HANDLE = "LOCATION HANDLE"
+    IIIF_HANDLE = "IIIF_HANDLE"
+    FIXED_VALUE = "FIXED_VALUE"
 
 
 class Level(TextChoices):
@@ -36,6 +40,7 @@ class FileType(TextChoices):
 
 class Status(TextChoices):
     PENDING = "PENDING"
+    QUEUED = "QUEUED"
     IN_PROGRESS = "IN_PROGRESS"
     COMPLETE = "COMPLETE"
     ERROR = "ERROR"
@@ -93,12 +98,20 @@ class ChoiceValueType(BasicValueType):
         return str(self.options) + (" multiple" if self.multiple else "") + (" range" if self.range else "")
 
 
+class FixedValueType(BasicValueType):
+    values = ArrayField(CharField(), blank=list)
+
+    def __str__(self):
+        return str(self.values) + (" multiple" if self.multiple else "") + (" range" if self.range else "")
+
+
 class ProjectMetadataTerm(Model):
     project = ForeignKey(Project, on_delete=CASCADE)
     metadataTerm = ForeignKey(MetadataTerm, on_delete=CASCADE)
     mandatory = BooleanField()
     level = CharField(choices=Level.choices)
     valueType = ForeignKey(BasicValueType, on_delete=CASCADE)
+    includeInExport = BooleanField(default=True)
 
     def __str__(self):
         return f"{self.project.name} - {self.metadataTerm.standardTerm} ({self.level}, {self.mandatory})"
@@ -140,6 +153,30 @@ class ProcessingStepConfiguration(Model):
 class Process(Model):
     name = CharField()
     project = ForeignKey(Project, on_delete=CASCADE)
+    status = CharField(choices=Status.choices, default=Status.PENDING)
+    lastModified = DateTimeField(auto_now=True)
+
+    def updateStatus(self):
+        jobStatuses = set([step.status for step in self.processingSteps.all()])
+
+        for status in [Status.ERROR, Status.AWAITING_HUMAN_INPUT, Status.AWAITING_HUMAN_VALIDATION]:
+            if status in jobStatuses:
+                self.status = status
+                self.save()
+                return
+
+        if len(jobStatuses) == 1:
+            self.status = jobStatuses[0]
+            self.save()
+            return
+        else:
+            for status in [Status.QUEUED, Status.IN_PROGRESS]:
+                if status in jobStatuses:
+                    self.status = status
+                    self.save()
+                    return
+        self.status = Status.PENDING
+        self.save()
 
 
 class Item(Model):
@@ -159,7 +196,7 @@ class Page(Model):
 
 class ProcessingStep(Model):
     configuration = ForeignKey(ProcessingStepConfiguration, on_delete=CASCADE)
-    process = ForeignKey(Process, on_delete=CASCADE)
+    process = ForeignKey(Process, on_delete=CASCADE, related_name="processingSteps")
     status = CharField(choices=Status.choices, default=Status.PENDING)
     log = CharField(blank=True)
     startDate = DateTimeField()
@@ -205,3 +242,16 @@ class MetadataAssignment(Model):
         indexes = [
             Index(fields=["content_type", "object_id"]),
         ]
+
+
+# noinspection PyUnusedLocal
+@receiver(pre_save, sender=ProcessingStep, weak=False)
+def processLog(sender, instance, **_kwargs):  # pylint: disable=unused-argument
+    if instance.status != Status.ERROR:
+        instance.log = ""
+
+
+# noinspection PyUnusedLocal
+@receiver(post_save, sender=ProcessingStep, weak=False)
+def statusUpdate(sender, instance, **_kwargs):  # pylint: disable=unused-argument
+    instance.process.updateStatus()
