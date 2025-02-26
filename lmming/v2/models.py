@@ -30,8 +30,7 @@ class ProcessingStepMode(TextChoices):
 class FileType(TextChoices):
     IMAGE = "IMAGE"
     PDF = "PDF"
-    XML_ALTO = "XML_ALTO"
-    XML_PAGE = "XML_PAGE"
+    XML = "XML"
     PLAINTEXT = "PLAINTEXT"
     AUDIO = "AUDIO"
     VIDEO = "VIDEO"
