@@ -1,16 +1,11 @@
 {% extends "v2/base.html" %}
 
-{% block title %}Dummy Index{% endblock %}
+{% block title %}Extraction Process Overview{% endblock %}
 
 {% block content %}
-<p>nothing to see here for now ... </p>
-
-
-{%comment%}
-<div class="p-0" hx-get="{% url 'v2:transfer_table'%}?sort=created:desc" hx-trigger="load" hx-target="#tablediv">
+<div class="p-0" hx-get="{% url 'v2:process_table'%}?sort=updated:desc" hx-trigger="load" hx-target="#tablediv">
 
     <div id="tablediv">
     </div>
 </div>
-{%endcomment%}
 {% endblock %}

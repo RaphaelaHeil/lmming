@@ -47,7 +47,7 @@
             <ul class="nav navbar-nav ms-auto w-100 justify-content-end">
                 <li class="nav-item">
                     <span data-bs-toggle="tooltip"> {# extra span is needed so that tooltip AND modal can be applied to the same button #}
-                        <span style="cursor:pointer;" hx-get="{% url 'metadata:settings_modal'%}"
+                        <span style="cursor:pointer;" hx-get="{% url 'v2:settings_modal'%}"
                               hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
                               data-bs-target="#modalContainer" class="btn btn-dark" title="Settings"
                               id="settings_button">

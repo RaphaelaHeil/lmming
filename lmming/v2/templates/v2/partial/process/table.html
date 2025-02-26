@@ -1,0 +1,171 @@
+<div class="mb-2 d-flex justify-content-between">
+
+    <a href="{%url 'v2:create_process'%}" class="btn btn-warning" id="create_transfer_button">
+        <i class="fa-solid fa-file-circle-plus"></i> Start New Extraction Process
+    </a>
+    {%comment%}
+    <a href="{%url 'v2:import_process'%}" class="btn btn-warning" id="import_transfer_button">
+        <i class="fa-solid fa-file-circle-plus"></i> Import Extraction Process
+    </a>
+{%endcomment%}
+    <div hx-include="[name='ids']" hx-target="#tbody">
+        {%comment%}
+        <button class="btn btn-primary checkbox-action-button disabled" hx-get="{% url 'v2:process_batch_redirect'%}">
+            <i class="fa-solid fa-download"></i> Export Selected CSVs
+        </button>
+        {%endcomment%}
+        <button class="btn btn-danger checkbox-action-button disabled" hx-delete="{% url 'v2:process_batch_delete'%}"
+                hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal" data-bs-target="#modalContainer">
+            <i class="fa-solid fa-trash"></i> Delete Selected
+        </button>
+    </div>
+
+</div>
+
+<div class="table-responsive">
+    <form id="checked-contacts">
+        <table class="table table-striped" hx-get="{% url 'v2:process_table'%}?{{searchParams}}"
+               hx-trigger="every 20s[allowRefresh()], collection-deleted from:body" hx-target="#tablediv">
+            <thead>
+            <tr>
+                <th>
+                    <input class="form-check-input" type="checkbox" id="checkAll" onclick="toggleCheckboxes()">
+                </th>
+                <th scope="col" class="col-7">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'v2:process_table'%}?{{viewStatus.name.sortUrl}}">
+                Process Name
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.name.up}};cursor: pointer;"
+                       hx-trigger="click"
+                       hx-get="{% url 'v2:process_table'%}?sort=name:asc" hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.name.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=name:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+                <!--                <th scope="col">Pages/Reports</th>-->
+                <th scope="col" class="col-1">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'v2:process_table'%}?{{viewStatus.status.sortUrl}}">
+                Status
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.status.up}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=status:asc"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.status.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=status:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+
+                {%comment%}
+                <th scope="col">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'v2:process_table'%}?{{viewStatus.created.sortUrl}}">
+                Date Created
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.created.up}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=created:asc"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.created.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=created:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+                {%endcomment%}
+
+                <th scope="col">
+            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                  hx-get="{% url 'v2:process_table'%}?{{viewStatus.updated.sortUrl}}">
+                Last Updated
+            </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.updated.up}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=updated:asc"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.updated.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'v2:process_table'%}?sort=updated:desc"
+                       hx-target="#tablediv"></i>
+                </th>
+
+
+                <th scope="col" class="col-2 text-end">Options</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            {% if processes%}
+            {%for job in processes %}
+            <tr>
+                <td>
+                    <input type='checkbox' class="form-check-input checkable" name='ids' value='{{job.id}}'
+                           onchange="checkboxChange()">
+                </td>
+                <th scope="row">
+                    <a href="{% url 'v2:process' job.id %}" class="px-1 text-reset text-decoration-none">
+                        {{job.name}}
+                    </a>
+                </th>
+                <td>
+                    {{job.get_status_display}}
+                </td>
+                <td>
+                    {{job.lastModified |date:"d M Y, H:i"}}
+                </td>
+                <td class="text-end">
+                    <a href="{% url 'v2:process' job.id %}" class="px-1 text-reset text-decoration-none">
+                        <i class="fa-solid fa-magnifying-glass text-dark"></i>
+                    </a>
+
+                    {%if job.status == 'COMPLETE'%}
+
+                    {%if archive == 'FAC'%}
+                    <span data-bs-toggle="tooltip">
+                    <a href="{% url 'v2:download_process' job.id 'csv'%}" style="cursor:pointer;" class="px-1"
+                       title="Download complete metadata for Omeka (csv)">
+                        <i class="fa-solid fa-file-csv text-dark"></i></a>
+                    </span>
+                    {%endif%}
+
+                    <span data-bs-toggle="tooltip">
+                    <a style="cursor:pointer;" href="{% url 'v2:download_process' job.id 'csv_restricted'%}"
+                       class="px-1" title="Download restricted metadata for Omeka (csv)">
+                        <i class="fa-solid fa-file-shield text-dark"></i></a>
+                    </span>
+
+                    {%if archive == 'FAC'%}
+                    <span data-bs-toggle="tooltip">
+                    <a style="cursor:pointer;" href="{% url 'v2:download_process' job.id 'zip'%}" class="px-1"
+                       title="Download complete Archivematica folder structure (zip)">
+                        <i class="fa-solid fa-folder-plus text-dark"></i></a>
+                    </span>
+                    {%endif%}
+
+                    <span data-bs-toggle="tooltip">
+                    <a style="cursor:pointer;" href="{% url 'v2:download_process' job.id 'zip_restricted'%}"
+                       class="px-1" title="Download restricted Archivematica folder structure (zip)">
+                        <i class="fa-solid fa-folder-minus text-dark"></i></a>
+                    </span>
+
+                    {%endif%}
+
+                    <span style="cursor:pointer;" hx-get="{% url 'v2:process_delete_modal' job.id %}"
+                          hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
+                          data-bs-target="#modalContainer" class="px-1">
+                {% csrf_token %}
+                <i class="fa-solid fa-trash text-dark"></i>
+                </span>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td></td>
+                <th scope="row">
+                    No extraction processes
+                </th>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </form>
+</div>

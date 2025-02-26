@@ -1,0 +1,23 @@
+<div class="modal-dialog modal-dialog-centered ">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title text-danger" id="exampleModalLabel">
+                Delete Collection "{{process.name}}"?
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            Are you sure that you want to delete the data for extraction process "{{process.name}}"?
+        </div>
+        <div class="modal-footer">
+             <span hx-delete="{% url 'v2:process' process.id %}" class="btn btn-danger" role="button"
+                   data-bs-dismiss="modal">
+                 Yes, delete extraction process
+             </span>
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                No, keep extraction process
+            </button>
+        </div>
+    </div>
+</div>
+

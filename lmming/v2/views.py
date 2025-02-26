@@ -1,16 +1,78 @@
 from django.forms import formset_factory
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
 
-from v2.forms.vocabulary import VocabularyForm, MetadataTermForm
 from v2.forms.project import ProjectForm
-from v2.models import Vocabulary, MetadataTerm, Project
+from v2.forms.vocabulary import VocabularyForm, MetadataTermForm
+from v2.models import Vocabulary, MetadataTerm, Project, Process
 
 
 def index(request):
     return render(request, "v2/partial/index_partial.html", {})
+
+
+class ProcessesView(View):
+
+    def get(self, request, *_args, **_kwargs):
+        INV = "lightgray"
+        VIS = "black"
+        sortInstruction = request.GET.get("sort", "updated:desc").split(":")
+        viewStatus = {"name": {"up": INV, "down": INV, "sortUrl": "sort=name:asc"},
+                      "abbreviation": {"up": INV, "down": INV, "sortUrl": "sort=abbreviation:asc"},
+                      "status": {"up": INV, "down": INV, "sortUrl": "sort=status:asc"},
+                      # "created": {"up": INV, "down": INV, "sortUrl": "sort=created:asc"},
+                      "updated": {"up": INV, "down": INV, "sortUrl": "sort=updated:asc"}
+                      }
+        if len(sortInstruction) != 2:
+            orderBy = "lastModified"
+            viewKey = "updated"
+        else:
+            lookup = {"name": "name", "status": "status", "updated": "lastModified",
+                      "abbreviation": "project__abbreviation"}
+            if sortInstruction[0] in lookup:
+                viewKey = sortInstruction[0]
+                orderBy = lookup[sortInstruction[0]]
+            else:
+                viewKey = "updated"
+                orderBy = "lastModified"
+
+        if len(sortInstruction) < 2 or sortInstruction[1] == "desc":
+            viewStatus[viewKey]["down"] = VIS
+            viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:asc"
+            context = {"processes": Process.objects.order_by(orderBy).reverse(), "viewStatus": viewStatus,
+                       "searchParams": f"sort={viewKey}:desc"}
+        else:
+            viewStatus[viewKey]["up"] = VIS
+            viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:desc"
+            context = {"processes": Process.objects.order_by(orderBy), "viewStatus": viewStatus,
+                       "searchParams": f"sort={viewKey}:asc"}
+
+        return render(request, "v2/partial/process/table.html", context)
+
+    def delete(self, request, *_args, **_kwargs):
+        processes = Process.objects.filter(id__in=[int(id) for id in request.GET.getlist("ids")])
+        for process in processes:
+            process.delete()
+        return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
+
+
+class ProcessView(View):
+    def get(self, request, *_args, **kwargs):
+        if "process_id" in kwargs:
+            process = get_object_or_404(Process, pk=kwargs["process_id"])
+            return render(request, "v2/partial/process/details.html", {"process": process})
+        else:
+            return HttpResponseRedirect("/")
+
+    def delete(self, request, *_args, **kwargs):
+        process = get_object_or_404(Process, pk=kwargs["process_id"])
+        process.delete()
+        if request.GET.get("redirect", False) is not None:
+            return HttpResponse(status=204, headers={"HX-Redirect": "/v2"})
+        else:
+            return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
 
 
 class VocabularyView(View):

@@ -1,0 +1,40 @@
+<div class="modal-dialog modal-dialog-centered ">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title text-danger" id="exampleModalLabel">
+                Delete Selected Extraction Processes?
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            Are you sure that you want to delete the data for the following extraction processes?
+
+            {% if processes%}
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Date Created</th>
+                </tr>
+                </thead>
+                <tbody>
+                {%for process in processes %}
+                <tr>
+                    <th scope="row">{{process.name}}</th>
+                    <td>{{process.dateCreated}}</td>
+                </tr>
+                {%endfor%}
+                </tbody>
+            </table>
+            {%endif%}
+        </div>
+        <div class="modal-footer">
+             <span hx-delete="{% url 'v2:process_table'%}?{{ids}}" class="btn btn-danger" role="button"
+                   data-bs-dismiss="modal">
+                 Yes, delete extraction processes
+             </span>
+            <button type="button" class="btn btn-success" data-bs-dismiss="modal">No, keep extraction processes</button>
+        </div>
+    </div>
+</div>
+

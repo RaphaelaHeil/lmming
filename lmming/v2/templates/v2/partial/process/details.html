@@ -1,0 +1,8 @@
+{% extends "v2/base.html" %}
+
+{% block title %}Details for Extraction Process "{{process.name}}" (Status: {{process.get_status_display}}){% endblock %}
+
+{% block content %}
+<p>Status: {{process.get_status_display}}</p>
+
+{% endblock %}
