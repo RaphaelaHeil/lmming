@@ -10,6 +10,7 @@ from django.views.generic import View
 
 from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
 from metadata.pipeline_views.arab import arabGenerate, arabManual, arabMint, arabFilename, arabTranslate
+from metadata.pipeline_views.arab_other import filemakerLookupArab, arabOtherManual, arabOtherMintHandle
 from metadata.pipeline_views.fac import mint, facManual, facFilename, facTranslate
 from metadata.pipeline_views.shared import ner, compute, filemaker
 from metadata.utils import buildTransferCsvs, buildStructMap, buildFolderStructure, buildBulkTransferCsvs
@@ -19,8 +20,13 @@ def index(request):
     return render(request, "partial/index_partial.html", {})
 
 
+def arabIndex(request):
+    return render(request, "partial/arab_index_partial.html", {})
+
+
 def waitingJobs(request):
-    return render(request, "partial/waiting_partial.html", {})
+    mode = request.GET.get("mode", "")
+    return render(request, "partial/waiting_partial.html", {"mode": mode})
 
 
 def jobDetails(request, job_id):
@@ -83,6 +89,17 @@ def batchDownload(request):
 class Transfers(View):
 
     def get(self, request, *_args, **_kwargs):
+        mode = request.GET.get("mode", "")
+        template = "partial/extraction_transfer_table.html"
+        if mode == "arab":
+            pipeline = "ARAB_OTHER"
+            template = "partial/arab_extraction_transfer_table.html"
+        else:
+            if settings.ARCHIVE_INST == "FAC":
+                pipeline = "FAC"
+            else:
+                pipeline = "ARAB_LM"
+
         INV = "lightgray"
         VIS = "black"
         sortInstruction = request.GET.get("sort", "updated:asc").split(":")
@@ -105,15 +122,18 @@ class Transfers(View):
         if len(sortInstruction) < 2 or sortInstruction[1] == "desc":
             viewStatus[viewKey]["down"] = VIS
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:asc"
-            context = {"jobs": ExtractionTransfer.objects.order_by(orderBy).reverse(), "viewStatus": viewStatus,
-                       "searchParams": f"sort={viewKey}:desc", "archive": settings.ARCHIVE_INST}
+            context = {"jobs": ExtractionTransfer.objects.filter(pipeline=pipeline).order_by(orderBy).reverse(),
+                       "viewStatus": viewStatus,
+                       "searchParams": f"sort={viewKey}:desc&mode={mode}", "archive": settings.ARCHIVE_INST,
+                       "mode": mode}
         else:
             viewStatus[viewKey]["up"] = VIS
             viewStatus[viewKey]["sortUrl"] = f"sort={viewKey}:desc"
-            context = {"jobs": ExtractionTransfer.objects.order_by(orderBy), "viewStatus": viewStatus,
-                       "searchParams": f"sort={viewKey}:asc", "archive": settings.ARCHIVE_INST}
+            context = {"jobs": ExtractionTransfer.objects.filter(pipeline=pipeline).order_by(orderBy),
+                       "viewStatus": viewStatus, "searchParams": f"sort={viewKey}:asc&mode={mode}",
+                       "archive": settings.ARCHIVE_INST, "mode": mode}
 
-        return render(request, "partial/extraction_transfer_table.html", context)
+        return render(request, template, context)
 
     def delete(self, request, *_args, **_kwargs):
         transfers = ExtractionTransfer.objects.filter(id__in=[int(id) for id in request.GET.getlist("ids")])
@@ -168,7 +188,9 @@ class JobEditView(View):
         stepIndex = {"fac_filename": facFilename, "arab_filename": arabFilename, "filemaker_lookup": filemaker,
                      "generate": compute, "fac_manual": facManual, "ner": ner, "mint_arks": mint,
                      "arab_generate": arabGenerate, "arab_manual": arabManual, "arab_mint_handle": arabMint,
-                     "arab_translate_to_swedish": arabTranslate, "fac_translate_to_swedish": facTranslate}
+                     "arab_translate_to_swedish": arabTranslate, "fac_translate_to_swedish": facTranslate,
+                     "filemaker_lookup_arab": filemakerLookupArab, "arab_other_manual": arabOtherManual,
+                     "arab_other_mint_handle": arabOtherMintHandle}
         context = stepIndex[stepName](request, job)
         context["stepParam"] = stepName
         return context

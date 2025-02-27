@@ -110,6 +110,8 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
     unionId = s[0].lstrip("0") or "0"
 
     typeName = s[1]
+    type_other = typeName
+
     typeName = typeName.lower()
     typeName = typeName.replace("ä", "a")
     typeName = typeName.replace("å", "a")
@@ -159,7 +161,7 @@ def parseFilename(filename: str) -> Dict[str, Union[int, str, List[str], List[da
             "The provided filename does not follow one of the expected patterns. Could not identify one or more of the "
             "following: union identifier, report type, report year(s)")
 
-    return {"date": sorted(list(dates)), "union_id": unionId, "type": reportType, "page": page}
+    return {"date": sorted(list(dates)), "union_id": unionId, "type": reportType, "page": page, "typeName": type_other}
 
 
 def buildReportIdentifier(data: Dict[str, Union[str, int, List[datetime]]]) -> str:
@@ -173,7 +175,7 @@ def buildReportIdentifier(data: Dict[str, Union[str, int, List[datetime]]]) -> s
     if isinstance(reportType, list):
         reportType = "-".join(sorted(reportType))
 
-    return f"{data['union_id']}-{reportType}-{dateRepr}"
+    return f"{data['union_id']}-{reportType}-{dateRepr}-{data["typeName"]}"
 
 
 def __toOmekaList(ll: Iterable[Any]) -> str:

@@ -6,6 +6,7 @@ app_name = "metadata"
 
 urlpatterns = [
     path("", views.index, name="index"),
+    path("arab", views.arabIndex, name="arab_index"),
     path("transfers", views.Transfers.as_view(), name="transfer_table"),
     path("transfer/create", partials.createTransfer, name="create_transfer"),
     path("transfer/import", partials.importTransfer, name="import_transfer"),

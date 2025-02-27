@@ -116,7 +116,7 @@ def namedEntityRecognition(jobPk: int, pipeline: bool = True):
     normalisationCutOff = DefaultNumberSettings.objects.filter(
         pk=DefaultNumberSettings.DefaultNumberSettingsType.NER_NORMALISATION_END_YEAR).first()
     if normalisationCutOff:
-        if report.created.year <= normalisationCutOff.value:
+        if report.created and (report.created.year <= normalisationCutOff.value):
             normalise = True
         else:
             normalise = False

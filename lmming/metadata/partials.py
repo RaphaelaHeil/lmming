@@ -13,7 +13,7 @@ from django.urls import reverse
 from metadata.forms.shared import ExtractionTransferDetailForm, SettingsForm, ExternalRecordsSettingsForm, \
     ProcessingStepForm, TransferImportForm
 from metadata.models import ExtractionTransfer, Report, Page, Status, Job, ProcessingStep, DefaultValueSettings, \
-    DefaultNumberSettings, ReportTranslation
+    DefaultNumberSettings, ReportTranslation, Pipeline
 from metadata.pipeline_views.fac import bulkFacManual
 from metadata.tasks.manage import restartTask, scheduleTask
 from metadata.utils import parseFilename, buildReportIdentifier, updateExternalRecords, buildProcessingSteps, \
@@ -83,6 +83,30 @@ ARAB_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILE
                                  "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
                                  "modeDisabled": False}
                                 ]
+
+ARAB_OTHER_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepType.FILENAME,
+                                       "tooltip": "Extracts 'date' and 'type' information, as well as the organisation's id, "
+                                                  "from the filename.",
+                                       "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC,
+                                       "humanValidation": False, "modeDisabled": False},
+                                      {"label": ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP_ARAB,
+                                       "tooltip": "Uses the organisation's ID to extract informationen from Filemaker-based "
+                                                  "data. Fills the fields 'creator', 'relation', 'coverage', and 'spatial'.",
+                                       "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                       "modeDisabled": False},
+                                      {"label": ProcessingStep.ProcessingStepType.ARAB_OTHER_MANUAL,
+                                       "tooltip": "Any piece of data that can not be handled automatically at the moment.",
+                                       "mode": ProcessingStep.ProcessingStepMode.MANUAL, "humanValidation": False,
+                                       "modeDisabled": True},
+                                      {"label": ProcessingStep.ProcessingStepType.NER,
+                                       "tooltip": "Extracts named entities from the provided transcriptions.",
+                                       "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                       "modeDisabled": False},
+                                      {"label": ProcessingStep.ProcessingStepType.ARAB_OTHER_MINT_HANDLE,
+                                       "tooltip": "Creates and registers a new handle for each report.",
+                                       "mode": ProcessingStep.ProcessingStepMode.AUTOMATIC, "humanValidation": False,
+                                       "modeDisabled": False}
+                                      ]
 
 
 def restart(_request, job_id: int, step: str):
@@ -205,13 +229,21 @@ def verifyTransfer(request, transfer_id):
 
 
 def createTransfer(request):
+    mode = request.GET.get("mode", request.POST.get("mode"))
+
     detailform = ExtractionTransferDetailForm()
     StepFormSet = formset_factory(ProcessingStepForm, extra=0)
 
-    if settings.ARCHIVE_INST == "FAC":
-        initial = deepcopy(FAC_PROCESSING_STEP_INITIAL)
+    if mode == "arab":
+        initial = deepcopy(ARAB_OTHER_PROCESSING_STEP_INITIAL)
+        pipeline = Pipeline.ARAB_OTHER
     else:
-        initial = deepcopy(ARAB_PROCESSING_STEP_INITIAL)
+        if settings.ARCHIVE_INST == "FAC":
+            initial = deepcopy(FAC_PROCESSING_STEP_INITIAL)
+            pipeline = Pipeline.FAC
+        else:
+            initial = deepcopy(ARAB_PROCESSING_STEP_INITIAL)
+            pipeline = Pipeline.ARAB_LM
 
     if request.method == 'POST':
         detailform = ExtractionTransferDetailForm(request.POST, request.FILES)
@@ -220,7 +252,8 @@ def createTransfer(request):
         if detailform.is_valid() and stepForm.is_valid():
             collectionName = detailform.cleaned_data['processName']
             transferInstance = ExtractionTransfer.objects.create(name=collectionName,
-                                                                 status=Status.AWAITING_HUMAN_VALIDATION)
+                                                                 status=Status.AWAITING_HUMAN_VALIDATION,
+                                                                 pipeline=pipeline)
             transcriptionFiles = detailform.cleaned_data["file_field"]
             pagesToReports = {}
             for file in transcriptionFiles:
@@ -241,17 +274,22 @@ def createTransfer(request):
                 pages = pagesToReports[reportIdentifier]
                 unionId = set(p["union_id"] for p in pages).pop()  # TODO: can there be multiple?
                 reportType = list(set(p["type"] for p in pages))
+                typeName = set(p["typeName"] for p in pages).pop()
 
                 dates = set()
                 for p in pages:
                     dates.update(p["date"])
                 dateList = sorted(list(dates))
 
-                if settings.ARCHIVE_INST == "FAC":
+                if mode == "arab_other":
                     r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType,
-                                              date=dateList)
+                                              date=dateList, type_other=typeName, publisher="SE/ARAB")
                 else:
-                    r = Report.objects.create(transfer=transferInstance, unionId=unionId, date=dateList)
+                    if settings.ARCHIVE_INST == "FAC":
+                        r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType,
+                                                  date=dateList)
+                    else:
+                        r = Report.objects.create(transfer=transferInstance, unionId=unionId, date=dateList)
                 Page.objects.bulk_create([Page(report=r, order=int(page["page"]), transcriptionFile=page["file"],
                                                originalFileName=page["file"]) for page in pages])
 
@@ -269,14 +307,22 @@ def createTransfer(request):
             return redirect("metadata:verify_transfer", transfer_id=transferInstance.pk)
 
     stepForm = StepFormSet(initial=initial)
-    return render(request, 'partial/create_transfer.html', {"detailform": detailform, "steps": stepForm})
+    return render(request, 'partial/create_transfer.html', {"detailform": detailform,
+                                                            "steps": stepForm, "mode": mode})
 
 
 def awaitingHumanInteraction(request):
+    mode = request.GET.get("mode")
+    print("mode", mode)
+    if mode == "arab":
+        processingSteps = ProcessingStep.objects.filter(Q(job__transfer__pipeline="ARAB_OTHER") &
+                                                        (Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(
+                                                            status=Status.AWAITING_HUMAN_INPUT)))
+    else:
+        processingSteps = ProcessingStep.objects.filter(
+            Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT))
     stepData = []
     jobPks = set()
-    processingSteps = ProcessingStep.objects.filter(
-        Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT))
     for step in processingSteps:
         if step.job.pk in jobPks:
             continue
@@ -286,7 +332,7 @@ def awaitingHumanInteraction(request):
              "stepDisplay": ProcessingStep.ProcessingStepType[step.processingStepType].label,
              "status": Status[step.status].label, "job": step.job.pk, "startDate": step.job.startDate})
 
-    return render(request, 'partial/waiting_jobs_table.html', {"steps": stepData})
+    return render(request, 'partial/waiting_jobs_table.html', {"steps": stepData, "mode": mode})
 
 
 def waitingProcesses(request):
@@ -316,9 +362,16 @@ def waitingProcesses(request):
     return render(request, 'partial/waiting_reports_table.html', {"processes": processData})
 
 
-def waitingCount(_request):
-    value = Job.objects.filter(
-        Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT)).count()
+def waitingCount(request):
+    mode = request.GET.get("mode", "lm")
+    if mode == "arab":
+        pipeline = "ARAB_OTHER"
+    elif settings.ARCHIVE_INST == "ARAB":
+        pipeline = "ARAB_LM"
+    else:
+        pipeline = "FAC"
+    value = Job.objects.filter(Q(transfer__pipeline=pipeline) & (Q(status=Status.AWAITING_HUMAN_VALIDATION) |
+                                                                 Q(status=Status.AWAITING_HUMAN_INPUT))).count()
     if value == 0:
         return HttpResponse("")
     else:

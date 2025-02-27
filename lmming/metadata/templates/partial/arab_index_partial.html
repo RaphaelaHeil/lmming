@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="p-0" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:desc&mode=arab" hx-trigger="load"
+     hx-target="#tablediv">
+
+    <div id="tablediv">
+    </div>
+</div>
+{% endblock %}

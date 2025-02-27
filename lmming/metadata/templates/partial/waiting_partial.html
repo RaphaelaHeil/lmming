@@ -10,7 +10,7 @@
 </div>
 
 
-<div class="p-0" hx-get="{% url 'metadata:waiting_jobs_table'%}" hx-trigger="load" hx-target="#tablediv">
+<div class="p-0" hx-get="{% url 'metadata:waiting_jobs_table'%}?mode={{mode}}" hx-trigger="load" hx-target="#tablediv">
     <div id="tablediv">
     </div>
 </div>
