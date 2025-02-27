@@ -4,6 +4,7 @@ from django.forms import Form, CharField, TextInput, Textarea, URLField, \
 
 class VocabularyForm(Form):
     name = CharField(required=True, widget=TextInput(attrs={'class': 'form-control'}))
+    prefix = CharField(required=True, widget=TextInput(attrs={'class': 'form-control'}))
     description = CharField(required=False, widget=Textarea(attrs={"class": "form-control", "rows":5}))
     url = URLField(required=False, widget=URLInput(attrs={'class': 'form-control'}))
 

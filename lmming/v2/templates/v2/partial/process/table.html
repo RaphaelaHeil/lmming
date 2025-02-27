@@ -7,7 +7,7 @@
     <a href="{%url 'v2:import_process'%}" class="btn btn-warning" id="import_transfer_button">
         <i class="fa-solid fa-file-circle-plus"></i> Import Extraction Process
     </a>
-{%endcomment%}
+    {%endcomment%}
     <div hx-include="[name='ids']" hx-target="#tbody">
         {%comment%}
         <button class="btn btn-primary checkbox-action-button disabled" hx-get="{% url 'v2:process_batch_redirect'%}">
@@ -115,6 +115,7 @@
 
                     {%if job.status == 'COMPLETE'%}
 
+                    {%comment%}
                     {%if archive == 'FAC'%}
                     <span data-bs-toggle="tooltip">
                     <a href="{% url 'v2:download_process' job.id 'csv'%}" style="cursor:pointer;" class="px-1"
@@ -122,6 +123,7 @@
                         <i class="fa-solid fa-file-csv text-dark"></i></a>
                     </span>
                     {%endif%}
+
 
                     <span data-bs-toggle="tooltip">
                     <a style="cursor:pointer;" href="{% url 'v2:download_process' job.id 'csv_restricted'%}"
@@ -142,15 +144,18 @@
                        class="px-1" title="Download restricted Archivematica folder structure (zip)">
                         <i class="fa-solid fa-folder-minus text-dark"></i></a>
                     </span>
-
+                    {%endcomment%}
                     {%endif%}
 
                     <span style="cursor:pointer;" hx-get="{% url 'v2:process_delete_modal' job.id %}"
                           hx-target="#modalContainer" hx-trigger="click" data-bs-toggle="modal"
                           data-bs-target="#modalContainer" class="px-1">
+
+
                 {% csrf_token %}
                 <i class="fa-solid fa-trash text-dark"></i>
                 </span>
+
                 </td>
             </tr>
             {% endfor %}

@@ -1,8 +1,6 @@
-from django.contrib.contenttypes.fields import GenericForeignKey
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.postgres.fields import ArrayField
 from django.db.models import Model, CharField, TextField, ForeignKey, TextChoices, CASCADE, URLField, UniqueConstraint, \
-    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField, DateTimeField, Index
+    BooleanField, DateField, PositiveIntegerField, JSONField, FileField, OneToOneField, DateTimeField
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
@@ -165,7 +163,7 @@ class Process(Model):
                 return
 
         if len(jobStatuses) == 1:
-            self.status = jobStatuses[0]
+            self.status = jobStatuses.pop()
             self.save()
             return
         else:
@@ -204,21 +202,33 @@ class ProcessingStep(Model):
     humanValidation = BooleanField(default=False)
 
 
+class MetadataAssignment(Model):
+    item = ForeignKey(Item, on_delete=CASCADE, blank=True, null=True)
+    page = ForeignKey(Page, on_delete=CASCADE, blank=True, null=True)
+    projectMetadataTerm = ForeignKey(ProjectMetadataTerm, on_delete=CASCADE)
+
+
 class TextValue(Model):
     text = TextField(blank=True)
+    metadataAssignment = ForeignKey(MetadataAssignment, on_delete=CASCADE, null=True)
 
 
 class DateValue(Model):
     date = DateField(blank=True)
+    metadataAssignment = ForeignKey(MetadataAssignment, on_delete=CASCADE, null=True)
 
 
 class PlainHandleValue(Model):
     handle = CharField(blank=True)
     resolveTo = URLField(blank=True)
+    noid = CharField(blank=True)
+    metadataAssignment = ForeignKey(MetadataAssignment, on_delete=CASCADE, null=True)
 
 
 class LocationHandleValue(Model):
     handle = CharField(blank=True)
+    noid = CharField(blank=True)
+    metadataAssignment = ForeignKey(MetadataAssignment, on_delete=CASCADE, null=True)
 
 
 class Location(Model):
@@ -227,20 +237,6 @@ class Location(Model):
     view = CharField(blank=True)
     language = CharField(blank=True)
     weight = PositiveIntegerField(default=0)
-
-
-class MetadataAssignment(Model):
-    item = ForeignKey(Item, on_delete=CASCADE, blank=True, null=True)
-    page = ForeignKey(Page, on_delete=CASCADE, blank=True, null=True)
-    projectMetadataTerm = ForeignKey(ProjectMetadataTerm, on_delete=CASCADE)
-    content_type = ForeignKey(ContentType, on_delete=CASCADE)
-    object_id = PositiveIntegerField()
-    value = GenericForeignKey("content_type", "object_id")
-
-    class Meta:
-        indexes = [
-            Index(fields=["content_type", "object_id"]),
-        ]
 
 
 # noinspection PyUnusedLocal

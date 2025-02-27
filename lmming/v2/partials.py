@@ -3,7 +3,8 @@ from django.shortcuts import render, get_object_or_404
 
 from v2.forms.process import ProcessForm
 from v2.models import Project, Process, Item, Page
-from v2.utils import extractFileData
+from v2.tasks.manage import scheduleTask
+from v2.utils import extractFileData, initMetadataAssignment, initProcessingSteps
 
 
 def createProcess(request):
@@ -28,11 +29,15 @@ def createProcess(request):
             process = Process.objects.create(name=processName, project=Project.objects.get(name=projectName))
             item = Item.objects.create(process=process, recordId=ids.pop(), documentTypeIdentifier=typeNames.pop(),
                                        date=list(dates.pop()))
-
+            pages = []
             for fileData in data:
-                print(fileData["fileType"], fileData["page"], fileData["date"])
-                Page.objects.create(item=item, originalFilename=fileData["file"], file=fileData["file"],
-                                    fileType=fileData["fileType"], pageNumber=fileData["page"])
+                p = Page.objects.create(item=item, originalFilename=fileData["file"], file=fileData["file"],
+                                        fileType=fileData["fileType"], pageNumber=fileData["page"])
+                pages.append(p)
+
+            initMetadataAssignment(process, item, pages)
+
+            initProcessingSteps(process)
 
             return render(request, 'v2/partial/index_partial.html')
     else:

@@ -92,7 +92,7 @@ class VocabularyView(View):
 
             if mode == "edit":
                 form = VocabularyForm(initial={"description": vocabulary.description, "name": vocabulary.name,
-                                               "url": vocabulary.url})
+                                               "url": vocabulary.url, "prefix": vocabulary.prefix})
                 MetadataFormSet = formset_factory(MetadataTermForm, extra=0, can_delete=True)
                 metadataForm = MetadataFormSet(
                     initial=[{"description": m.description, "standardTerm": m.standardTerm, "id": m.id} for m in
@@ -113,7 +113,8 @@ class VocabularyView(View):
 
         if mode == "edit":
             vocabulary = get_object_or_404(Vocabulary, pk=kwargs["id"])
-            initial = {"description": vocabulary.description, "name": vocabulary.name, "url": vocabulary.url}
+            initial = {"description": vocabulary.description, "name": vocabulary.name, "url": vocabulary.url,
+                       "prefix": vocabulary.prefix}
             metaDataInitial = [{"description": m.description, "standardTerm": m.standardTerm, "id": m.id} for m in
                                vocabulary.metadataterm_set.all()]
         else:
@@ -131,6 +132,8 @@ class VocabularyView(View):
                     vocabulary.description = vocabForm.cleaned_data["description"]
                 if "url" in vocabForm.changed_data:
                     vocabulary.url = vocabForm.cleaned_data["url"]
+                if "prefix" in vocabForm.changed_data:
+                    vocabulary.prefix = vocabForm.cleaned_data["prefix"]
         if metadataForm.is_valid():
             for f in metadataForm:
                 if f.id < 0:

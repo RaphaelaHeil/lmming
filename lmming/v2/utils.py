@@ -3,7 +3,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Union, List
 
-from v2.models import FileType
+from v2.models import FileType, ChoiceValueType, FixedValueType, TextValue, MetadataAssignment, DateValue, \
+    PlainHandleValue, ProcessingStepMode, ProcessingStep
+from v2.tasks.manage import scheduleTask
 
 __FILETYPE_INDEX = {".jpg": FileType.IMAGE, ".jpeg": FileType.IMAGE, ".xml": FileType.XML, ".txt": FileType.PLAINTEXT,
                     ".pdf": FileType.PDF}
@@ -105,3 +107,51 @@ def extractFileData(files):
         dates.add(data["date"])
 
     return result, unionIds, typeNames, pages, dates
+
+
+def __attachValue(metadataAssignment, valueType):
+    if isinstance(valueType, ChoiceValueType):
+        TextValue.objects.create(text="", metadataAssignment=metadataAssignment)
+    elif isinstance(valueType, FixedValueType):
+        for value in valueType.values:
+            TextValue.objects.create(text=value, metadataAssignment=metadataAssignment)
+    else:
+        metadataValueTypes = valueType.valueTypes
+        if len(metadataValueTypes) > 1:
+            pass  # logger: warn that we are only using the first for now!
+
+        match metadataValueTypes[0]:
+            case "PLAIN_HANDLE":
+                PlainHandleValue.objects.create(metadataAssignment=metadataAssignment)
+            case "IIIF_HANDLE":
+                PlainHandleValue.objects.create(metadataAssignment=metadataAssignment)
+            case "PLAINTEXT":
+                TextValue.objects.create(metadataAssignment=metadataAssignment)
+            case "DATE":
+                DateValue.objects.create(metadataAssignment=metadataAssignment)
+
+
+def initMetadataAssignment(process, item, pages):
+    for projectMetadataTerm in process.project.projectmetadataterm_set.all():
+        valueType = projectMetadataTerm.valueType
+
+        if projectMetadataTerm.level == "ITEM":
+            metadataAssignment = MetadataAssignment.objects.create(projectMetadataTerm=projectMetadataTerm, item=item)
+            __attachValue(metadataAssignment, valueType)
+        else:
+            for p in pages:
+                metadataAssignment = MetadataAssignment.objects.create(projectMetadataTerm=projectMetadataTerm, page=p)
+                __attachValue(metadataAssignment, valueType)
+
+
+def initProcessingSteps(process):
+    for stepConfig in process.project.processingstepconfiguration_set.all():
+        if stepConfig.key == "manual":
+            mode = ProcessingStepMode.MANUAL
+        else:
+            mode = ProcessingStepMode.AUTOMATIC
+
+        ProcessingStep.objects.create(configuration=stepConfig, process=process, mode=mode, humanValidation=False,
+                                      startDate=datetime.now())
+
+    scheduleTask(process.pk)
