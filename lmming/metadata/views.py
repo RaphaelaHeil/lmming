@@ -44,7 +44,13 @@ def jobDetails(request, job_id):
         step = job.processingSteps.filter(status=Status.ERROR).first()
         error["message"] = step.log
         error["step"] = ProcessingStep.ProcessingStepType[step.processingStepType].label
-    return render(request, "partial/job.html", {"job": job, "error": error, "steps": stepData})
+
+    pipeline = job.transfer.pipeline
+    if pipeline == "ARAB_OTHER":
+        mode = "arab"
+    else:
+        mode = ""
+    return render(request, "partial/job.html", {"job": job, "error": error, "steps": stepData, "mode": mode})
 
 
 def downloadTransfer(_request, transfer_id: int, filetype: str):

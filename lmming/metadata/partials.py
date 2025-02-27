@@ -219,9 +219,17 @@ def settingsModal(request):
 def verifyTransfer(request, transfer_id):
     transferInstance = get_object_or_404(ExtractionTransfer, pk=transfer_id)
 
+    if transferInstance.pipeline == "ARAB_OTHER":
+        mode = "arab"
+    else:
+        mode = ""
+
     if request.method == "POST":
+        mode = request.POST.get("mode")
+
         for job in transferInstance.jobs.all():
             scheduleTask(job.pk)
+
         # TODO: add delete button,
         return redirect("/")
 
@@ -281,7 +289,7 @@ def createTransfer(request):
                     dates.update(p["date"])
                 dateList = sorted(list(dates))
 
-                if mode == "arab_other":
+                if mode == "arab":
                     r = Report.objects.create(transfer=transferInstance, unionId=unionId, type=reportType,
                                               date=dateList, type_other=typeName, publisher="SE/ARAB")
                 else:

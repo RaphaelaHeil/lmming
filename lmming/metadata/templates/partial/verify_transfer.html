@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="p-0">
-    <form class="form" method="POST" action="{% url 'metadata:verify_transfer' transfer.id%}">
+    <form class="form" method="POST" action="{% url 'metadata:verify_transfer' transfer.id%}?mode={{mode}}">
         {% csrf_token %}
         <input type="submit" value="Confirm" class="btn btn-success">
 
