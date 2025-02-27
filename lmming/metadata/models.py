@@ -17,6 +17,11 @@ class Status(TextChoices):
     AWAITING_HUMAN_VALIDATION = "AWAITING_HUMAN_VALIDATION", "Awaiting Human Validation"
 
 
+class Pipeline(TextChoices):
+    FAC = "FAC"
+    ARAB_LM = "ARAB_LM"
+    ARAB_OTHER = "ARAB_OTHER"
+
 class ExtractionTransfer(Model):
     name = CharField()
     dateCreated = DateTimeField(auto_now_add=True)
@@ -24,6 +29,8 @@ class ExtractionTransfer(Model):
     endDate = DateTimeField(null=True, blank=True)
     status = CharField(choices=Status.choices, default=Status.PENDING)
     lastUpdated = DateTimeField(auto_now=True, null=True)
+    pipeline = CharField(choices=Pipeline.choices, null=True)
+    handler = CharField(null=True, blank=True)
 
     def updateTransferStatus(self):
         jobStatuses = set([job.status for job in self.jobs.all()])
