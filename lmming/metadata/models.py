@@ -22,6 +22,7 @@ class Pipeline(TextChoices):
     ARAB_LM = "ARAB_LM"
     ARAB_OTHER = "ARAB_OTHER"
 
+
 class ExtractionTransfer(Model):
     name = CharField()
     dateCreated = DateTimeField(auto_now_add=True)
@@ -121,6 +122,12 @@ class Report(Model):
 
     references = CharField(blank=True, default="")
     referencesNoid = CharField(blank=True, default="")
+
+    publisher = CharField(blank=True, default="")
+    format = CharField(blank=True, default="")
+    comment = CharField(blank=True, default="")
+    medium = CharField(blank=True, default="")
+    type_other = CharField(blank=True, default="")
 
     def dateString(self) -> str:
         if len(self.date) == 0:
