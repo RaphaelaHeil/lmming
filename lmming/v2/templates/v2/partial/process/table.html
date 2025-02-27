@@ -113,6 +113,11 @@
                         <i class="fa-solid fa-magnifying-glass text-dark"></i>
                     </a>
 
+                    {% if job.status == 'AWAITING_HUMAN_INPUT' or job.status == 'AWAITING_HUMAN_VALIDATION'%}
+                    <a href="{% url 'v2:process' job.id %}" class="px-1 text-reset text-decoration-none">
+                        <i class="fa-solid fa-pencil text-dark"></i>
+                    </a>
+                    {%endif%}
                     {%if job.status == 'COMPLETE'%}
 
                     {%comment%}
