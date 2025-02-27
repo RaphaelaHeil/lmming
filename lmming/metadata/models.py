@@ -278,6 +278,10 @@ class ProcessingStep(Model):
         ARAB_MINT_HANDLE = "ARAB_MINT_HANDLE", 61, "Mint Handle IDs"
         ARAB_TRANSLATE_TO_SWEDISH = "ARAB_TRANSLATE_TO_SWEDISH", 70, "Translate to Swedish"
         FAC_TRANSLATE_TO_SWEDISH = "FAC_TRANSLATE_TO_SWEDISH", 70, "Translate to Swedish"
+        FILEMAKER_LOOKUP_ARAB = "FILEMAKER_LOOKUP_ARAB", 20, "External record look-up"
+        ARAB_OTHER_GENERATE = "ARAB_OTHER_GENERATE", 32, "Generate"
+        ARAB_OTHER_MANUAL = "ARAB_OTHER_MANUAL", 37, "Manual"
+        ARAB_OTHER_MINT_HANDLE = "ARAB_OTHER_MINT_HANDLE", 62, "Mint Handle IDs"
 
         @property
         def order(self):
