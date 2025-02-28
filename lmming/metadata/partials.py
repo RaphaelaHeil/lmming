@@ -319,14 +319,14 @@ def createTransfer(request):
 
 def awaitingHumanInteraction(request):
     mode = request.GET.get("mode")
-    print("mode", mode)
     if mode == "arab":
         processingSteps = ProcessingStep.objects.filter(Q(job__transfer__pipeline="ARAB_OTHER") &
                                                         (Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(
                                                             status=Status.AWAITING_HUMAN_INPUT)))
     else:
-        processingSteps = ProcessingStep.objects.filter(
-            Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(status=Status.AWAITING_HUMAN_INPUT))
+        processingSteps = ProcessingStep.objects.filter(~Q(job__transfer__pipeline="ARAB_OTHER") &
+                                                        (Q(status=Status.AWAITING_HUMAN_VALIDATION) | Q(
+                                                            status=Status.AWAITING_HUMAN_INPUT)))
     stepData = []
     jobPks = set()
     for step in processingSteps:
