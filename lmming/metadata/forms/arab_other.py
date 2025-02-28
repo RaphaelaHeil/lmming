@@ -12,14 +12,14 @@ class ArabOtherManualForm(Form):
     date = CharField(label="Omfattar tid (kommaseparerad lista)", required=True,
                      widget=TextInput(attrs={'class': 'form-control'}))
     created = CharField(label="Publicerat datum", required=False, widget=TextInput(attrs={'class': 'form-control'}))
-    format = CharField(label="Materialtyp", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    format = CharField(label="Materialtyp (kommaseparerad lista) ", required=False, widget=TextInput(attrs={'class': 'form-control'}))
     accessRights = ChoiceField(choices=Report.AccessRights, required=False, label="Access Rights [required]",
                                widget=Select(attrs={"class": "form-select"}))
     license = CharField(label="Upphovsrätt", required=False, widget=TextInput(attrs={'class': 'form-control'}))
     comment = CharField(label="Anmärkning", required=False, widget=TextInput(attrs={'class': 'form-control'}))
-    spatial = CharField(label="Topografi", required=False, widget=TextInput(attrs={'class': 'form-control'}))
-    medium = CharField(label="Originalformat", required=False, widget=TextInput(attrs={'class': 'form-control'}))
-    language = CharField(label="Språk", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    spatial = CharField(label="Topografi (kommaseparerad lista) ", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    medium = CharField(label="Originalformat (kommaseparerad lista)", required=False, widget=TextInput(attrs={'class': 'form-control'}))
+    language = CharField(label="Språk (kommaseparerad lista) ", required=False, widget=TextInput(attrs={'class': 'form-control'}))
 
 
 class ArabOtherMintForm(Form):
