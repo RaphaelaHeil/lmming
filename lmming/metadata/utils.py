@@ -175,7 +175,7 @@ def buildReportIdentifier(data: Dict[str, Union[str, int, List[datetime]]]) -> s
     if isinstance(reportType, list):
         reportType = "-".join(sorted(reportType))
 
-    return f"{data['union_id']}-{reportType}-{dateRepr}-{data["typeName"]}"
+    return f"{data['union_id']}-{reportType}-{dateRepr}-{data['typeName']}"
 
 
 def __toOmekaList(ll: Iterable[Any]) -> str:
