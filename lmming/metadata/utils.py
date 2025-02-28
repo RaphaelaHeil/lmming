@@ -12,7 +12,7 @@ from django.conf import settings
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring, parse
 from requests.compat import urljoin
 
-from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status
+from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status, Pipeline
 
 __REPORT_TYPE_INDEX = {"ars": Report.DocumentType.ANNUAL_REPORT,
                        "verksam": Report.DocumentType.ANNUAL_REPORT,
@@ -365,6 +365,81 @@ def buildNormalizationCsv(srcNames, withPreservation: bool = True) -> str:
     return df.to_csv(header=False, index=False)
 
 
+def buildArabOtherMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = False) -> str:
+    records = []
+
+    for report in transfer.report_set.all():
+        translation = report.reporttranslation_set.filter(language="sv")
+        if translation:
+            translation = translation.first()
+            dcType = __toCSList(translation.type)
+            dcAccessRights = translation.accessRights
+            dcFormat = f"{translation.description} - {__toCSList([translation.isFormatOf])}"
+        else:
+            dcType = report.type_other
+            dcAccessRights = Report.AccessRights[report.accessRights].label
+            dcFormat = f"{report.description} - {__toCSList([Report.DocumentFormat[x].label for x in report.isFormatOf])}"
+
+        if checkRestriction and __isRestricted(report):
+            # Not following the AtoM standard, since ARAB doesn't use that!
+            row = {"dc.identifier": report.identifier,
+                   "dc.type": dcType,
+                   "dc.date": "/".join([d.strftime("%Y-%m-%d") for d in report.date]),
+                   "dc.language": __toCSList(report.language),
+                   "dc.publisher": report.publisher,
+                   "dc.source": __toCSList(report.source),
+                   "dc.creator": report.creator,
+                   "dc.title": report.title,
+                   "dc.description": report.description,
+                   "dc.created": report.created.strftime("%Y-%m-%d"),
+                   "dc.format": dcFormat,
+                   "dc.accessRights": dcAccessRights,
+                   "dc.license": __toCSList(report.license),
+                   "dc.comment": report.comment,
+                   "dc.spatial": __toCSList(report.spatial),
+                   "dc.medium": report.medium
+                   }
+            filename = f"page_not_available_{report.noid}"
+            transcriptionFilename = f"objects/transcription/{filename}.xml"
+            preserverationFilename = f"objects/{filename}.jpg"
+            a = {"filename": transcriptionFilename}
+            a.update(row)
+            b = {"filename": preserverationFilename}
+            b.update(row)
+            records.append(a)
+            records.append(b)
+        else:
+            row = {"dc.identifier": report.noid,
+                   "dc.type": dcType,
+                   "dc.date": "/".join([d.strftime("%Y-%m-%d") for d in report.date]),
+                   "dc.language": __toCSList(report.language),
+                   "dc.publisher": report.publisher,
+                   "dc.source": __toCSList(report.source),
+                   "dc.creator": report.creator,
+                   "dc.title": report.title,
+                   "dc.description": report.description,
+                   "dc.created": report.created.strftime("%Y-%m-%d"),
+                   "dc.format": dcFormat,
+                   "dc.accessRights": dcAccessRights,
+                   "dc.license": __toCSList(report.license),
+                   "dc.comment": report.comment,
+                   "dc.spatial": __toCSList(report.spatial),
+                   "dc.medium": report.medium
+                   }
+            for page in report.page_set.all():
+                transcriptionFilename = f"objects/transcription/{page.originalFileName}"
+                preserverationFilename = f"objects/{page.originalFileName[:-4]}.jpg"
+                a = {"filename": transcriptionFilename}
+                a.update(row)
+                b = {"filename": preserverationFilename}
+                b.update(row)
+                records.append(a)
+                records.append(b)
+    df = pd.DataFrame.from_records(records)
+    cols = df.columns.to_list()
+    return df.to_csv(index=False, header=cols)
+
+
 def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = False) -> str:
     records = []
 
@@ -441,7 +516,8 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
     return df.to_csv(index=False, header=cols)
 
 
-def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False):
+def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False,
+                         arabOther: bool = False):
     dummyFileName = "page_not_available"
     if forArab:
         dummyFileName = "arab_restricted"
@@ -474,6 +550,10 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
             else:
                 for page in report.page_set.all():
                     pageFileName = page.originalFileName
+
+                    if arabOther:
+                        pass  # TODO
+
                     filenames.append(pageFileName)
                     filenames.append(str(Path(pageFileName).with_suffix(".jpg")))
                     zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
@@ -482,12 +562,16 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
 
         # zf.writestr("normalization.csv", buildNormalizationCsv(filenames, withPreservation=(not forArab)))
 
-        zf.writestr("metadata/metadata.csv", buildMetadataCsv(transfer, checkRestriction))
+        if arabOther:
+            zf.writestr("metadata/metadata.csv", buildArabOtherMetadataCsv(transfer, checkRestriction))
+        else:
+            zf.writestr("metadata/metadata.csv", buildMetadataCsv(transfer, checkRestriction))
         zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer, checkRestriction))
 
-        reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
-        zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
-        zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
+        if not arabOther:
+            reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
+            zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
+            zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
 
         zf.close()
     outfile.seek(0)

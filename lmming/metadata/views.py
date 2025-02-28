@@ -53,7 +53,31 @@ def jobDetails(request, job_id):
     return render(request, "partial/job.html", {"job": job, "error": error, "steps": stepData, "mode": mode})
 
 
-def downloadTransfer(_request, transfer_id: int, filetype: str):
+def arabOtherDownload( transfer_id: int, filetype: str):
+    transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
+
+    if filetype == "zip_restricted":
+        outFile = buildFolderStructure(transfer, checkRestriction=True, forArab=True, arabOther=True)
+        folderName = transfer.name.replace(" ", "_")
+        return FileResponse(outFile, as_attachment=True,
+                            filename=f"restricted_{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
+    elif filetype == "zip":
+        outFile = buildFolderStructure(transfer, forArab=True, arabOther=True)
+        folderName = transfer.name.replace(" ", "_")
+        return FileResponse(outFile, as_attachment=True,
+                            filename=f"{folderName}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
+    else:
+        # TODO: raise error
+        pass
+
+
+
+
+def downloadTransfer(request, transfer_id: int, filetype: str):
+    if request.GET.get("mode") == "arab":
+        print("here")
+        return arabOtherDownload(transfer_id, filetype)
+
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
     forArab = settings.ARCHIVE_INST == "ARAB"
 
@@ -87,6 +111,11 @@ def batchDownload(request):
     forArab = settings.ARCHIVE_INST == "ARAB"
     ids = [int(id) for id in request.GET.getlist('ids')]
     transfers = ExtractionTransfer.objects.filter(id__in=ids, status=Status.COMPLETE)
+
+    pipelines = [t.pipeline for t in transfers]
+    if len(set(pipelines)) > 1:
+        return
+
     outFile = buildBulkTransferCsvs(transfers, checkRestriction=True, forArab=forArab)
     return FileResponse(outFile, as_attachment=True,
                         filename=f"bulk_Omeka_CSVs_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.zip")
@@ -112,13 +141,14 @@ class Transfers(View):
         viewStatus = {"name": {"up": INV, "down": INV, "sortUrl": "sort=name:asc"},
                       "status": {"up": INV, "down": INV, "sortUrl": "sort=status:asc"},
                       # "created": {"up": INV, "down": INV, "sortUrl": "sort=created:asc"},
+                      "archivist": {"up": INV, "down": INV, "sortUrl": "sort=archivist:asc"},
                       "updated": {"up": INV, "down": INV, "sortUrl": "sort=updated:asc"}
                       }
         if len(sortInstruction) != 2:
             orderBy = "lastUpdated"
             viewKey = "updated"
         else:
-            lookup = {"name": "name", "status": "status", "updated": "lastUpdated"}
+            lookup = {"name": "name", "status": "status", "updated": "lastUpdated", "archivist": "handler"}
             if sortInstruction[0] in lookup:
                 viewKey = sortInstruction[0]
                 orderBy = lookup[sortInstruction[0]]

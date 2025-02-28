@@ -259,9 +259,10 @@ def createTransfer(request):
 
         if detailform.is_valid() and stepForm.is_valid():
             collectionName = detailform.cleaned_data['processName']
+            handlerName = detailform.cleaned_data["handler"]
             transferInstance = ExtractionTransfer.objects.create(name=collectionName,
                                                                  status=Status.AWAITING_HUMAN_VALIDATION,
-                                                                 pipeline=pipeline)
+                                                                 pipeline=pipeline, handler=handlerName)
             transcriptionFiles = detailform.cleaned_data["file_field"]
             pagesToReports = {}
             for file in transcriptionFiles:
@@ -404,6 +405,15 @@ def __splitAndStrip(text: str) -> List[str]:
 def importTransfer(request):
     importForm = TransferImportForm()
 
+    mode = request.GET.get("mode", request.POST.get("mode"))
+    if mode == "arab":
+        pipeline = Pipeline.ARAB_OTHER
+    else:
+        if settings.ARCHIVE_INST == "FAC":
+            pipeline = Pipeline.FAC
+        else:
+            pipeline = Pipeline.ARAB_LM
+
     if request.method == 'POST':
         importForm = TransferImportForm(request.POST, request.FILES)
 
@@ -411,7 +421,9 @@ def importTransfer(request):
 
         if importForm.is_valid():
             transferName = importForm.cleaned_data["processName"]
-            transferInstance = ExtractionTransfer.objects.create(name=transferName, status=Status.COMPLETE)
+            handlerName = importForm.cleaned_data["handler"]
+            transferInstance = ExtractionTransfer.objects.create(name=transferName, status=Status.COMPLETE,
+                                                                 handler=handlerName, pipeline=pipeline)
 
             itemsFile = importForm.cleaned_data["itemsFile"]
             mediaFile = importForm.cleaned_data["mediaFile"]

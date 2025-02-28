@@ -26,12 +26,16 @@ class MultipleFileField(FileField):
 class ExtractionTransferDetailForm(Form):
     processName = CharField(max_length=100, label="Extraction Process Name:", required=True,
                             widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}))
+    handlerName = CharField(label="Handler Name", required=False,
+                            widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Archivist'}))
     file_field = MultipleFileField(label="Select transcription files (*.xml):")
 
 
 class TransferImportForm(Form):
     processName = CharField(max_length=100, label="Extraction Process Name:", required=True,
                             widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Name'}))
+    handlerName = CharField(label="Handler Name", required=False,
+                            widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Archivist'}))
     transcriptionFiles = MultipleFileField(label="Select (unrestricted!) transcription files (*.xml):", required=True)
     itemsFile = FileField(label="items.csv (unrestricted!)", required=True,
                           widget=FileInput(attrs={"accept": ".csv", "class": "form-control"}))

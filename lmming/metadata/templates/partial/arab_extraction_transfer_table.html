@@ -9,9 +9,6 @@
     {%endcomment%}
 
     <div hx-include="[name='ids']" hx-target="#tbody">
-        <button class="btn btn-primary checkbox-action-button disabled" hx-get="{% url 'metadata:transfer_batch_redirect'%}">
-            <i class="fa-solid fa-download"></i> Export Selected CSVs
-        </button>
         <button class="btn btn-danger checkbox-action-button disabled"
                 hx-delete="{% url 'metadata:transfer_batch_delete'%}" hx-target="#modalContainer" hx-trigger="click"
                 data-bs-toggle="modal" data-bs-target="#modalContainer">
@@ -22,64 +19,62 @@
 </div>
 <div class="table-responsive">
     <form id="checked-contacts">
-        <table class="table table-striped" hx-get="{% url 'metadata:transfer_table'%}?{{searchParams}}"
+        <table class="table table-striped" hx-get="{% url 'metadata:transfer_table'%}?{{searchParams}}&mode={{mode}}"
                hx-trigger="every 20s[allowRefresh()], collection-deleted from:body" hx-target="#tablediv">
             <thead>
             <tr>
                 <th>
                     <input class="form-check-input" type="checkbox" id="checkAll" onclick="toggleCheckboxes()">
                 </th>
-                <th scope="col" class="col-7">
+                <th scope="col" class="col-5">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
-                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.name.sortUrl}}">
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.name.sortUrl}}&mode={{mode}}">
                 Extraction Process Name
             </span>
                     <i class="fa-solid fa-caret-up" style="color:{{viewStatus.name.up}};cursor: pointer;"
                        hx-trigger="click"
-                       hx-get="{% url 'metadata:transfer_table'%}?sort=name:asc" hx-target="#tablediv"></i>
+                       hx-get="{% url 'metadata:transfer_table'%}?sort=name:asc&mode={{mode}}"
+                       hx-target="#tablediv"></i>
                     <i class="fa-solid fa-caret-down" style="color:{{viewStatus.name.down}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=name:desc"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=name:desc&mode={{mode}}"
                        hx-target="#tablediv"></i>
                 </th>
-                <!--                <th scope="col">Pages/Reports</th>-->
-                <th scope="col" class="col-1">
+                <th scope="col">
+                     <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
+                           hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.archivist.sortUrl}}&mode={{mode}}">
+                    Archivist
+ </span>
+                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.archivist.up}};cursor: pointer;"
+                       hx-trigger="click"
+                       hx-get="{% url 'metadata:transfer_table'%}?sort=archivist:asc&mode={{mode}}"
+                       hx-target="#tablediv"></i>
+                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.archivist.down}};cursor: pointer;"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=archivist:desc&mode={{mode}}"
+                       hx-target="#tablediv"></i>
+                </th>
+                <th scope="col" class="col-2">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
-                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.status.sortUrl}}">
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.status.sortUrl}}&mode={{mode}}">
                 Status
             </span>
                     <i class="fa-solid fa-caret-up" style="color:{{viewStatus.status.up}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=status:asc"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=status:asc&mode={{mode}}"
                        hx-target="#tablediv"></i>
                     <i class="fa-solid fa-caret-down" style="color:{{viewStatus.status.down}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=status:desc"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=status:desc&mode={{mode}}"
                        hx-target="#tablediv"></i>
                 </th>
 
-                {%comment%}
                 <th scope="col">
             <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
-                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.created.sortUrl}}">
-                Date Created
-            </span>
-                    <i class="fa-solid fa-caret-up" style="color:{{viewStatus.created.up}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=created:asc"
-                       hx-target="#tablediv"></i>
-                    <i class="fa-solid fa-caret-down" style="color:{{viewStatus.created.down}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=created:desc"
-                       hx-target="#tablediv"></i>
-                </th>
-                {%endcomment%}
-
-                <th scope="col">
-            <span style="cursor:pointer;" hx-trigger="click" hx-target="#tablediv"
-                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.updated.sortUrl}}">
+                  hx-get="{% url 'metadata:transfer_table'%}?{{viewStatus.updated.sortUrl}}&mode={{mode}}">
                 Last Updated
             </span>
                     <i class="fa-solid fa-caret-up" style="color:{{viewStatus.updated.up}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:asc"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:asc&mode={{mode}}"
                        hx-target="#tablediv"></i>
                     <i class="fa-solid fa-caret-down" style="color:{{viewStatus.updated.down}};cursor: pointer;"
-                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:desc"
+                       hx-trigger="click" hx-get="{% url 'metadata:transfer_table'%}?sort=updated:desc&mode={{mode}}"
                        hx-target="#tablediv"></i>
                 </th>
 
@@ -98,11 +93,9 @@
                 <th scope="row">
                     {{job.name}}
                 </th>
-                {% comment %}
                 <td>
-                    {{job.report_set.count}}
+                    {{job.handler}}
                 </td>
-                {% endcomment %}
                 <td>
                     {{job.get_status_display}}
                 </td>
@@ -118,30 +111,8 @@
 
                     {%if job.status == 'COMPLETE'%}
 
-                    {%if archive == 'FAC'%}
                     <span data-bs-toggle="tooltip">
-                    <a href="{% url 'metadata:download_transfer' job.id 'csv'%}" style="cursor:pointer;" class="px-1"
-                       title="Download complete metadata for Omeka (csv)">
-                        <i class="fa-solid fa-file-csv text-dark"></i></a>
-                    </span>
-                    {%endif%}
-
-                    <span data-bs-toggle="tooltip">
-                    <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'csv_restricted'%}"
-                       class="px-1" title="Download restricted metadata for Omeka (csv)">
-                        <i class="fa-solid fa-file-shield text-dark"></i></a>
-                    </span>
-
-                    {%if archive == 'FAC'%}
-                    <span data-bs-toggle="tooltip">
-                    <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'zip'%}" class="px-1"
-                       title="Download complete Archivematica folder structure (zip)">
-                        <i class="fa-solid fa-folder-plus text-dark"></i></a>
-                    </span>
-                    {%endif%}
-
-                    <span data-bs-toggle="tooltip">
-                    <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'zip_restricted'%}"
+                    <a style="cursor:pointer;" href="{% url 'metadata:download_transfer' job.id 'zip_restricted'%}?mode={{mode}}"
                        class="px-1" title="Download restricted Archivematica folder structure (zip)">
                         <i class="fa-solid fa-folder-minus text-dark"></i></a>
                     </span>

@@ -22,13 +22,13 @@
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 <nav class="navbar navbar-dark navbar-expand-md bg-dark justify-content-center fixed-top">
     <div class="container-fluid">
-        <a href="/" class="navbar-brand d-flex w-30 me-auto">LMMing</a>
+        <a href="/" class="navbar-brand d-flex w-30 ">LMMing</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsingNavbar3">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse w-100" id="collapsingNavbar3">
             <ul class="navbar-nav w-100 justify-content-center">
-                <li class="nav-item me-5">
+                <li class="nav-item me-2">
                     <a class="btn btn-outline-light" href="/">LM Processes</a>
                 </li>
                 <li class="nav-item me-5">
@@ -39,10 +39,11 @@
                         </span>
                     </a>
                 </li>
-                <li class="nav-item me-5">
+
+                <li class="nav-item me-2 ms-5">
                     <a class="btn btn-outline-light" href="{%url 'metadata:arab_index'%}">ARAB Processes</a>
                 </li>
-                <li class="nav-itemme-5">
+                <li class="nav-ite me-5">
                     <a class="btn btn-outline-light" href="{% url 'metadata:waiting_jobs'%}?mode=arab">ARAB Waiting Jobs
                         <span hx-trigger="load, every 20s[allowRefresh()]" hx-target="#counterSpan2"
                               hx-get="{%url 'metadata:waiting_count'%}?mode=arab">
@@ -51,7 +52,7 @@
                     </a>
                 </li>
             </ul>
-            <ul class="nav navbar-nav ms-auto w-100 justify-content-end">
+            <ul class="nav navbar-nav ms-auto w-20 justify-content-end">
                 <li class="nav-item">
                     <span data-bs-toggle="tooltip"> {# extra span is needed so that tooltip AND modal can be applied to the same button #}
                         <span style="cursor:pointer;" hx-get="{% url 'metadata:settings_modal'%}"
