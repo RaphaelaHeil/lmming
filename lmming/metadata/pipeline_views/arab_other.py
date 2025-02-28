@@ -86,7 +86,7 @@ def arabOtherManual(request, job):
                 if "spatial" in imageForm.changed_data:
                     report.spatial = fromCommaList(imageForm.cleaned_data["spatial"])
                 if "medium" in imageForm.changed_data:
-                    report.medium = __fromDateDisplay(imageForm.cleaned_data["medium"])
+                    report.medium = fromCommaList(imageForm.cleaned_data["medium"])
                 if "language" in imageForm.changed_data:
                     report.language = fromCommaList(imageForm.cleaned_data["language"])
                 report.save()
