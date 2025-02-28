@@ -47,6 +47,10 @@ def fileMakerLookupArabOther(jobPk: int, pipeline: bool = True):
 
     report.creator = filemaker.organisationName
 
+    report.spatial = ["SE"] + [x for x in
+                               [filemaker.county, filemaker.municipality, filemaker.city, filemaker.parish]
+                               if x]
+
     report.save()
 
     if step.humanValidation:
