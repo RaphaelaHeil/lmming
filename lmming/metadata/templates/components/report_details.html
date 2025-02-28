@@ -238,8 +238,10 @@
 </div>
 {%if show_pages == True%}
 <div class="pt-5">
+    {%if mode != 'arab'%}
     <p>{{report.reportTranslations.count}}</p>
     {% include "components/report_translation.html" with translations=report.reporttranslation_set.all %}
+    {%endif%}
     {% include "components/page_details.html" with pages=report.page_set.all %}
 </div>
 {%endif%}

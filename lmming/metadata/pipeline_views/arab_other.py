@@ -57,9 +57,9 @@ def arabOtherManual(request, job):
     report = job.report
     initial = {"title": report.title, "source": report.get_source_display(), "description": report.description,
                "date": ",".join([__dateDisplay(d) for d in report.date]),
-               "created": __dateDisplay(report.created), "format": report.format,
+               "created": __dateDisplay(report.created), "format": report.get_format_display(),
                "accessRights": report.accessRights, "license": report.get_license_display(), "comment": report.comment,
-               "spatial": report.get_spatial_display(), "medium": report.medium,
+               "spatial": report.get_spatial_display(), "medium": report.get_medium_display(),
                "language": report.get_language_display()}
     if request.method == "POST":
         imageForm = ArabOtherManualForm(request.POST, initial=initial)
@@ -76,7 +76,7 @@ def arabOtherManual(request, job):
                 if "created" in imageForm.changed_data:
                     report.created = __fromDateDisplay(imageForm.cleaned_data["created"])
                 if "format" in imageForm.changed_data:
-                    report.format = imageForm.cleaned_data["format"]
+                    report.format = __fromDateDisplay(imageForm.cleaned_data["format"])
                 if "accessRights" in imageForm.changed_data:
                     report.accessRights = imageForm.cleaned_data["accessRights"]  # TODO: radio button
                 if "license" in imageForm.changed_data:
@@ -86,7 +86,7 @@ def arabOtherManual(request, job):
                 if "spatial" in imageForm.changed_data:
                     report.spatial = fromCommaList(imageForm.cleaned_data["spatial"])
                 if "medium" in imageForm.changed_data:
-                    report.medium = imageForm.cleaned_data["medium"]
+                    report.medium = __fromDateDisplay(imageForm.cleaned_data["medium"])
                 if "language" in imageForm.changed_data:
                     report.language = fromCommaList(imageForm.cleaned_data["language"])
                 report.save()

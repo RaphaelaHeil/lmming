@@ -8,7 +8,7 @@ from metadata.tasks.arab import arabComputeFromExistingFields, arabMintHandle
 from metadata.tasks.arab import translateToSwedish as arabTranslateToSwedish
 from metadata.tasks.fac import computeFromExistingFields, extractFromImage, mintArks, translateToSwedish
 from metadata.tasks.shared import extractFromFileNames, fileMakerLookup, namedEntityRecognition
-from metadata.tasks.arab_other import arabOtherMintHandle, fileMakerLookup
+from metadata.tasks.arab_other import arabOtherMintHandle, fileMakerLookupArabOther
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
@@ -23,7 +23,7 @@ TASK_INDEX = {ProcessingStep.ProcessingStepType.FILENAME.value: extractFromFileN
               ProcessingStep.ProcessingStepType.FAC_TRANSLATE_TO_SWEDISH.value: translateToSwedish,
               ProcessingStep.ProcessingStepType.ARAB_TRANSLATE_TO_SWEDISH.value: arabTranslateToSwedish,
               ProcessingStep.ProcessingStepType.ARAB_OTHER_MINT_HANDLE.value: arabOtherMintHandle,
-              ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP_ARAB.value: fileMakerLookup,
+              ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP_ARAB.value: fileMakerLookupArabOther,
               }
 
 

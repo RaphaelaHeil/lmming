@@ -14,7 +14,7 @@ logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
 
 @shared_task()
-def fileMakerLookup(jobPk: int, pipeline: bool = True):
+def fileMakerLookupArabOther(jobPk: int, pipeline: bool = True):
     report = Report.objects.get(job__pk=jobPk)
     step = ProcessingStep.objects.filter(job__pk=jobPk,
                                          processingStepType=ProcessingStep.ProcessingStepType.FILEMAKER_LOOKUP_ARAB.value

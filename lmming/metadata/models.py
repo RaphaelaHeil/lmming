@@ -124,9 +124,9 @@ class Report(Model):
     referencesNoid = CharField(blank=True, default="")
 
     publisher = CharField(blank=True, default="")
-    format = CharField(blank=True, default="")
+    format = ArrayField(CharField(), blank=True, null=True, default=list)
     comment = CharField(blank=True, default="")
-    medium = CharField(blank=True, default="")
+    medium = ArrayField(CharField(), blank=True, null=True,  default=list)
     type_other = CharField(blank=True, default="")
 
     def dateString(self) -> str:
@@ -163,6 +163,12 @@ class Report(Model):
 
     def get_relation_display(self):
         return ", ".join(self.relation if self.relation else [])
+
+    def get_medium_display(self):
+        return ", ".join(self.medium if self.medium else [])
+
+    def get_format_display(self):
+        return ", ".join(self.format if self.format else [])
 
 
 class ReportTranslation(Model):

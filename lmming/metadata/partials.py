@@ -110,6 +110,8 @@ ARAB_OTHER_PROCESSING_STEP_INITIAL = [{"label": ProcessingStep.ProcessingStepTyp
 
 
 def restart(_request, job_id: int, step: str):
+    if "filename" in step:
+        step = "filename"
     restartTask(job_id, ProcessingStep.ProcessingStepType[step.upper()])
     return redirect("metadata:job", job_id=job_id)
 
@@ -219,18 +221,13 @@ def settingsModal(request):
 def verifyTransfer(request, transfer_id):
     transferInstance = get_object_or_404(ExtractionTransfer, pk=transfer_id)
 
-    if transferInstance.pipeline == "ARAB_OTHER":
-        mode = "arab"
-    else:
-        mode = ""
-
     if request.method == "POST":
-        mode = request.POST.get("mode")
 
         for job in transferInstance.jobs.all():
             scheduleTask(job.pk)
 
-        # TODO: add delete button,
+        if transferInstance.pipeline == "ARAB_OTHER":
+            return redirect("/arab")
         return redirect("/")
 
     return render(request, "partial/verify_transfer.html", {"transfer": transferInstance})
@@ -259,7 +256,7 @@ def createTransfer(request):
 
         if detailform.is_valid() and stepForm.is_valid():
             collectionName = detailform.cleaned_data['processName']
-            handlerName = detailform.cleaned_data["handler"]
+            handlerName = detailform.cleaned_data["handlerName"]
             transferInstance = ExtractionTransfer.objects.create(name=collectionName,
                                                                  status=Status.AWAITING_HUMAN_VALIDATION,
                                                                  pipeline=pipeline, handler=handlerName)

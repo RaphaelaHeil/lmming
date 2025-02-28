@@ -8,7 +8,7 @@ from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.views.generic import View
 
-from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep
+from metadata.models import ExtractionTransfer, Job, Status, ProcessingStep, Pipeline
 from metadata.pipeline_views.arab import arabGenerate, arabManual, arabMint, arabFilename, arabTranslate
 from metadata.pipeline_views.arab_other import filemakerLookupArab, arabOtherManual, arabOtherMintHandle
 from metadata.pipeline_views.fac import mint, facManual, facFilename, facTranslate
@@ -192,9 +192,12 @@ class Transfer(View):
 
     def delete(self, request, *_args, **kwargs):
         transfer = get_object_or_404(ExtractionTransfer, pk=kwargs["transfer_id"])
+        redirectTo = "/"
+        if transfer.pipeline == Pipeline.ARAB_OTHER:
+            redirectTo = "/arab"
         transfer.delete()
         if request.GET.get("redirect", False) is not None:
-            return HttpResponse(status=204, headers={"HX-Redirect": "/"})
+            return HttpResponse(status=204, headers={"HX-Redirect": redirectTo})
         else:
             return HttpResponse(status=204, headers={"HX-Trigger": "collection-deleted"})
 

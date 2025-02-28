@@ -196,6 +196,98 @@ def __isRestricted(report: Report) -> bool:
     return report.accessRights == Report.AccessRights.RESTRICTED
 
 
+def __buildOmekaSummariesArabOther(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = True):
+    reportSummary = []
+    pageSummary = []
+    for report in transfer.report_set.all():
+        # TODO: add null/none checks!!
+        reportEntry = {"dcterms:identifier": report.identifier,
+                       "dcterms:title": report.title,
+                       "dcterms:creator": report.creator,
+                       "dcterms:date": formatDateString(report.date, "|"),
+                       "dcterms:language": __toOmekaList(report.language),
+                       "dcterms:spatial": __toOmekaList(report.spatial),
+                       "dcterms:type": report.type_other,
+                       "dcterms:license": __toOmekaList(report.license),
+                       "dcterms:accessRights": Report.AccessRights[report.accessRights].label,
+                       "dcterms:created": report.created.year,
+                       "dcterms:source": __toOmekaList(report.source),
+                       "dcterms:description": report.description,
+                       "dcterms:publisher": report.publisher,
+                       "dcterms:format": __toOmekaList(report.format),
+                       "dcterms:comment": report.comment,
+                       "dcterms:medium": __toOmekaList(report.medium)
+                       }
+        for translation in report.reporttranslation_set.all():
+            language = translation.language
+            reportEntry.update({f"dcterms:coverage.{language}": translation.coverage,
+                                f"dcterms:type.{language}": __toOmekaList(translation.type),
+                                f"dcterms:isFormatOf.{language}": __toOmekaList(translation.isFormatOf),
+                                f"dcterms:accessRights.{language}": translation.accessRights,
+                                f"dcterms:description.{language}": translation.description})
+
+        reportSummary.append(reportEntry)
+
+        persons = set()
+        organisations = set()
+        locations = set()
+        times = set()
+        works = set()
+        events = set()
+        objects = set()
+
+        if checkRestriction and __isRestricted(report):
+            transcription = ("FOLKRÖRELSEARKVET FÖR UPPSALA LÄN The contents of this report are "
+                             "not publicly available. Please contact Folkrörelsearkivet för "
+                             "Uppsala Län for more information. Email: info@fauppsala.se "
+                             "https://www.fauppsala.se/kontakt/ FOLKRÖRELSEARKIVET FÖR UPPSALA "
+                             "LÄN")
+            if forArab:
+                transcription = ("THE CONTENTS OF THIS REPORT ARE NOT PUBLICLY AVAILABLE. PLEASE CONTACT "
+                                 "ARBETARRÖRELSENS ARKIV OCH BIBLIOTEK FOR MORE INFORMATION. INFO@ARBARK.SE "
+                                 "WWW.ARBARK.SE/KONTAKT ARBETARRÖRELSENS ARKIV OCH BIBLIOTEK Swedish Labour Movement's "
+                                 "Archvies and Library")
+
+            pageSummary.append({"dcterms:isPartOf": report.identifier,
+                                "dcterms:identifier": urljoin(settings.IIIF_BASE_URL,
+                                                              f"iiif/image/{report.noid}_1/info.json"),
+                                "dcterms:source": "",
+                                "dcterms:bibliographicCitation": "",
+                                "lm:transcription": transcription, "lm:person": "",
+                                "lm:organisation": "", "lm:location": "", "lm:time": "", "lm:work": "", "lm:event": "",
+                                "lm:object": ""})
+        else:
+            for page in report.page_set.all().order_by("order"):
+                pageSummary.append({"dcterms:isPartOf": report.identifier,
+                                    "dcterms:identifier": page.identifier,
+                                    "dcterms:source": page.source,
+                                    "dcterms:bibliographicCitation": page.bibCitation,
+                                    "lm:transcription": page.transcription,
+                                    "lm:person": __toOmekaList(page.persons),
+                                    "lm:organisation": __toOmekaList(page.organisations),
+                                    "lm:location": __toOmekaList(page.locations),
+                                    "lm:time": __toOmekaList(page.times),
+                                    "lm:work": __toOmekaList(page.works),
+                                    "lm:event": __toOmekaList(page.events),
+                                    "lm:object": __toOmekaList(page.ner_objects)})
+                persons.update(page.persons)
+                organisations.update(page.organisations)
+                locations.update(page.locations)
+                times.update(page.times)
+                works.update(page.works)
+                events.update(page.events)
+                objects.update(page.ner_objects)
+        reportEntry["lm:person"] = __toOmekaList(persons)
+        reportEntry["lm:organisation"] = __toOmekaList(organisations)
+        reportEntry["lm:location"] = __toOmekaList(locations)
+        reportEntry["lm:time"] = __toOmekaList(times)
+        reportEntry["lm:work"] = __toOmekaList(works)
+        reportEntry["lm:event"] = __toOmekaList(events)
+        reportEntry["lm:object"] = __toOmekaList(objects)
+
+    return reportSummary, pageSummary
+
+
 def __buildOmekaSummaries(transfer: ExtractionTransfer, checkRestriction: bool = False, forArab: bool = False) -> \
         Tuple[List[Dict[str, str]], List[Dict[str, str]]]:
     reportSummary = []
@@ -374,11 +466,9 @@ def buildArabOtherMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bo
             translation = translation.first()
             dcType = __toCSList(translation.type)
             dcAccessRights = translation.accessRights
-            dcFormat = f"{translation.description} - {__toCSList([translation.isFormatOf])}"
         else:
             dcType = report.type_other
             dcAccessRights = Report.AccessRights[report.accessRights].label
-            dcFormat = f"{report.description} - {__toCSList([Report.DocumentFormat[x].label for x in report.isFormatOf])}"
 
         if checkRestriction and __isRestricted(report):
             # Not following the AtoM standard, since ARAB doesn't use that!
@@ -392,12 +482,12 @@ def buildArabOtherMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bo
                    "dc.title": report.title,
                    "dc.description": report.description,
                    "dc.created": report.created.strftime("%Y-%m-%d"),
-                   "dc.format": dcFormat,
+                   "dc.format": __toCSList(report.format),
                    "dc.accessRights": dcAccessRights,
                    "dc.license": __toCSList(report.license),
                    "dc.comment": report.comment,
                    "dc.spatial": __toCSList(report.spatial),
-                   "dc.medium": report.medium
+                   "dc.medium": __toCSList(report.medium)
                    }
             filename = f"page_not_available_{report.noid}"
             transcriptionFilename = f"objects/transcription/{filename}.xml"
@@ -419,7 +509,7 @@ def buildArabOtherMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bo
                    "dc.title": report.title,
                    "dc.description": report.description,
                    "dc.created": report.created.strftime("%Y-%m-%d"),
-                   "dc.format": dcFormat,
+                   "dc.format": __toCSList(report.format),
                    "dc.accessRights": dcAccessRights,
                    "dc.license": __toCSList(report.license),
                    "dc.comment": report.comment,
@@ -568,7 +658,11 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
             zf.writestr("metadata/metadata.csv", buildMetadataCsv(transfer, checkRestriction))
         zf.writestr("metadata/mets_structmap.xml", buildStructMap(transfer, checkRestriction))
 
-        if not arabOther:
+        if arabOther:
+            reportSummary, pageSummary = __buildOmekaSummariesArabOther(transfer, checkRestriction)
+            zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
+            zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))
+        else:
             reportSummary, pageSummary = __buildOmekaSummaries(transfer, checkRestriction, forArab=forArab)
             zf.writestr("items.csv", pd.DataFrame.from_records(reportSummary).to_csv(index=False))
             zf.writestr("media.csv", pd.DataFrame.from_records(pageSummary).to_csv(index=False))

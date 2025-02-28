@@ -1,6 +1,5 @@
 import logging
 from pathlib import Path
-from typing import List
 
 from celery import shared_task, signals
 from django.conf import settings
@@ -9,8 +8,6 @@ from metadata.models import ProcessingStep, Status, ExternalRecord, Report, Defa
 from metadata.nlp.hf_utils import download
 from metadata.nlp.ner import processPage, NlpResult
 from metadata.tasks.utils import resumePipeline, getFacCoverage
-
-from datetime import date
 
 logger = logging.getLogger(settings.WORKER_LOG_NAME)
 
