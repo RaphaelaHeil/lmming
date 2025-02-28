@@ -76,7 +76,7 @@ def arabOtherManual(request, job):
                 if "created" in imageForm.changed_data:
                     report.created = __fromDateDisplay(imageForm.cleaned_data["created"])
                 if "format" in imageForm.changed_data:
-                    report.format = __fromDateDisplay(imageForm.cleaned_data["format"])
+                    report.format = fromCommaList(imageForm.cleaned_data["format"])
                 if "accessRights" in imageForm.changed_data:
                     report.accessRights = imageForm.cleaned_data["accessRights"]  # TODO: radio button
                 if "license" in imageForm.changed_data:
