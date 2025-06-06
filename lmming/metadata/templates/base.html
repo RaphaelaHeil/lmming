@@ -40,6 +40,7 @@
                     </a>
                 </li>
 
+                {%if ARCHIVE_INST == "ARAB" %}
                 <li class="nav-item me-2 ms-5">
                     <a class="btn btn-outline-light" href="{%url 'metadata:arab_index'%}">ARAB Processes</a>
                 </li>
@@ -51,6 +52,7 @@
                         </span>
                     </a>
                 </li>
+                {%endif%}
             </ul>
             <ul class="nav navbar-nav ms-auto w-20 justify-content-end">
                 <li class="nav-item">
