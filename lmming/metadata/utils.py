@@ -569,6 +569,7 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
             preserverationFilename = f"objects/{filename}.jpg"
             a = {"filename": transcriptionFilename}
             a.update(row)
+            a["dc.title"] = "Transcription: " + a["dc.title"]
             b = {"filename": preserverationFilename}
             b.update(row)
             records.append(a)
@@ -594,6 +595,7 @@ def buildMetadataCsv(transfer: ExtractionTransfer, checkRestriction: bool = Fals
                 preserverationFilename = f"objects/{page.originalFileName[:-4]}.jpg"
                 a = {"filename": transcriptionFilename}
                 a.update(row)
+                a["dc.title"] = "Transcription: " + a["dc.title"]
                 b = {"filename": preserverationFilename}
                 b.update(row)
                 records.append(a)

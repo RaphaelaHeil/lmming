@@ -166,12 +166,7 @@
             <strong>isVersionOf:</strong>
         </div>
         <div class="col">
-            {%if report.isVersionOf%}
-            <span data-bs-toggle="tooltip"><a href="{{report.isVersionOf}}" target="_blank" title="Opens in new tab">{{report.isVersionOf}}
-                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
-            {%else%}
-            not assigned yet
-            {%endif%}
+            {{report.isVersionOf|default:'not assigned yet'}}
         </div>
     </div>
     <div class="row d-flex align-items-center py-2">

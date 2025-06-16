@@ -88,7 +88,7 @@ def fileMakerLookup(jobPk: int, pipeline: bool = True):
         report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://forskarsal.e-arkivportalen.se/"
     else:
         report.coverage = Report.UnionLevel.NATIONAL_BRANCH
-        report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else "https://www.arbark.se/"
+        report.isVersionOf = filemaker.isVersionOfLink if filemaker.isVersionOfLink else f"https://www.arbark.se/ - SE/ARAB/{report.unionId}"
 
     report.save()
 
