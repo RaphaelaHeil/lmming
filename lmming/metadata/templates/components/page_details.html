@@ -20,11 +20,11 @@
                             </div>
                             <div class="col">
                                 {%if page.identifier%}
-                                <span data-bs-toggle="tooltip"><a href="{{page.identifier}}" target="_blank"
+                                <p><span data-bs-toggle="tooltip"><a href="{{page.identifier}}" target="_blank"
                                                                   title="Opens in new tab">{{page.identifier}}
-                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
+                                    <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span></p>
                                 {%else%}
-                                not assigned yet
+                                <p>not assigned yet</p>
                                 {%endif%}
                             </div>
                         </div>
@@ -33,13 +33,7 @@
                                 <strong>Source:</strong>
                             </div>
                             <div class="col">
-                               {%if page.source%}
-                                <span data-bs-toggle="tooltip"><a href="{{page.source}}" target="_blank"
-                                                                  title="Opens in new tab">{{page.source}}
-                <i class="fa-solid fa-arrow-up-right-from-square ps-1"></i></a></span>
-                                {%else%}
-                                not assigned yet
-                                {%endif%}
+                                <p>{{page.source|default:'not assigned yet'}}</p>
                             </div>
                         </div>
                         <div class="row">

@@ -211,8 +211,9 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
 
                 page.iiifId = page.noid
                 page.identifier = f"https://hdl.handle.net/{handle}?locatt=view:manifest"
-                page.source = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
-                page.bibCitation = bibCitationBase + f"({page.source})"
+                sourceUrl = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
+                page.source = f"{sourceUrl} Direct link to image"
+                page.bibCitation = bibCitationBase + f"({sourceUrl})"
                 page.save()
             except HandleError as handleError:
                 step.log = handleError.userMessage
@@ -241,9 +242,10 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
                     handle = handleAdapter.updateLocationBasedHandle(page.noid, locations)
                     page.iiifId = page.noid
                     page.identifier = f"https://hdl.handle.net/{handle}?locatt=view:manifest"
-                    page.source = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
+                    sourceUrl = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
+                    page.source = f"{sourceUrl} Direct link to image"
 
-                    page.bibCitation = bibCitationBase + f"({page.source})"
+                    page.bibCitation = bibCitationBase + f"({sourceUrl})"
                     page.save()
                     break
                 except HandleError as handleError:
