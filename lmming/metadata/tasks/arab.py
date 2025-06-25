@@ -196,7 +196,7 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
             step.status = Status.ERROR
             step.save()
 
-    bibCitationBase = f"{report.title} ({formatDateString(report.date, ',')}) "
+    bibCitationBase = f"{report.title} (SE/ARAB/{report.unionId}) "
 
     for page in report.page_set.all():
         if page.noid:
@@ -212,7 +212,7 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
                 page.iiifId = page.noid
                 page.identifier = f"https://hdl.handle.net/{handle}?locatt=view:manifest"
                 page.source = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
-                page.bibCitation = bibCitationBase + page.source
+                page.bibCitation = bibCitationBase + f"({page.source})"
                 page.save()
             except HandleError as handleError:
                 step.log = handleError.userMessage
@@ -243,7 +243,7 @@ def arabMintHandle(jobPk: int, pipeline: bool = True):
                     page.identifier = f"https://hdl.handle.net/{handle}?locatt=view:manifest"
                     page.source = f"https://hdl.handle.net/{handle}?locatt=view:jpgfull"
 
-                    page.bibCitation = bibCitationBase + page.source
+                    page.bibCitation = bibCitationBase + f"({page.source})"
                     page.save()
                     break
                 except HandleError as handleError:
