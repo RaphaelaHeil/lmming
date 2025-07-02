@@ -294,7 +294,12 @@ def __buildOmekaSummaries(transfer: ExtractionTransfer, checkRestriction: bool =
     pageSummary = []
     for report in transfer.report_set.all():
         # TODO: add null/none checks!!
-        reportEntry = {"dcterms:identifier": report.identifier,
+        identifier = report.identifier
+        if settings.ARCHIVE_INST in ["FAC", "ARAB"]:
+            if " " not in report.identifier:
+                identifier = f"{report.identifier} {report.identifier}"
+                
+        reportEntry = {"dcterms:identifier": identifier,
                        "dcterms:title": report.title,
                        "dcterms:creator": report.creator,
                        "dcterms:date": formatDateString(report.date, "|"),
