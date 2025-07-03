@@ -53,7 +53,7 @@ def jobDetails(request, job_id):
     return render(request, "partial/job.html", {"job": job, "error": error, "steps": stepData, "mode": mode})
 
 
-def arabOtherDownload( transfer_id: int, filetype: str):
+def arabOtherDownload(transfer_id: int, filetype: str):
     transfer = get_object_or_404(ExtractionTransfer, pk=transfer_id)
 
     if filetype == "zip_restricted":
@@ -69,8 +69,6 @@ def arabOtherDownload( transfer_id: int, filetype: str):
     else:
         # TODO: raise error
         pass
-
-
 
 
 def downloadTransfer(request, transfer_id: int, filetype: str):

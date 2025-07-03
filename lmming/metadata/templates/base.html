@@ -31,7 +31,7 @@
                 <li class="nav-item me-2">
                     <a class="btn btn-outline-light" href="/">LM Processes</a>
                 </li>
-                <li class="nav-item me-5">
+                <li class="nav-item me-2">
                     <a class="btn btn-outline-light" href="{% url 'metadata:waiting_jobs'%}">LM Waiting Jobs
                         <span hx-trigger="load, every 20s[allowRefresh()]" hx-target="#counterSpan"
                               hx-get="{%url 'metadata:waiting_count'%}">
@@ -39,18 +39,24 @@
                         </span>
                     </a>
                 </li>
+                <li class="nav-item me-5">
+                    <a class="btn btn-outline-light" href="{%url 'metadata:batch_run_table'%}">LM Batch</a>
+                </li>
 
                 {%if ARCHIVE_INST == "ARAB" %}
                 <li class="nav-item me-2 ms-5">
                     <a class="btn btn-outline-light" href="{%url 'metadata:arab_index'%}">ARAB Processes</a>
                 </li>
-                <li class="nav-ite me-5">
+                <li class="nav-ite me-2">
                     <a class="btn btn-outline-light" href="{% url 'metadata:waiting_jobs'%}?mode=arab">ARAB Waiting Jobs
                         <span hx-trigger="load, every 20s[allowRefresh()]" hx-target="#counterSpan2"
                               hx-get="{%url 'metadata:waiting_count'%}?mode=arab">
                         <span id="counterSpan2" class="ms-2 badge bg-danger rounded-pill"></span>
                         </span>
                     </a>
+                </li>
+                <li class="nav-item me-5">
+                    <a class="btn btn-outline-light" href="{%url 'metadata:batch_run_table'%}?mode=arab">ARAB Batch</a>
                 </li>
                 {%endif%}
             </ul>

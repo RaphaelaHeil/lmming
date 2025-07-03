@@ -27,4 +27,6 @@ urlpatterns = [
     path("jobs/waiting/table", partials.awaitingHumanInteraction, name="waiting_jobs_table"),
     path("jobs/waiting/count", partials.waitingCount, name="waiting_count"),
     path("jobs/edit/<str:step>/<str:jobs>", partials.bulkEditJobs, name="bulk_edit_jobs"),
+    path("transfers/run", partials.batchRunTable, name="batch_run_table"),
+    path("transfers/runs", partials.batchRestart, name="batch_run"),
 ]

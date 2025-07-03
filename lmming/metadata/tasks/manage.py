@@ -28,8 +28,7 @@ TASK_INDEX = {ProcessingStep.ProcessingStepType.FILENAME.value: extractFromFileN
 
 
 def restartTask(jobId: int, stepType: ProcessingStep.ProcessingStepType):
-    job = Job.objects.get(pk=jobId)
-    step = job.processingSteps.filter(processingStepType=stepType.value).first()
+    step = ProcessingStep.objects.filter(processingStepType=stepType.value, job__pk=jobId).first()
     step.status = Status.IN_PROGRESS
     step.save()
     transaction.on_commit(lambda: TASK_INDEX[stepType.value].delay(jobId, False))

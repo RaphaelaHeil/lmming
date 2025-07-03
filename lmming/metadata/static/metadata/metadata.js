@@ -38,4 +38,34 @@ function checkboxChange() {
     }
 };
 
+function batchChange(){
+    enabled = false
+
+    for (checkbox of $(".checkable")) {
+        if ($(checkbox).prop('checked')) {
+            enabled = true;
+            break;
+        }
+    }
+
+    if (!enabled){
+        $("#checkAll").prop('checked', false);
+    }
+
+    selectedStep = $("#stepSelect option:selected").val()
+    if (selectedStep == "none"){
+        enabled = false;
+    }
+
+    var i = $(".checkbox-action-button")
+    if (enabled) {
+        for (element of i) {
+            $(element).removeClass('disabled');
+        }
+    } else {
+        for (element of i) {
+            $(element).addClass('disabled');
+        }
+    }
+};
 

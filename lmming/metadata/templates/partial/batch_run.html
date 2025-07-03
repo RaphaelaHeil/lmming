@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Run{% endblock %}
+
+{% block content %}
+
+<form>
+    <div class="mb-2 d-flex justify-content-between">
+        <select class="form-select form-select-sm" name="step" id="stepSelect" onchange="batchChange()">
+            <option selected disabled hidden value="none">Select Processing Step</option>
+            {%for step in steps%}
+            <option value="{{step.1}}">{{step.0}}</option>
+            {%endfor%}
+        </select>
+        <div hx-include="[name='ids'],[name='step']">
+            <button class="btn btn-primary checkbox-action-button disabled"
+                    hx-get="{% url 'metadata:batch_run'%}?mode={{mode}}">
+                <i class="fa-solid fa-repeat"></i> Rerun
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>
+                    <input class="form-check-input" type="checkbox" id="checkAll" onclick="toggleCheckboxes()">
+                </th>
+                <th scope="col" class="col-5"> Extraction Process Name</th>
+                <th scope="col"> Archivist</th>
+                <th scope="col"> Last Updated</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            {% if transfers%}
+            {%for transfer in transfers %}
+            <tr>
+                <td>
+                    <input type='checkbox' class="form-check-input checkable" name='ids' value='{{transfer.id}}'
+                           onchange="batchChange()">
+                </td>
+                <th scope="row">
+                    {{transfer.name}}
+                </th>
+                <td>
+                    {{transfer.handler}}
+                </td>
+                <td>
+                    {{transfer.lastUpdated |date:"d M Y, H:i"}}
+                </td>
+                {% csrf_token %}
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td></td>
+                <th scope="row">
+                    No extraction processes
+                </th>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% endif %}
+            </tbody>
+        </table>
+
+    </div>
+</form>
+{% endblock %}

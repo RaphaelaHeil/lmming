@@ -116,6 +116,45 @@ def restart(_request, job_id: int, step: str):
     return redirect("metadata:job", job_id=job_id)
 
 
+def batchRunTable(request):
+    mode = request.GET.get("mode")
+
+    if settings.ARCHIVE_INST == "FAC":
+        transfers = ExtractionTransfer.objects.filter(status=Status.COMPLETE, pipeline=Pipeline.FAC)
+        stepOptions = [(x["label"].label, x["label"].name.lower()) for x in FAC_PROCESSING_STEP_INITIAL if
+                       x["label"].name.lower() not in ["ner", "fac_manual"]]
+    else:
+        if mode == "arab":
+            transfers = ExtractionTransfer.objects.filter(status=Status.COMPLETE, pipeline=Pipeline.ARAB_OTHER)
+            stepOptions = [(x["label"].label, x["label"].name.lower()) for x in ARAB_OTHER_PROCESSING_STEP_INITIAL if
+                           x["label"].name.lower() not in ["ner", "arab_other_manual"]]
+        else:
+            transfers = ExtractionTransfer.objects.filter(status=Status.COMPLETE, pipeline=Pipeline.ARAB_LM)
+            stepOptions = [(x["label"].label, x["label"].name.lower()) for x in ARAB_PROCESSING_STEP_INITIAL if
+                           x["label"].name.lower() not in ["ner", "arab_manual"]]
+
+    return render(request, "partial/batch_run.html", {"transfers": transfers, "steps": stepOptions, "mode": mode})
+
+
+def batchRestart(request):
+    mode = request.GET.get("mode")
+    ids = request.GET.getlist("ids")
+    step = request.GET.get("step")
+    if not step:
+        return redirect("metadata:batch_run_table")
+
+    for job in Job.objects.filter(transfer__id__in=ids):
+        restartTask(job.pk, ProcessingStep.ProcessingStepType[step.upper()])
+
+    if mode == "arab":
+        redirectTo = resolve_url("metadata:arab_index")
+    else:
+        redirectTo = resolve_url("metadata:index")
+    response = HttpResponse()
+    response["HX-Redirect"] = redirectTo
+    return response
+
+
 def batchDeleteModal(request):
     ids = [int(id) for id in (QueryDict(request.body).getlist("ids"))]
     result = ""
