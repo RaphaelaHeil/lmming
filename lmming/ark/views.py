@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import View
 
-from ark.forms import ArkDetails, EditArk
+from ark.forms import ArkDetails, EditArk, CreateArk
 from ark.utils import getArkDetails, updateArk, createArk
 
 
@@ -36,14 +36,13 @@ class Read(View):
 
 class Create(View):
     def get(self, request):
-        form = EditArk(initial={})
+        form = CreateArk(initial={})
         return render(request, "ark/partial/edit.html", {"form": form, "mode": "create"})
 
     def post(self, request):
-        form = EditArk(request.POST)
+        form = CreateArk(request.POST)
         if form.is_valid():
             try:
-                print(form.cleaned_data)
                 response = createArk(form.cleaned_data)
                 return render(request, "ark/partial/details.html", response)
             except ValueError as e:

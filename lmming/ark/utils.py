@@ -3,6 +3,13 @@ from typing import Dict
 import requests
 from django.conf import settings
 
+FAC_SHOULDERS = [("/r1", "r1 - image (RIC record)"), ("/a1", "a1 - authority record (RIC agent)"),
+                 ("/rs1", "rs1 - archive (RIC record set)"), ("/rp1", "rp1 - page (RIC record part)"),
+                 ("/o1", "o1 - Other (=non-LM)")]
+
+if settings.DEBUG:
+    FAC_SHOULDERS.append(("/test", "only for test purposes"))
+
 
 def getArkDetails(url: str) -> Dict[str, str]:
     response = requests.get(url + "?json")
@@ -26,7 +33,7 @@ def updateArk(arkUrl: str, details: Dict[str, str]) -> Dict[str, str]:
 
 
 def createArk(details: Dict[str, str]) -> Dict[str, str]:
-    shoulder = "/r1"
+    shoulder = details.pop("shoulder")
     mintUrl = settings.MINTER_URL + "/mint"
     headers = {"Authorization": f"Bearer {settings.MINTER_AUTH}"}
     mintBody = {"naan": settings.MINTER_ORG_ID, "shoulder": shoulder}

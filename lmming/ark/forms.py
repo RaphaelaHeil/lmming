@@ -1,4 +1,6 @@
-from django.forms import Form, CharField, TextInput, URLInput, URLField, HiddenInput
+from django.forms import Form, CharField, TextInput, URLInput, URLField, HiddenInput, ChoiceField, Select
+
+from ark.utils import FAC_SHOULDERS
 
 
 class ArkDetails(Form):
@@ -28,3 +30,12 @@ class EditArk(Form):
                       widget=URLInput(attrs={'class': 'form-control', 'placeholder': 'DC Terms Source'}))
     metadata = CharField(max_length=200, required=False, label="Metadata",
                          widget=TextInput(attrs={'class': 'form-control', 'placeholder': 'Miscellaneous Metadata'}))
+
+
+class CreateArk(EditArk):
+    shoulder = ChoiceField(label="Shoulder (=ARK type) [required]", required=True,
+                           widget=Select(attrs={"class": "form-select",
+                                                'placeholder': 'Shoulder under which the ARK should be created'}),
+                           choices=FAC_SHOULDERS)
+
+    field_order = ['shoulder']
