@@ -12,7 +12,8 @@ from django.conf import settings
 from lxml.etree import SubElement, register_namespace, QName, Element, tostring, parse
 from requests.compat import urljoin
 
-from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status, Pipeline
+from metadata.models import Report, ExtractionTransfer, ExternalRecord, ProcessingStep, Status
+from metadata.xml_utils import convertPageToAlto
 
 __REPORT_TYPE_INDEX = {"ars": Report.DocumentType.ANNUAL_REPORT,
                        "verksam": Report.DocumentType.ANNUAL_REPORT,
@@ -298,7 +299,7 @@ def __buildOmekaSummaries(transfer: ExtractionTransfer, checkRestriction: bool =
         if settings.ARCHIVE_INST in ["FAC", "ARAB"]:
             if " " not in report.identifier:
                 identifier = f"{report.identifier} {report.identifier}"
-                
+
         reportEntry = {"dcterms:identifier": identifier,
                        "dcterms:title": report.title,
                        "dcterms:creator": report.creator,
@@ -653,11 +654,18 @@ def buildFolderStructure(transfer: ExtractionTransfer, checkRestriction: bool = 
 
                     filenames.append(pageFileName)
                     filenames.append(str(Path(pageFileName).with_suffix(".jpg")))
-                    zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
+
+                    if forArab:
+                        zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
+                    else:
+                        root = parse(page.transcriptionFile.path).getroot()
+                        rootTag = root.tag
+                        if "alto" in rootTag:
+                            zf.write(page.transcriptionFile.path, f"transcription/{pageFileName}")
+                        elif "PcGts" in rootTag:
+                            zf.writestr(f"transcription/{pageFileName}", convertPageToAlto(Path(pageFileName), root))
 
         filenames.sort(key=lambda x: (x[-3:], x[:-4]))
-
-        # zf.writestr("normalization.csv", buildNormalizationCsv(filenames, withPreservation=(not forArab)))
 
         if arabOther:
             zf.writestr("metadata/metadata.csv", buildArabOtherMetadataCsv(transfer, checkRestriction))

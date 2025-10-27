@@ -1,0 +1,26 @@
+<alto xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns="http://www.loc.gov/standards/alto/ns-v4#"
+      xsi:schemaLocation="http://www.loc.gov/standards/alto/ns-v4# http://www.loc.gov/standards/alto/v4/alto-4-2.xsd">
+   <Description>
+      <MeasurementUnit>pixel</MeasurementUnit>
+      <sourceImageInformation>
+         <fileName>{FILENAME}</fileName>
+      </sourceImageInformation>
+      <Processing ID="IdOcr">
+         <processingDateTime>{PROCESSING_DATETIME}</processingDateTime>
+         <processingSoftware>
+            <softwareCreator>Labour's Memory</softwareCreator>
+            <softwareName>LMMing</softwareName>
+         </processingSoftware>
+      </Processing>
+   </Description>
+   <Layout>
+      <Page ID="Page1" PHYSICAL_IMG_NR="1" HEIGHT="{PAGE_HEIGHT}" WIDTH="{PAGE_WIDTH}">
+         <TopMargin HEIGHT="0" WIDTH="{PAGE_WIDTH}" VPOS="0" HPOS="0"/>
+         <LeftMargin HEIGHT="{PAGE_HEIGHT}" WIDTH="0" VPOS="0" HPOS="0"/>
+         <RightMargin HEIGHT="{PAGE_HEIGHT}" WIDTH="0" VPOS="0" HPOS="{PAGE_WIDTH}"/>
+         <BottomMargin HEIGHT="0" WIDTH="{PAGE_WIDTH}" VPOS="{PAGE_HEIGHT}" HPOS="0"/>
+         <PrintSpace HEIGHT="{PAGE_HEIGHT}" WIDTH="{PAGE_WIDTH}" VPOS="0" HPOS="0"></PrintSpace>
+      </Page>
+   </Layout>
+</alto>
