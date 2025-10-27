@@ -55,7 +55,10 @@ def __parsePage(root) -> Page:
     parsedPage.width = pageElement.attrib["imageWidth"]
 
     for textRegion in pageElement.findall("TextRegion", namespace):
-        coordString = textRegion.find("Coords", namespace).attrib["points"]
+        trCoords = textRegion.find("Coords", namespace)
+        if trCoords is None:
+            continue
+        coordString = trCoords.attrib["points"]
         coords = coordString.split()
         xCoords = [int(p.split(",")[0]) for p in coords]
         yCoords = [int(p.split(",")[1]) for p in coords]
